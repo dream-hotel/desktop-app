@@ -9,6 +9,7 @@ import RecentTasks from "../components/dashboard/RecentTasks";
 import WelcomeNotificationsModal from "../components/dashboard/WelcomeNotificationsModal";
 import StatusBar from "../components/dashboard/StatusBar";
 import UnderConstructionPage from "./UnderConstructionPage";
+import TasksPage from "./TasksPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -46,15 +47,17 @@ export default function DashboardPage() {
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
         <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
-        <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-          <DashboardHeader
-            user={user}
-            notificationCount={pendingNotifications.length}
-            notifications={data.notifications}
-            showNotifications={showNotifications}
-            onToggleNotifications={() => setShowNotifications((prev) => !prev)}
-            onCloseNotifications={() => setShowNotifications(false)}
-          />
+        <main className={`flex min-w-0 flex-1 flex-col ${activeNav === "tareas" ? "overflow-hidden" : "overflow-y-auto"}`}>
+          {activeNav !== "tareas" && (
+            <DashboardHeader
+              user={user}
+              notificationCount={pendingNotifications.length}
+              notifications={data.notifications}
+              showNotifications={showNotifications}
+              onToggleNotifications={() => setShowNotifications((prev) => !prev)}
+              onCloseNotifications={() => setShowNotifications(false)}
+            />
+          )}
 
           {activeNav === "dashboard" ? (
             <div className="flex flex-1 flex-col gap-5 px-8 pb-6">
@@ -113,6 +116,8 @@ export default function DashboardPage() {
                 <RecentTasks tasks={data.recentTasks} />
               </div>
             </div>
+          ) : activeNav === "tareas" ? (
+            <TasksPage />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}
