@@ -51,15 +51,19 @@ export default function NotificationsPanel({
   }
 
   return (
-    <div className="fixed inset-0 z-100 flex justify-center pt-10" onClick={onClose}>
-      <div
-        className="flex max-h-[80vh] w-[420px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.15)]"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <>
+      {/* Invisible backdrop to close on click outside */}
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+
+      {/* Dropdown panel - positioned by parent's relative container */}
+      <div className="absolute top-full right-0 z-50 mt-2 flex max-h-[calc(100vh-120px)] w-[400px] flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
+        {/* Triangle arrow pointing to bell */}
+        <div className="absolute -top-2 right-[14px] h-4 w-4 rotate-45 border-t border-l border-border bg-white" />
+
         {/* Header */}
-        <div className="flex items-start justify-between px-5 pt-5 pb-3">
+        <div className="relative flex items-start justify-between px-5 pt-5 pb-3">
           <div className="flex items-center gap-[10px]">
-            <h2 className="m-0 font-alexandria text-[22px] leading-7 font-medium text-text-primary">
+            <h2 className="m-0 font-alexandria text-lg leading-6 font-medium text-text-primary">
               Anuncios
             </h2>
             <span className="rounded-xl bg-success-light px-[10px] py-[3px] font-inter text-[11px] font-semibold text-white">
@@ -114,82 +118,84 @@ export default function NotificationsPanel({
           ))}
         </div>
 
-        {/* List */}
-        <div className="flex flex-1 flex-col gap-[10px] overflow-y-auto px-5 pb-5">
-          {filtered.map((notification) => (
-            <div
-              key={notification.id}
-              className="overflow-hidden rounded-xl border border-border"
-              style={{ background: getNotificationBg(notification.priority) }}
-            >
-              {/* Card Header */}
+        {/* Scrollable list */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+          <div className="flex flex-col gap-[10px]">
+            {filtered.map((notification) => (
               <div
-                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-[14px]"
-                onClick={() => toggleExpanded(notification.id)}
+                key={notification.id}
+                className="overflow-hidden rounded-xl border border-border"
+                style={{ background: getNotificationBg(notification.priority) }}
               >
-                <div className="flex min-w-0 flex-1 items-center gap-[10px]">
-                  <div
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                    style={{ background: getPriorityColor(notification.priority) }}
-                  >
-                    {notification.actionType === "tarea" ? (
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M3 7l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    )}
-                  </div>
-                  <span className="font-inter text-[13px] leading-[18px] font-semibold text-text-primary">
-                    {notification.title}
-                  </span>
-                </div>
-                <button className="flex items-center border-none bg-transparent p-1 shadow-none">
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    className="transition-transform duration-200"
-                    style={{
-                      transform: expandedIds.has(notification.id) ? "rotate(180deg)" : "none",
-                    }}
-                  >
-                    <path d="M2 4l4 4 4-4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Card Body */}
-              {expandedIds.has(notification.id) && (
-                <div className="px-4 pb-[14px]">
-                  <div className="mb-[10px] flex flex-wrap items-center gap-2">
-                    <span className="font-inter text-xs text-text-secondary">
-                      {notification.authorName} — {notification.authorRole}
-                    </span>
-                    <span className="text-xs text-text-secondary">·</span>
-                    <span className="flex items-center font-inter text-xs text-text-secondary">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mr-1">
-                        <circle cx="6" cy="6" r="5" stroke="#6b7280" strokeWidth="1" />
-                        <path d="M6 3v3l2 1" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-                      </svg>
-                      {notification.date}
+                {/* Card Header */}
+                <div
+                  className="flex cursor-pointer items-center justify-between gap-3 px-4 py-[14px]"
+                  onClick={() => toggleExpanded(notification.id)}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-[10px]">
+                    <div
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                      style={{ background: getPriorityColor(notification.priority) }}
+                    >
+                      {notification.actionType === "tarea" ? (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M3 7l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="font-inter text-[13px] leading-[18px] font-semibold text-text-primary">
+                      {notification.title}
                     </span>
                   </div>
-                  <p className="m-0 mb-3 font-inter text-[13px] leading-5 text-text-body">
-                    {notification.description}
-                  </p>
-                  <button className="border-none bg-transparent p-0 font-inter text-xs font-semibold text-success shadow-none hover:underline">
-                    {notification.actionLabel} →
+                  <button className="flex items-center border-none bg-transparent p-1 shadow-none">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      className="transition-transform duration-200"
+                      style={{
+                        transform: expandedIds.has(notification.id) ? "rotate(180deg)" : "none",
+                      }}
+                    >
+                      <path d="M2 4l4 4 4-4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </button>
                 </div>
-              )}
-            </div>
-          ))}
+
+                {/* Card Body */}
+                {expandedIds.has(notification.id) && (
+                  <div className="px-4 pb-[14px]">
+                    <div className="mb-[10px] flex flex-wrap items-center gap-2">
+                      <span className="font-inter text-xs text-text-secondary">
+                        {notification.authorName} — {notification.authorRole}
+                      </span>
+                      <span className="text-xs text-text-secondary">·</span>
+                      <span className="flex items-center font-inter text-xs text-text-secondary">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mr-1">
+                          <circle cx="6" cy="6" r="5" stroke="#6b7280" strokeWidth="1" />
+                          <path d="M6 3v3l2 1" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
+                        </svg>
+                        {notification.date}
+                      </span>
+                    </div>
+                    <p className="m-0 mb-3 font-inter text-[13px] leading-5 text-text-body">
+                      {notification.description}
+                    </p>
+                    <button className="border-none bg-transparent p-0 font-inter text-xs font-semibold text-success shadow-none hover:underline">
+                      {notification.actionLabel} →
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

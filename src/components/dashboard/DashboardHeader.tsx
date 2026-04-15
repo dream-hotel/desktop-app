@@ -1,9 +1,14 @@
 import { User } from "../../types/response/AuthResponse";
+import { Notification } from "../../types/response/DashboardResponse";
+import NotificationsPanel from "./NotificationsPanel";
 
 interface DashboardHeaderProps {
   user: User;
   notificationCount: number;
+  notifications: Notification[];
+  showNotifications: boolean;
   onToggleNotifications: () => void;
+  onCloseNotifications: () => void;
 }
 
 function getGreeting(): string {
@@ -42,7 +47,10 @@ function getInitials(name: string): string {
 export default function DashboardHeader({
   user,
   notificationCount,
+  notifications,
+  showNotifications,
   onToggleNotifications,
+  onCloseNotifications,
 }: DashboardHeaderProps) {
   return (
     <header className="flex items-start justify-between px-8 pt-6 pb-4">
@@ -56,21 +64,31 @@ export default function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-4">
-        <button
-          className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/8 bg-transparent shadow-none transition-colors hover:bg-[#f5f3f7]"
-          onClick={onToggleNotifications}
-          aria-label="Notificaciones"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 2a5 5 0 00-5 5v3l-1.3 2.6a.5.5 0 00.45.7h11.7a.5.5 0 00.45-.7L15 10V7a5 5 0 00-5-5z" stroke="#6b7280" strokeWidth="1.5" strokeLinejoin="round" />
-            <path d="M8 15a2 2 0 004 0" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger font-inter text-[10px] font-semibold text-white">
-              {notificationCount}
-            </span>
+        {/* Bell button + dropdown container */}
+        <div className="relative">
+          <button
+            className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/8 bg-transparent shadow-none transition-colors hover:bg-[#f5f3f7]"
+            onClick={onToggleNotifications}
+            aria-label="Notificaciones"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2a5 5 0 00-5 5v3l-1.3 2.6a.5.5 0 00.45.7h11.7a.5.5 0 00.45-.7L15 10V7a5 5 0 00-5-5z" stroke="#6b7280" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M8 15a2 2 0 004 0" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger font-inter text-[10px] font-semibold text-white">
+                {notificationCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifications && (
+            <NotificationsPanel
+              notifications={notifications}
+              onClose={onCloseNotifications}
+            />
           )}
-        </button>
+        </div>
 
         <div className="flex items-center gap-[10px]">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-inter text-sm font-semibold text-white">

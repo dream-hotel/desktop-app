@@ -6,7 +6,7 @@ import Sidebar from "../components/dashboard/Sidebar";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import StatsCard from "../components/dashboard/StatsCard";
 import RecentTasks from "../components/dashboard/RecentTasks";
-import NotificationsPanel from "../components/dashboard/NotificationsPanel";
+import WelcomeNotificationsModal from "../components/dashboard/WelcomeNotificationsModal";
 import StatusBar from "../components/dashboard/StatusBar";
 import UnderConstructionPage from "./UnderConstructionPage";
 
@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
@@ -38,6 +39,9 @@ export default function DashboardPage() {
     );
   }
 
+  const pendingNotifications = data.notifications.filter((n) => n.status === "pendiente");
+  const showWelcomeModal = !welcomeDismissed && pendingNotifications.length > 0;
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
@@ -45,8 +49,11 @@ export default function DashboardPage() {
         <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
           <DashboardHeader
             user={user}
-            notificationCount={data.notifications.filter((n) => n.status === "pendiente").length}
-            onToggleNotifications={() => setShowNotifications(!showNotifications)}
+            notificationCount={pendingNotifications.length}
+            notifications={data.notifications}
+            showNotifications={showNotifications}
+            onToggleNotifications={() => setShowNotifications((prev) => !prev)}
+            onCloseNotifications={() => setShowNotifications(false)}
           />
 
           {activeNav === "dashboard" ? (
@@ -113,10 +120,11 @@ export default function DashboardPage() {
       </div>
       <StatusBar />
 
-      {showNotifications && (
-        <NotificationsPanel
-          notifications={data.notifications}
-          onClose={() => setShowNotifications(false)}
+      {/* Welcome modal - blocks interaction until all notifications read */}
+      {showWelcomeModal && (
+        <WelcomeNotificationsModal
+          notifications={pendingNotifications}
+          onDismiss={() => setWelcomeDismissed(true)}
         />
       )}
     </div>
