@@ -10,6 +10,7 @@ import WelcomeNotificationsModal from "../components/dashboard/WelcomeNotificati
 import StatusBar from "../components/dashboard/StatusBar";
 import UnderConstructionPage from "./UnderConstructionPage";
 import TasksPage from "./TasksPage";
+import WikiPage from "./WikiPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -47,8 +48,8 @@ export default function DashboardPage() {
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
         <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
-        <main className={`flex min-w-0 flex-1 flex-col ${activeNav === "tareas" ? "overflow-hidden" : "overflow-y-auto"}`}>
-          {activeNav !== "tareas" && (
+        <main className={`flex min-w-0 flex-1 flex-col ${activeNav === "tareas" || activeNav === "wiki" ? "overflow-hidden" : "overflow-y-auto"}`}>
+          {activeNav !== "tareas" && activeNav !== "wiki" && (
             <DashboardHeader
               user={user}
               notificationCount={pendingNotifications.length}
@@ -60,7 +61,7 @@ export default function DashboardPage() {
           )}
 
           {activeNav === "dashboard" ? (
-            <div className="flex flex-1 flex-col gap-5 px-8 pb-6">
+            <div className="flex flex-1 flex-col gap-5 px-8 pb-6 pt-0">
               <div className="flex gap-4">
                 <StatsCard
                   icon={
@@ -118,6 +119,8 @@ export default function DashboardPage() {
             </div>
           ) : activeNav === "tareas" ? (
             <TasksPage />
+          ) : activeNav === "wiki" ? (
+            <WikiPage />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}
@@ -125,7 +128,6 @@ export default function DashboardPage() {
       </div>
       <StatusBar />
 
-      {/* Welcome modal - blocks interaction until all notifications read */}
       {showWelcomeModal && (
         <WelcomeNotificationsModal
           notifications={pendingNotifications}

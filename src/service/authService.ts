@@ -1,52 +1,109 @@
 import { LoginRequest } from "../types/request/LoginRequest";
-import { AuthResponse, User } from "../types/response/AuthResponse";
+import { AuthResponse, User, BackendAuthResponse, UserRole } from "../types/response/AuthResponse";
 
-const MOCK_USERS: User[] = [
-  {
-    id: 1,
-    username: "ElizabethM",
-    fullName: "Elizabeth M.",
-    role: "administrador",
-    email: "elizabeth@stannum.com",
-  },
-  {
-    id: 2,
-    username: "AlanM",
-    fullName: "Alan M.",
-    role: "recepcionista",
-    email: "alan@stannum.com",
-  },
-];
+const API_URL = "http://localhost:3000/api";
+
+function mapRole(backendRoleName: string): UserRole {
+  switch (backendRoleName.toUpperCase()) {
+    case "ADMIN":
+    case "ROOT":
+      return "administrador";
+    case "RECEPTIONIST":
+      return "recepcionista";
+    default:
+      return "cliente";
+  }
+}
 
 export async function login(request: LoginRequest): Promise<AuthResponse> {
+  // MOCK LOGIN TEMPORAL PARA DESARROLLO DE UI
   await new Promise((resolve) => setTimeout(resolve, 800));
 
-  const user = MOCK_USERS.find(
-    (u) => u.username.toLowerCase() === request.username.toLowerCase()
-  );
+  const mockAdmin: User = {
+    id: 999,
+    fullName: "Usuario",
+    lastName: "Administrador (Mock)",
+    email: request.email || "admin@hotel.com",
+    role: "administrador",
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  };
 
-  if (!user) {
-    return {
-      success: false,
-      message: "Usuario no encontrado",
-    };
-  }
-
-  if (request.password !== "admin123") {
-    return {
-      success: false,
-      message: "Contraseña incorrecta",
-    };
-  }
+  localStorage.setItem("accessToken", "mock-token-temporal");
 
   return {
     success: true,
-    message: "Inicio de sesión exitoso",
-    user,
-    token: "mock-jwt-token-" + user.id,
+    message: "Mock Login Exitoso",
+    user: mockAdmin,
+    token: "mock-token-temporal",
   };
+
+  /* CÓDIGO REAL COMENTADO TEMPORALMENTE
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return {
+        success: false,
+        message: errorData.message || "Credenciales inválidas o error en el servidor",
+      };
+    }
+
+    const data: BackendAuthResponse = await response.json();
+
+    localStorage.setItem("accessToken", data.accessToken);
+    if (data.refreshToken) {
+      localStorage.setItem("refreshToken", data.refreshToken);
+    }
+
+    const frontendUser: User = {
+      id: data.user.id,
+      fullName: data.user.fullName,
+      lastName: data.user.lastName,
+      email: data.user.email,
+      role: mapRole(data.user.role.name),
+      isActive: data.user.isActive,
+      createdAt: data.user.createdAt,
+    };
+
+    return {
+      success: true,
+      message: "Inicio de sesión exitoso",
+      user: frontendUser,
+      token: data.accessToken,
+    };
+  } catch (error) {
+    console.error("Login error:", error);
+    return {
+      success: false,
+      message: "Error de red. No se pudo conectar al servidor.",
+    };
+  }
+  */
 }
 
 export async function logout(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+  }
 }

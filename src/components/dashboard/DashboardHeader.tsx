@@ -9,6 +9,7 @@ interface DashboardHeaderProps {
   showNotifications: boolean;
   onToggleNotifications: () => void;
   onCloseNotifications: () => void;
+  customTitle?: string;
 }
 
 function getGreeting(): string {
@@ -51,20 +52,28 @@ export default function DashboardHeader({
   showNotifications,
   onToggleNotifications,
   onCloseNotifications,
+  customTitle,
 }: DashboardHeaderProps) {
   return (
-    <header className="flex items-start justify-between px-8 pt-6 pb-4">
+    <header className="flex items-start justify-between border-b border-border bg-white px-8 pb-4 pt-6">
       <div className="flex flex-col gap-[2px]">
-        <h1 className="m-0 font-alexandria text-[28px] leading-9 font-medium text-text-primary">
-          {getGreeting()}, {user.fullName.split(" ")[0]}
-        </h1>
-        <p className="m-0 font-inter text-[13px] leading-[19.5px] text-text-secondary">
-          {getFormattedDate()} - {getTurno()}
-        </p>
+        {customTitle ? (
+          <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
+            {customTitle}
+          </h1>
+        ) : (
+          <>
+            <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
+              {getGreeting()}, {user.fullName.split(" ")[0]}
+            </h1>
+            <p className="m-0 font-inter text-[13px] leading-[19.5px] text-text-secondary">
+              {getFormattedDate()} - {getTurno()}
+            </p>
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Bell button + dropdown container */}
         <div className="relative">
           <button
             className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/8 bg-transparent shadow-none transition-colors hover:bg-[#f5f3f7]"

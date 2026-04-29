@@ -6,14 +6,14 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error } = useAuth();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const success = await login({ username, password });
+    const success = await login({ email, password });
     if (success) {
       onSuccess();
     }
@@ -30,14 +30,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
       <div className="flex flex-col gap-2">
         <label className="font-alexandria text-[20px] leading-[21px] font-extralight text-white">
-          Usuario
+          Correo Electrónico
         </label>
         <input
-          type="text"
+          type="email"
           className="h-[42px] w-full rounded-[10px] border-[0.5px] border-white/80 bg-transparent px-[14px] font-alexandria text-[20px] leading-[21px] font-light text-white outline-none placeholder:text-white/40 focus:border-white"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Ingresa tu usuario"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="ejemplo@correo.com"
           required
           autoFocus
         />
