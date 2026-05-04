@@ -11,10 +11,12 @@ import StatusBar from "../components/dashboard/StatusBar";
 import UnderConstructionPage from "./UnderConstructionPage";
 import TasksPage from "./TasksPage";
 import WikiPage from "./WikiPage";
+import AnnouncementsPage from "./AnnouncementsPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
   wiki: "Wiki",
+  "crear-anuncios": "Creación De Anuncios",
   horarios: "Horarios",
   usuarios: "Usuarios",
   actividad: "Actividad",
@@ -48,8 +50,8 @@ export default function DashboardPage() {
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
         <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
-        <main className={`flex min-w-0 flex-1 flex-col ${activeNav === "tareas" || activeNav === "wiki" ? "overflow-hidden" : "overflow-y-auto"}`}>
-          {activeNav !== "tareas" && activeNav !== "wiki" && (
+        <main className={`flex min-w-0 flex-1 flex-col ${activeNav === "tareas" || activeNav === "wiki" || activeNav === "crear-anuncios" ? "overflow-hidden" : "overflow-y-auto"}`}>
+          {activeNav !== "tareas" && activeNav !== "wiki" && activeNav !== "crear-anuncios" && (
             <DashboardHeader
               user={user}
               notificationCount={pendingNotifications.length}
@@ -121,6 +123,8 @@ export default function DashboardPage() {
             <TasksPage />
           ) : activeNav === "wiki" ? (
             <WikiPage />
+          ) : activeNav === "crear-anuncios" ? (
+            <AnnouncementsPage />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}

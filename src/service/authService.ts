@@ -1,7 +1,7 @@
 import { LoginRequest } from "../types/request/LoginRequest";
 import { AuthResponse, User, BackendAuthResponse, UserRole } from "../types/response/AuthResponse";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = "http://localhost:3000/api/hotel";
 
 function mapRole(backendRoleName: string): UserRole {
   switch (backendRoleName.toUpperCase()) {
@@ -16,29 +16,6 @@ function mapRole(backendRoleName: string): UserRole {
 }
 
 export async function login(request: LoginRequest): Promise<AuthResponse> {
-  // MOCK LOGIN TEMPORAL PARA DESARROLLO DE UI
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  const mockAdmin: User = {
-    id: 999,
-    fullName: "Usuario",
-    lastName: "Administrador (Mock)",
-    email: request.email || "admin@hotel.com",
-    role: "administrador",
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  };
-
-  localStorage.setItem("accessToken", "mock-token-temporal");
-
-  return {
-    success: true,
-    message: "Mock Login Exitoso",
-    user: mockAdmin,
-    token: "mock-token-temporal",
-  };
-
-  /* CÓDIGO REAL COMENTADO TEMPORALMENTE
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
@@ -86,7 +63,6 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
       message: "Error de red. No se pudo conectar al servidor.",
     };
   }
-  */
 }
 
 export async function logout(): Promise<void> {

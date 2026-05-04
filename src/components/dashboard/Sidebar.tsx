@@ -40,6 +40,17 @@ const NAV_ITEMS: SidebarItem[] = [
     ),
   },
   {
+    id: "crear-anuncios",
+    label: "Creación De Anuncios",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M8 2L3 6H1v6h2l5 4V2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M11 6a4 4 0 010 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M14 4a7 7 0 010 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     id: "horarios",
     label: "Horarios",
     icon: (
