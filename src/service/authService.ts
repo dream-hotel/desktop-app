@@ -1,49 +1,97 @@
 import { LoginRequest } from "../types/request/LoginRequest";
 import { AuthResponse, User } from "../types/response/AuthResponse";
 
-const MOCK_USERS: User[] = [
-  {
-    id: 1,
-    username: "ElizabethM",
-    fullName: "Elizabeth M.",
-    role: "administrador",
-    email: "elizabeth@stannum.com",
-  },
-  {
-    id: 2,
-    username: "AlanM",
-    fullName: "Alan M.",
-    role: "recepcionista",
-    email: "alan@stannum.com",
-  },
-];
+const AUTH_LOGIN_URL = "http://localhost:3000/api/auth/login";
+type BackendLoginResponse = {
+  access_token?: string;
+  user?: {
+    id: number;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+  };
+  message?: string;
+};
 
 export async function login(request: LoginRequest): Promise<AuthResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
+  console.log("[authService.login] Request payload:", {
+    email: request.email,
+    hasPassword: !!request.password,
+  });
 
-  const user = MOCK_USERS.find(
-    (u) => u.username.toLowerCase() === request.username.toLowerCase()
-  );
-
-  if (!user) {
+  let response: Response;
+  try {
+    response = await fetch(AUTH_LOGIN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: request.email,
+        password: request.password,
+      }),
+    });
+  } catch (error) {
+    console.error("[authService.login] Network error:", error);
     return {
       success: false,
-      message: "Usuario no encontrado",
+      message: "No se pudo conectar con el servidor de autenticación.",
     };
   }
 
-  if (request.password !== "admin123") {
+  let data: BackendLoginResponse;
+  try {
+    data = (await response.json()) as BackendLoginResponse;
+  } catch {
+    console.error("[authService.login] Invalid JSON response. HTTP status:", response.status);
     return {
       success: false,
-      message: "Contraseña incorrecta",
+      message: "Respuesta inválida del servidor de autenticación.",
     };
   }
+
+  console.log("[authService.login] Backend response:", {
+    status: response.status,
+    ok: response.ok,
+    data,
+  });
+
+  if (!response.ok) {
+    return {
+      success: false,
+      message: data.message || "No fue posible iniciar sesión.",
+    };
+  }
+
+  const backendUser = data.user;
+  if (!backendUser) {
+    return {
+      success: true,
+      message: "Inicio de sesión exitoso.",
+      token: data.access_token,
+    };
+  }
+
+  const fullName = `${backendUser.firstName ?? ""} ${backendUser.lastName ?? ""}`.trim();
+  const normalizedUser: User = {
+    id: backendUser.id,
+    email: backendUser.email,
+    username: backendUser.email.split("@")[0] || backendUser.email,
+    fullName: fullName || backendUser.email,
+    role:
+      backendUser.role === "administrador" || backendUser.role === "admin"
+        ? "administrador"
+        : backendUser.role === "recepcionista" || backendUser.role === "receptionist"
+          ? "recepcionista"
+          : "cliente",
+  };
 
   return {
     success: true,
-    message: "Inicio de sesión exitoso",
-    user,
-    token: "mock-jwt-token-" + user.id,
+    message: "Inicio de sesión exitoso.",
+    token: data.access_token,
+    user: normalizedUser,
   };
 }
 
