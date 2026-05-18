@@ -24,14 +24,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const response = await authService.login(request);
-      if (response.success && response.user) {
-        setUser(response.user);
+      console.log("[AuthContext.login] authService response:", response);
+
+      if (response.success) {
+        const fallbackUser: User = {
+          id: 0,
+          username: request.email.split("@")[0] || request.email,
+          fullName: request.email.split("@")[0] || request.email,
+          role: "cliente",
+          email: request.email,
+        };
+
+        const resolvedUser = response.user ?? fallbackUser;
+        setUser(resolvedUser);
+        console.log("[AuthContext.login] Login success. User resolved:", resolvedUser);
         return true;
       } else {
         setError(response.message);
+        console.warn("[AuthContext.login] Login rejected:", response.message);
         return false;
       }
-    } catch {
+    } catch (e) {
+      console.error("[AuthContext.login] Unexpected error:", e);
       setError("Error de conexión. Intente nuevamente.");
       return false;
     } finally {

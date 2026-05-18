@@ -37,7 +37,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           className="h-[42px] w-full rounded-[10px] border-[0.5px] border-white/80 bg-transparent px-[14px] font-alexandria text-[20px] leading-[21px] font-light text-white outline-none placeholder:text-white/40 focus:border-white"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="ejemplo@correo.com"
+          placeholder="Ingresa tu email"
           required
           autoFocus
         />

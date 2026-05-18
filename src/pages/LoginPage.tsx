@@ -1,11 +1,22 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "../components/login/LoginForm";
 import loginBg from "../assets/login-bg.jpg";
+import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log("[LoginPage] User authenticated. Redirecting to /dashboard");
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   function handleLoginSuccess() {
+    console.log("[LoginPage] Login success callback. Navigating to /dashboard");
     navigate("/dashboard");
   }
 
