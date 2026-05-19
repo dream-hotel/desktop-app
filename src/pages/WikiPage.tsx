@@ -5,7 +5,7 @@ import ArticleViewer from "../components/wiki/ArticleViewer";
 import ArticleEditorModal from "../components/wiki/ArticleEditorModal";
 import { WikiDirectory, WikiArticle } from "../types/models/Wiki";
 import * as wikiService from "../service/wikiService";
-import DashboardHeader from "../components/dashboard/DashboardHeader";
+import DashboardHeader from "../components/layout/DashboardHeader";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 

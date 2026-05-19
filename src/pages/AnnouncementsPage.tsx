@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import DashboardHeader from "../components/dashboard/DashboardHeader";
+import DashboardHeader from "../components/layout/DashboardHeader";
 import CreateAnnouncementForm from "../components/announcements/CreateAnnouncementForm";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";

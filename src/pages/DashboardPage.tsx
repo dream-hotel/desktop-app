@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
-import Sidebar from "../components/dashboard/Sidebar";
-import DashboardHeader from "../components/dashboard/DashboardHeader";
+import Sidebar from "../components/layout/Sidebar";
+import DashboardHeader from "../components/layout/DashboardHeader";
+import StatusBar from "../components/layout/StatusBar";
 import StatsCard from "../components/dashboard/StatsCard";
 import RecentTasks from "../components/dashboard/RecentTasks";
 import WelcomeNotificationsModal from "../components/dashboard/WelcomeNotificationsModal";
-import StatusBar from "../components/dashboard/StatusBar";
 import UnderConstructionPage from "./UnderConstructionPage";
 import TasksPage from "./TasksPage";
 import WikiPage from "./WikiPage";
@@ -19,7 +19,7 @@ import SchedulesPage from "./SchedulesPage";
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
   wiki: "Wiki",
-  "crear-anuncios": "Creación De Anuncios",
+  anuncios: "Anuncios",
   horarios: "Horarios",
   usuarios: "Usuarios",
   actividad: "Actividad",
@@ -49,7 +49,7 @@ export default function DashboardPage() {
   const pendingNotifications = data.notifications.filter((n) => n.status === "pendiente");
   const showWelcomeModal = !welcomeDismissed && pendingNotifications.length > 0;
 
-  const FULL_HEIGHT_PAGES = ["tareas", "wiki", "crear-anuncios", "usuarios", "actividad", "horarios"];
+  const FULL_HEIGHT_PAGES = ["tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios"];
   const isFullHeightPage = FULL_HEIGHT_PAGES.includes(activeNav);
 
   return (
@@ -129,7 +129,7 @@ export default function DashboardPage() {
             <TasksPage />
           ) : activeNav === "wiki" ? (
             <WikiPage />
-          ) : activeNav === "crear-anuncios" ? (
+          ) : activeNav === "anuncios" ? (
             <AnnouncementsPage />
           ) : activeNav === "usuarios" ? (
             <UsersPage />
