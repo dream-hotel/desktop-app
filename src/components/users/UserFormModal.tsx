@@ -74,7 +74,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="flex w-[460px] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+        className="flex w-[480px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
       >
         <div className="flex items-start justify-between">
           <div>
@@ -99,24 +99,24 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
         </div>
 
         <div className="flex gap-3">
-          <div className="flex flex-1 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">Nombre</label>
             <input
               required
               maxLength={100}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
             />
           </div>
-          <div className="flex flex-1 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">Apellido</label>
             <input
               required
               maxLength={100}
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             maxLength={150}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+            className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
           />
         </div>
 
@@ -144,17 +144,17 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder={mode === "create" ? "Opcional — si está vacío, se envía invitación" : "••••••••"}
-            className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+            className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
           />
         </div>
 
         <div className="flex gap-3">
-          <div className="flex flex-1 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">Rol</label>
             <select
               value={roleId}
               onChange={(e) => setRoleId(Number(e.target.value))}
-              className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
             >
               {ROLE_OPTIONS.map((opt) => (
                 <option key={opt.id} value={opt.id}>
@@ -164,12 +164,12 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             </select>
           </div>
           {mode === "edit" && (
-            <div className="flex flex-1 flex-col gap-1">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
               <label className="font-inter text-[12px] font-medium text-text-body">Estado</label>
               <select
                 value={isActive ? "1" : "0"}
                 onChange={(e) => setIsActive(e.target.value === "1")}
-                className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+                className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
               >
                 <option value="1">Activo</option>
                 <option value="0">Inactivo</option>
