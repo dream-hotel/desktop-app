@@ -12,6 +12,9 @@ import UnderConstructionPage from "./UnderConstructionPage";
 import TasksPage from "./TasksPage";
 import WikiPage from "./WikiPage";
 import AnnouncementsPage from "./AnnouncementsPage";
+import UsersPage from "./UsersPage";
+import ActivityLogPage from "./ActivityLogPage";
+import SchedulesPage from "./SchedulesPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -46,12 +49,15 @@ export default function DashboardPage() {
   const pendingNotifications = data.notifications.filter((n) => n.status === "pendiente");
   const showWelcomeModal = !welcomeDismissed && pendingNotifications.length > 0;
 
+  const FULL_HEIGHT_PAGES = ["tareas", "wiki", "crear-anuncios", "usuarios", "actividad", "horarios"];
+  const isFullHeightPage = FULL_HEIGHT_PAGES.includes(activeNav);
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
         <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
-        <main className={`flex min-w-0 flex-1 flex-col ${activeNav === "tareas" || activeNav === "wiki" || activeNav === "crear-anuncios" ? "overflow-hidden" : "overflow-y-auto"}`}>
-          {activeNav !== "tareas" && activeNav !== "wiki" && activeNav !== "crear-anuncios" && (
+        <main className={`flex min-w-0 flex-1 flex-col ${isFullHeightPage ? "overflow-hidden" : "overflow-y-auto"}`}>
+          {!isFullHeightPage && (
             <DashboardHeader
               user={user}
               notificationCount={pendingNotifications.length}
@@ -125,6 +131,12 @@ export default function DashboardPage() {
             <WikiPage />
           ) : activeNav === "crear-anuncios" ? (
             <AnnouncementsPage />
+          ) : activeNav === "usuarios" ? (
+            <UsersPage />
+          ) : activeNav === "actividad" ? (
+            <ActivityLogPage />
+          ) : activeNav === "horarios" ? (
+            <SchedulesPage />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}

@@ -1,7 +1,13 @@
 import { LoginRequest } from "../types/request/LoginRequest";
-import { AuthResponse, User, BackendAuthResponse, UserRole } from "../types/response/AuthResponse";
+import {
+  AuthResponse,
+  BackendAuthResponse,
+  User,
+  UserRole,
+} from "../types/response/AuthResponse";
+import { apiClient, ApiError, getAccessToken, setAccessToken } from "./apiClient";
 
-const API_URL = "http://localhost:3000/api/hotel";
+const REFRESH_TOKEN_KEY = "refreshToken";
 
 function mapRole(backendRoleName: string): UserRole {
   switch (backendRoleName.toUpperCase()) {
@@ -15,49 +21,39 @@ function mapRole(backendRoleName: string): UserRole {
   }
 }
 
+function mapBackendUser(data: BackendAuthResponse["user"]): User {
+  return {
+    id: data.id,
+    fullName: data.fullName,
+    lastName: data.lastName,
+    email: data.email,
+    role: mapRole(data.role.name),
+    isActive: data.isActive,
+    createdAt: data.createdAt,
+  };
+}
+
 export async function login(request: LoginRequest): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
+    const data = await apiClient.post<BackendAuthResponse>("/auth/login", request, {
+      auth: false,
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return {
-        success: false,
-        message: errorData.message || "Credenciales inválidas o error en el servidor",
-      };
-    }
-
-    const data: BackendAuthResponse = await response.json();
-
-    localStorage.setItem("accessToken", data.accessToken);
+    setAccessToken(data.accessToken);
     if (data.refreshToken) {
-      localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
     }
-
-    const frontendUser: User = {
-      id: data.user.id,
-      fullName: data.user.fullName,
-      lastName: data.user.lastName,
-      email: data.user.email,
-      role: mapRole(data.user.role.name),
-      isActive: data.user.isActive,
-      createdAt: data.user.createdAt,
-    };
 
     return {
       success: true,
       message: "Inicio de sesión exitoso",
-      user: frontendUser,
+      user: mapBackendUser(data.user),
       token: data.accessToken,
     };
   } catch (error) {
-    console.error("Login error:", error);
+    if (error instanceof ApiError) {
+      return { success: false, message: error.message };
+    }
     return {
       success: false,
       message: "Error de red. No se pudo conectar al servidor.",
@@ -67,19 +63,13 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
 
 export async function logout(): Promise<void> {
   try {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      await fetch(`${API_URL}/auth/logout`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    if (getAccessToken()) {
+      await apiClient.post("/auth/logout");
     }
-  } catch (error) {
-    console.error("Logout error:", error);
+  } catch {
+    // Logout failures shouldn't block clearing local credentials.
   } finally {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    setAccessToken(null);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 }

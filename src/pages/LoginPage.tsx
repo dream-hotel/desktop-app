@@ -10,13 +10,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      console.log("[LoginPage] User authenticated. Redirecting to /dashboard");
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
   function handleLoginSuccess() {
-    console.log("[LoginPage] Login success callback. Navigating to /dashboard");
     navigate("/dashboard");
   }
 

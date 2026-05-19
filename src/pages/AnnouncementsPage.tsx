@@ -21,8 +21,6 @@ export default function AnnouncementsPage() {
     try {
       const data = await announcementService.getRecentAnnouncements();
       setRecentAnnouncements(data);
-    } catch (error) {
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
