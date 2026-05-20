@@ -2,101 +2,173 @@ import { apiClient } from "./apiClient";
 import { PaginatedResponse } from "../types/api";
 import {
   BackendArticle,
+  BackendArticleList,
   BackendCategory,
-  WikiArticle,
-  WikiDirectory,
+  WikiArticleDetail,
+  WikiArticleSummary,
+  WikiCategoryNode,
 } from "../types/models/Wiki";
 
-const MONTHS_SHORT_EN = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
+// === Mapping helpers ===
 
-function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  return `${MONTHS_SHORT_EN[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+function authorName(user: BackendArticleList["user"]): string {
+  return [user.fullName, user.lastName].filter(Boolean).join(" ").trim();
 }
 
-function extractDescription(htmlContent: string): string {
-  const plainText = htmlContent.replace(/<[^>]+>/g, "");
-  return plainText.length > 100 ? `${plainText.substring(0, 100)}...` : plainText;
-}
-
-function mapBackendArticle(article: BackendArticle): WikiArticle {
+function mapArticleListItem(a: BackendArticleList): WikiArticleSummary {
   return {
-    id: article.id.toString(),
-    categoryId: article.category.id.toString(),
-    title: article.title,
-    description: extractDescription(article.content),
-    author: article.user.fullName,
-    date: formatDate(article.createdAt),
-    views: 0,
-    content: article.content,
-    isRestricted: !article.isPublic,
+    id: a.id,
+    title: a.title,
+    status: a.status,
+    categoryId: a.category?.id ?? null,
+    categoryName: a.category?.name ?? null,
+    authorName: authorName(a.user),
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
   };
 }
 
-export async function getDirectories(): Promise<WikiDirectory[]> {
-  const flatCategories = await apiClient.get<BackendCategory[]>("/wiki/categories");
-
-  return flatCategories
-    .filter((c) => c.parentId === null)
-    .map((directory) => ({
-      id: directory.id.toString(),
-      name: directory.name,
-      categories: flatCategories
-        .filter((c) => c.parentId === directory.id)
-        .map((c) => ({
-          id: c.id.toString(),
-          name: c.name,
-          articleCount: 0,
-        })),
-    }));
+function mapArticleDetail(a: BackendArticle): WikiArticleDetail {
+  return {
+    ...mapArticleListItem(a),
+    contentMarkdown: a.content?.contentMarkdown ?? "",
+    // Backend output DTO does not expose isPublic; default to true (public)
+    // and let the editor override on save.
+    isPublic: true,
+  };
 }
 
-export async function getArticles(
-  categoryId?: string,
-  search?: string,
-): Promise<PaginatedResponse<WikiArticle>> {
-  const response = await apiClient.get<PaginatedResponse<BackendArticle>>("/wiki/articles", {
-    query: { limit: 50, categoryId, search },
+export function buildCategoryTree(flat: BackendCategory[]): WikiCategoryNode[] {
+  const byId = new Map<number, WikiCategoryNode>();
+  flat.forEach((c) => {
+    byId.set(c.id, {
+      id: c.id,
+      parentId: c.parentId,
+      name: c.name,
+      children: [],
+      articleCount: 0,
+    });
   });
+  const roots: WikiCategoryNode[] = [];
+  byId.forEach((node) => {
+    if (node.parentId === null) {
+      roots.push(node);
+    } else {
+      const parent = byId.get(node.parentId);
+      if (parent) parent.children.push(node);
+      else roots.push(node);
+    }
+  });
+  const sortRec = (nodes: WikiCategoryNode[]) => {
+    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.forEach((n) => sortRec(n.children));
+  };
+  sortRec(roots);
+  return roots;
+}
 
+// === Categories ===
+
+export async function getCategoriesTree(): Promise<WikiCategoryNode[]> {
+  const response = await apiClient.get<PaginatedResponse<BackendCategory> | BackendCategory[]>(
+    "/wiki/categories",
+    { query: { limit: 500 } },
+  );
+  const flat = Array.isArray(response) ? response : response.data;
+  return buildCategoryTree(flat);
+}
+
+export interface CategoryPayload {
+  name: string;
+  parentId?: number | null;
+}
+
+export function createCategory(payload: CategoryPayload): Promise<BackendCategory> {
+  return apiClient.post<BackendCategory>("/wiki/categories", {
+    name: payload.name,
+    ...(payload.parentId != null ? { parentId: payload.parentId } : {}),
+  });
+}
+
+export function updateCategory(id: number, payload: Partial<CategoryPayload>): Promise<BackendCategory> {
+  return apiClient.patch<BackendCategory>(`/wiki/categories/${id}`, payload);
+}
+
+export function deleteCategory(id: number): Promise<void> {
+  return apiClient.delete<void>(`/wiki/categories/${id}`);
+}
+
+// === Articles ===
+
+export interface FindArticlesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  categoryId?: number;
+  status?: "draft" | "published";
+}
+
+export async function findArticles(
+  params: FindArticlesParams = {},
+): Promise<PaginatedResponse<WikiArticleSummary>> {
+  const response = await apiClient.get<PaginatedResponse<BackendArticleList>>("/wiki/articles", {
+    query: {
+      page: params.page ?? 1,
+      limit: params.limit ?? 50,
+      search: params.search,
+      categoryId: params.categoryId,
+      status: params.status,
+    },
+  });
   return {
-    data: response.data.map(mapBackendArticle),
+    data: response.data.map(mapArticleListItem),
     meta: response.meta,
   };
 }
 
-export async function getArticlesByCategory(categoryId: string): Promise<WikiArticle[]> {
-  const result = await getArticles(categoryId);
-  return result.data;
+export async function getArticle(id: number): Promise<WikiArticleDetail> {
+  const article = await apiClient.get<BackendArticle>(`/wiki/articles/${id}`);
+  return mapArticleDetail(article);
 }
 
-export async function searchArticles(query: string): Promise<WikiArticle[]> {
-  const result = await getArticles(undefined, query);
-  return result.data;
-}
-
-interface ArticlePayload {
+export interface ArticleInputPayload {
   title: string;
   content: string;
-  categoryId: number;
-  isPublic: boolean;
+  categoryId?: number | null;
+  isPublic?: boolean;
 }
 
-export function createArticle(data: ArticlePayload): Promise<BackendArticle> {
-  return apiClient.post("/wiki/articles", data);
+export async function createArticle(payload: ArticleInputPayload): Promise<WikiArticleDetail> {
+  const body: Record<string, unknown> = {
+    title: payload.title,
+    content: payload.content,
+  };
+  if (payload.categoryId != null) body.categoryId = payload.categoryId;
+  if (payload.isPublic !== undefined) body.isPublic = payload.isPublic;
+  const created = await apiClient.post<BackendArticle>("/wiki/articles", body);
+  return mapArticleDetail(created);
 }
 
-export function updateArticle(id: number, data: Partial<ArticlePayload>): Promise<BackendArticle> {
-  return apiClient.patch(`/wiki/articles/${id}`, data);
+export async function updateArticle(
+  id: number,
+  payload: Partial<ArticleInputPayload>,
+): Promise<WikiArticleDetail> {
+  const body: Record<string, unknown> = {};
+  if (payload.title !== undefined) body.title = payload.title;
+  if (payload.content !== undefined) body.content = payload.content;
+  if (payload.categoryId !== undefined && payload.categoryId !== null) {
+    body.categoryId = payload.categoryId;
+  }
+  if (payload.isPublic !== undefined) body.isPublic = payload.isPublic;
+  const updated = await apiClient.patch<BackendArticle>(`/wiki/articles/${id}`, body);
+  return mapArticleDetail(updated);
+}
+
+export async function publishArticle(id: number): Promise<WikiArticleDetail> {
+  const published = await apiClient.post<BackendArticle>(`/wiki/articles/${id}/publish`);
+  return mapArticleDetail(published);
 }
 
 export function deleteArticle(id: number): Promise<void> {
-  return apiClient.delete(`/wiki/articles/${id}`);
-}
-
-export function publishArticle(id: number): Promise<BackendArticle> {
-  return apiClient.post(`/wiki/articles/${id}/publish`);
+  return apiClient.delete<void>(`/wiki/articles/${id}`);
 }

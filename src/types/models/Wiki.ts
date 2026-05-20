@@ -1,28 +1,4 @@
-export interface WikiCategory {
-  id: string;
-  name: string;
-  articleCount: number;
-}
-
-export interface WikiDirectory {
-  id: string;
-  name: string;
-  categories: WikiCategory[];
-}
-
-export interface WikiArticle {
-  id: string;
-  categoryId: string;
-  title: string;
-  description: string;
-  author: string;
-  date: string;
-  views: number;
-  content: string;
-  isRestricted?: boolean;
-}
-
-// --- Backend Interfaces ---
+// === Backend DTOs (mirror /backend/src/modules/wiki) ===
 
 export interface BackendCategory {
   id: number;
@@ -31,20 +7,53 @@ export interface BackendCategory {
   createdAt: string;
 }
 
-export interface BackendArticle {
+export interface BackendArticleAuthor {
   id: number;
-  title: string;
-  content: string;
-  isPublic: boolean;
-  category: {
-    id: number;
-    name: string;
-  };
-  user: {
-    id: number;
-    fullName: string;
-    lastName: string;
-  };
-  createdAt: string;
+  fullName: string;
+  lastName: string;
 }
 
+export interface BackendArticleContent {
+  id: number;
+  contentMarkdown: string | null;
+}
+
+export interface BackendArticleList {
+  id: number;
+  title: string;
+  status: "draft" | "published";
+  createdAt: string;
+  updatedAt: string | null;
+  category: BackendCategory | null;
+  user: BackendArticleAuthor;
+}
+
+export interface BackendArticle extends BackendArticleList {
+  content: BackendArticleContent | null;
+}
+
+// === Frontend view models ===
+
+export interface WikiCategoryNode {
+  id: number;
+  parentId: number | null;
+  name: string;
+  children: WikiCategoryNode[];
+  articleCount: number;
+}
+
+export interface WikiArticleSummary {
+  id: number;
+  title: string;
+  status: "draft" | "published";
+  categoryId: number | null;
+  categoryName: string | null;
+  authorName: string;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface WikiArticleDetail extends WikiArticleSummary {
+  contentMarkdown: string;
+  isPublic: boolean;
+}
