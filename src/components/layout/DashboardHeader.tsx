@@ -36,15 +36,6 @@ function getTurno(): string {
   return "Turno noche";
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 export default function DashboardHeader({
   user,
   notificationCount,
@@ -97,20 +88,6 @@ export default function DashboardHeader({
               onClose={onCloseNotifications}
             />
           )}
-        </div>
-
-        <div className="flex items-center gap-[10px]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-inter text-sm font-semibold text-white">
-            {getInitials(user.fullName)}
-          </div>
-          <div className="flex flex-col">
-            <span className="font-inter text-[13px] leading-[18px] font-medium text-text-primary">
-              {user.fullName}
-            </span>
-            <span className="font-inter text-[11px] leading-4 text-text-secondary">
-              {user.role === "administrador" ? "Gerente general" : user.role}
-            </span>
-          </div>
         </div>
       </div>
     </header>

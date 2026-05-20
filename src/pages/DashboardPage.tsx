@@ -15,6 +15,7 @@ import AnnouncementsPage from "./AnnouncementsPage";
 import UsersPage from "./UsersPage";
 import ActivityLogPage from "./ActivityLogPage";
 import SchedulesPage from "./SchedulesPage";
+import AccountPage from "./AccountPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -28,7 +29,7 @@ const PAGE_LABELS: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { data, isLoading } = useDashboard();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [showNotifications, setShowNotifications] = useState(false);
@@ -49,13 +50,13 @@ export default function DashboardPage() {
   const pendingNotifications = data.notifications.filter((n) => n.status === "pendiente");
   const showWelcomeModal = !welcomeDismissed && pendingNotifications.length > 0;
 
-  const FULL_HEIGHT_PAGES = ["tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios"];
+  const FULL_HEIGHT_PAGES = ["tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios", "cuenta"];
   const isFullHeightPage = FULL_HEIGHT_PAGES.includes(activeNav);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
-        <Sidebar activeItem={activeNav} onNavigate={setActiveNav} />
+        <Sidebar activeItem={activeNav} onNavigate={setActiveNav} user={user} />
         <main className={`flex min-w-0 flex-1 flex-col ${isFullHeightPage ? "overflow-hidden" : "overflow-y-auto"}`}>
           {!isFullHeightPage && (
             <DashboardHeader
@@ -137,6 +138,8 @@ export default function DashboardPage() {
             <ActivityLogPage />
           ) : activeNav === "horarios" ? (
             <SchedulesPage />
+          ) : activeNav === "cuenta" ? (
+            <AccountPage user={user} onLogout={logout} />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}
