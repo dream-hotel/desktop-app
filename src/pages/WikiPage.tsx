@@ -8,7 +8,7 @@ import CategoryFormModal from "../components/wiki/CategoryFormModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import { useAuth } from "../hooks/useAuth";
-import { useDashboard } from "../hooks/useDashboard";
+import { useAnnouncementBell, requestNavigate } from "../hooks/useAnnouncementBell";
 import * as wikiService from "../service/wikiService";
 import {
   WikiArticleDetail,
@@ -51,7 +51,8 @@ function buildBreadcrumb(
 
 export default function WikiPage() {
   const { user } = useAuth();
-  const { data: dashboardData } = useDashboard();
+  const bell = useAnnouncementBell();
+  const [showNotifications, setShowNotifications] = useState(false);
   const isAdmin = user?.role === "administrador";
 
   const [tree, setTree] = useState<WikiCategoryNode[]>([]);
@@ -79,8 +80,6 @@ export default function WikiPage() {
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const pendingNotifications =
-    dashboardData?.notifications.filter((n) => n.status === "pendiente") ?? [];
 
   const loadTree = useCallback(async () => {
     setTreeLoading(true);
@@ -318,11 +317,19 @@ export default function WikiPage() {
     <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
       <DashboardHeader
         user={user!}
-        notificationCount={pendingNotifications.length}
-        notifications={dashboardData?.notifications ?? []}
-        showNotifications={false}
-        onToggleNotifications={() => {}}
-        onCloseNotifications={() => {}}
+        announcements={bell.announcements}
+        bellLoading={bell.loading}
+        unreadCount={bell.unreadCount}
+        isUnread={bell.isUnread}
+        showNotifications={showNotifications}
+        onToggleNotifications={() => setShowNotifications((v) => !v)}
+        onCloseNotifications={() => setShowNotifications(false)}
+        onAnnouncementClick={(id) => {
+          bell.markSeen(id);
+          setShowNotifications(false);
+          requestNavigate({ section: "anuncios", announcementId: id });
+        }}
+        onMarkAllSeen={bell.markAllSeen}
         customTitle="Wiki institucional"
       />
 

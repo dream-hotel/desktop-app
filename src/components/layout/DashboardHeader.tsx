@@ -1,14 +1,18 @@
 import { User } from "../../types/response/AuthResponse";
-import { Notification } from "../../types/response/DashboardResponse";
+import { Announcement } from "../../types/models/Announcement";
 import NotificationsPanel from "./NotificationsPanel";
 
 interface DashboardHeaderProps {
   user: User;
-  notificationCount: number;
-  notifications: Notification[];
+  announcements: Announcement[];
+  bellLoading: boolean;
+  unreadCount: number;
+  isUnread: (id: number) => boolean;
   showNotifications: boolean;
   onToggleNotifications: () => void;
   onCloseNotifications: () => void;
+  onAnnouncementClick: (id: number) => void;
+  onMarkAllSeen: () => void;
   customTitle?: string;
 }
 
@@ -38,11 +42,15 @@ function getTurno(): string {
 
 export default function DashboardHeader({
   user,
-  notificationCount,
-  notifications,
+  announcements,
+  bellLoading,
+  unreadCount,
+  isUnread,
   showNotifications,
   onToggleNotifications,
   onCloseNotifications,
+  onAnnouncementClick,
+  onMarkAllSeen,
   customTitle,
 }: DashboardHeaderProps) {
   return (
@@ -69,23 +77,28 @@ export default function DashboardHeader({
           <button
             className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/8 bg-transparent shadow-none transition-colors hover:bg-[#f5f3f7]"
             onClick={onToggleNotifications}
-            aria-label="Notificaciones"
+            aria-label="Anuncios"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M10 2a5 5 0 00-5 5v3l-1.3 2.6a.5.5 0 00.45.7h11.7a.5.5 0 00.45-.7L15 10V7a5 5 0 00-5-5z" stroke="#6b7280" strokeWidth="1.5" strokeLinejoin="round" />
               <path d="M8 15a2 2 0 004 0" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger font-inter text-[10px] font-semibold text-white">
-                {notificationCount}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger px-1 font-inter text-[10px] font-semibold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
             <NotificationsPanel
-              notifications={notifications}
+              announcements={announcements}
+              loading={bellLoading}
+              isUnread={isUnread}
+              unreadCount={unreadCount}
               onClose={onCloseNotifications}
+              onItemClick={onAnnouncementClick}
+              onMarkAllSeen={onMarkAllSeen}
             />
           )}
         </div>

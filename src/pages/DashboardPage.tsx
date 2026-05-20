@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
+import { useAnnouncementBell, onNavigateRequest } from "../hooks/useAnnouncementBell";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import StatusBar from "../components/layout/StatusBar";
@@ -31,9 +32,18 @@ const PAGE_LABELS: Record<string, string> = {
 export default function DashboardPage() {
   const { user, isAuthenticated, logout } = useAuth();
   const { data, isLoading } = useDashboard();
+  const bell = useAnnouncementBell();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [showNotifications, setShowNotifications] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const [pendingAnnouncementId, setPendingAnnouncementId] = useState<number | null>(null);
+
+  useEffect(() => {
+    return onNavigateRequest((req) => {
+      setActiveNav(req.section);
+      if (req.announcementId != null) setPendingAnnouncementId(req.announcementId);
+    });
+  }, []);
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
@@ -47,11 +57,18 @@ export default function DashboardPage() {
     );
   }
 
-  const pendingNotifications = data.notifications.filter((n) => n.status === "pendiente");
-  const showWelcomeModal = !welcomeDismissed && pendingNotifications.length > 0;
+  const unseenAnnouncements = bell.announcements.filter((a) => bell.isUnread(a.id));
+  const showWelcomeModal = !welcomeDismissed && unseenAnnouncements.length > 0;
 
   const FULL_HEIGHT_PAGES = ["tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios", "cuenta"];
   const isFullHeightPage = FULL_HEIGHT_PAGES.includes(activeNav);
+
+  const handleAnnouncementClick = (id: number) => {
+    bell.markSeen(id);
+    setShowNotifications(false);
+    setActiveNav("anuncios");
+    setPendingAnnouncementId(id);
+  };
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
@@ -61,11 +78,15 @@ export default function DashboardPage() {
           {!isFullHeightPage && (
             <DashboardHeader
               user={user}
-              notificationCount={pendingNotifications.length}
-              notifications={data.notifications}
+              announcements={bell.announcements}
+              bellLoading={bell.loading}
+              unreadCount={bell.unreadCount}
+              isUnread={bell.isUnread}
               showNotifications={showNotifications}
               onToggleNotifications={() => setShowNotifications((prev) => !prev)}
               onCloseNotifications={() => setShowNotifications(false)}
+              onAnnouncementClick={handleAnnouncementClick}
+              onMarkAllSeen={bell.markAllSeen}
             />
           )}
 
@@ -131,7 +152,10 @@ export default function DashboardPage() {
           ) : activeNav === "wiki" ? (
             <WikiPage />
           ) : activeNav === "anuncios" ? (
-            <AnnouncementsPage />
+            <AnnouncementsPage
+              pendingSelectedId={pendingAnnouncementId}
+              onConsumeSelection={() => setPendingAnnouncementId(null)}
+            />
           ) : activeNav === "usuarios" ? (
             <UsersPage />
           ) : activeNav === "actividad" ? (
@@ -149,8 +173,11 @@ export default function DashboardPage() {
 
       {showWelcomeModal && (
         <WelcomeNotificationsModal
-          notifications={pendingNotifications}
+          announcements={unseenAnnouncements}
+          onMarkSeen={bell.markSeen}
+          onMarkAllSeen={bell.markAllSeen}
           onDismiss={() => setWelcomeDismissed(true)}
+          onOpenAnnouncement={handleAnnouncementClick}
         />
       )}
     </div>
