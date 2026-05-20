@@ -1,4 +1,5 @@
 import { ReactNode, useMemo } from "react";
+import { Code, IndentDecrease, IndentIncrease, Link as LinkIcon, List, ListChecks, ListOrdered } from "lucide-react";
 import type { BlockNoteEditor } from "@blocknote/core";
 import { useActiveStyles, useSelectedBlocks } from "@blocknote/react";
 
@@ -170,15 +171,7 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
         active={!!activeStyles.code}
         onClick={() => toggleStyle("code")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M5 4L1 8l4 4M11 4l4 4-4 4"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Code size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
       <Divider />
@@ -188,63 +181,36 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
         active={blockType === "bulletListItem"}
         onClick={() => setList("bulletListItem")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <circle cx="3" cy="4" r="1" fill="currentColor" />
-          <circle cx="3" cy="8" r="1" fill="currentColor" />
-          <circle cx="3" cy="12" r="1" fill="currentColor" />
-          <path d="M6 4h8M6 8h8M6 12h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <List size={14} strokeWidth={1.8} />
       </ToolbarButton>
       <ToolbarButton
         title="Lista numerada"
         active={blockType === "numberedListItem"}
         onClick={() => setList("numberedListItem")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <text x="1" y="6" fontSize="5" fill="currentColor" fontFamily="Inter, sans-serif">1.</text>
-          <text x="1" y="11" fontSize="5" fill="currentColor" fontFamily="Inter, sans-serif">2.</text>
-          <text x="1" y="16" fontSize="5" fill="currentColor" fontFamily="Inter, sans-serif">3.</text>
-          <path d="M6 4h8M6 9h8M6 14h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <ListOrdered size={14} strokeWidth={1.8} />
       </ToolbarButton>
       <ToolbarButton
         title="Lista de verificación"
         active={blockType === "checkListItem"}
         onClick={() => setList("checkListItem")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <rect x="1" y="2" width="4" height="4" stroke="currentColor" strokeWidth="1.4" rx="0.6" />
-          <rect x="1" y="7" width="4" height="4" stroke="currentColor" strokeWidth="1.4" rx="0.6" />
-          <path d="M1.6 9l1 1 1.6-1.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7 4h8M7 9h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <ListChecks size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
       <Divider />
 
       <ToolbarButton title="Disminuir sangría" onClick={() => { editor.unnestBlock(); editor.focus(); }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M14 3H2M14 13H2M14 8H6M5 6L2 8l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <IndentDecrease size={14} strokeWidth={1.8} />
       </ToolbarButton>
       <ToolbarButton title="Aumentar sangría" onClick={() => { editor.nestBlock(); editor.focus(); }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M14 3H2M14 13H2M14 8H6M3 6l3 2-3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <IndentIncrease size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
       <Divider />
 
       <ToolbarButton title="Insertar enlace" onClick={handleLink} disabled={isList && false}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M7 9a3 3 0 004 0l2-2a3 3 0 10-4-4l-1 1M9 7a3 3 0 00-4 0L3 9a3 3 0 104 4l1-1"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <LinkIcon size={14} strokeWidth={1.8} />
       </ToolbarButton>
     </div>
   );

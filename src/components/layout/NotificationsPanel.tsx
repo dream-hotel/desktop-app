@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CheckSquare, FileText, Megaphone, X } from "lucide-react";
 import { Announcement, AnnouncementType } from "../../types/models/Announcement";
 
 interface NotificationsPanelProps {
@@ -43,39 +44,20 @@ function typeMeta(t: AnnouncementType): { label: string; classes: string; icon: 
     return {
       label: "Tarea",
       classes: "bg-info/10 text-info",
-      icon: (
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-          <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M5 7l1.5 1.5L10 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
+      icon: <CheckSquare size={12} strokeWidth={1.8} />,
     };
   }
   if (t === "article") {
     return {
       label: "Artículo",
       classes: "bg-primary/10 text-primary",
-      icon: (
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-          <path d="M4 2h6l3 3v9H4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M10 2v3h3M6 9h5M6 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      ),
+      icon: <FileText size={12} strokeWidth={1.8} />,
     };
   }
   return {
     label: "Comunicado",
     classes: "bg-text-secondary/10 text-text-secondary",
-    icon: (
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-        <path
-          d="M3 4h10v7H7l-3 3v-3H3z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <Megaphone size={12} strokeWidth={1.8} />,
   };
 }
 
@@ -115,9 +97,7 @@ export default function NotificationsPanel({
             onClick={onClose}
             aria-label="Cerrar"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 1l12 12M13 1L1 13" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={14} strokeWidth={1.8} className="text-text-secondary" />
           </button>
         </div>
 
@@ -161,14 +141,7 @@ export default function NotificationsPanel({
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center px-2 py-10 text-center">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="mb-2 text-text-secondary/40">
-                <path
-                  d="M14 3v12l-9-4H3a1 1 0 01-1-1V8a1 1 0 011-1h2l9-4z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Megaphone size={34} strokeWidth={1.4} className="mb-2 text-text-secondary/40" />
               <p className="font-inter text-[12.5px] text-text-secondary">
                 {tab === "nuevos"
                   ? "No tienes anuncios nuevos."

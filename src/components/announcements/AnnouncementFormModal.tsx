@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AlertCircle } from "lucide-react";
 import {
   Announcement,
   AnnouncementType,
@@ -276,10 +277,7 @@ export default function AnnouncementFormModal({
 
             {error && (
               <div className="flex items-start gap-2 rounded-[10px] border border-danger/30 bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
-                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M8 5v3.5M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <AlertCircle size={14} strokeWidth={1.8} className="mt-0.5 shrink-0" />
                 <span>{error}</span>
               </div>
             )}

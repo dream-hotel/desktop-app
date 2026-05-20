@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
@@ -210,9 +211,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             aria-label="Cerrar"
             className="rounded-md p-1 text-text-secondary hover:bg-neutral-soft"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={16} strokeWidth={1.8} />
           </button>
         </div>
 

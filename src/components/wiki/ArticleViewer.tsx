@@ -1,3 +1,4 @@
+import { Check, ChevronRight, FileText, Maximize2, Pencil, Trash2 } from "lucide-react";
 import { WikiArticleDetail } from "../../types/models/Wiki";
 import MarkdownView from "./MarkdownView";
 
@@ -47,16 +48,7 @@ export default function ArticleViewer({
       <div className="flex h-full flex-1 items-center justify-center bg-surface">
         <div className="flex max-w-sm flex-col items-center text-center">
           <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5 4h10l4 4v12H5z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <path d="M15 4v4h4" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M8 12h8M8 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <FileText size={20} strokeWidth={1.6} />
           </div>
           <h3 className="font-alexandria text-[16px] font-medium text-text-primary">
             Ningún artículo seleccionado
@@ -88,9 +80,7 @@ export default function ArticleViewer({
                   {label}
                 </span>
                 {idx < breadcrumb.length - 1 && (
-                  <svg width="9" height="9" viewBox="0 0 12 12" fill="none" className="text-text-secondary">
-                    <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <ChevronRight size={10} strokeWidth={1.6} className="text-text-secondary" />
                 )}
               </span>
             ))
@@ -102,15 +92,7 @@ export default function ArticleViewer({
             onClick={onExpandClick}
             className="flex h-7 items-center gap-1.5 rounded-[8px] border border-border bg-surface px-2.5 font-inter text-[11.5px] font-medium text-text-primary transition-colors hover:bg-bg"
           >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M9 2h5v5M14 2L9 7M7 14H2V9M2 14l5-5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Maximize2 size={12} strokeWidth={1.8} />
             Ver completo
           </button>
 
@@ -122,9 +104,7 @@ export default function ArticleViewer({
                   disabled={publishing}
                   className="flex h-7 items-center gap-1.5 rounded-[8px] bg-success px-2.5 font-inter text-[11.5px] font-medium text-white transition-colors hover:bg-success-light disabled:opacity-60"
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Check size={12} strokeWidth={2.2} />
                   {publishing ? "Publicando..." : "Publicar"}
                 </button>
               )}
@@ -132,15 +112,7 @@ export default function ArticleViewer({
                 onClick={onEditClick}
                 className="flex h-7 items-center gap-1.5 rounded-[8px] border border-primary/30 bg-primary/5 px-2.5 font-inter text-[11.5px] font-medium text-primary transition-colors hover:bg-primary/10"
               >
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M12.5 1.5a2.1 2.1 0 00-3 0L2 9l-1 4 4-1 7.5-7.5a2.1 2.1 0 000-3z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Pencil size={12} strokeWidth={1.8} />
                 Editar
               </button>
               <button
@@ -148,9 +120,7 @@ export default function ArticleViewer({
                 className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-border text-danger transition-colors hover:bg-danger/10"
                 aria-label="Eliminar artículo"
               >
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4l1 9h4l1-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Trash2 size={13} strokeWidth={1.8} />
               </button>
             </>
           )}

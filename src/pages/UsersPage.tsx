@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pencil, Plus, Search, ShieldCheck, Trash2, Users as UsersIcon } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
@@ -145,9 +146,7 @@ export default function UsersPage() {
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 4.5v9M4.5 9h9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <Plus size={16} strokeWidth={2} />
               Nuevo Usuario
             </button>
           )}
@@ -162,12 +161,7 @@ export default function UsersPage() {
                 : "border-transparent text-text-secondary hover:text-text-primary"
             }`}
           >
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M1 16c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              <circle cx="13" cy="6" r="2" stroke="currentColor" strokeWidth="1.2" />
-              <path d="M14 11c2 .4 3 1.8 3 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
+            <UsersIcon size={15} strokeWidth={1.8} />
             Usuarios
           </button>
           <button
@@ -178,10 +172,7 @@ export default function UsersPage() {
                 : "border-transparent text-text-secondary hover:text-text-primary"
             }`}
           >
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1l7 3v5c0 4-3 6.5-7 8-4-1.5-7-4-7-8V4l7-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-              <path d="M6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ShieldCheck size={15} strokeWidth={1.8} />
             Roles y permisos
           </button>
         </div>
@@ -189,16 +180,11 @@ export default function UsersPage() {
         {tab === "users" && (
           <div className="flex flex-wrap items-center gap-3 pb-5">
             <div className="relative min-w-[260px] flex-1">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                className="absolute left-3 top-1/2 -translate-y-1/2"
-              >
-                <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.2" />
-                <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
+              <Search
+                size={15}
+                strokeWidth={1.6}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
+              />
               <input
                 type="text"
                 placeholder="Buscar por nombre, apellido o email..."
@@ -340,9 +326,7 @@ export default function UsersPage() {
                               title="Editar"
                               className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
                             >
-                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M2 12h10M9 2l3 3-7 7H2v-3l7-7z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
+                              <Pencil size={14} strokeWidth={1.8} />
                             </button>
                             <button
                               onClick={() => {
@@ -352,9 +336,7 @@ export default function UsersPage() {
                               title="Eliminar"
                               className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger"
                             >
-                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M2 3.5h10M5 3.5V2h4v1.5M3 3.5l1 8.5h6l1-8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
+                              <Trash2 size={14} strokeWidth={1.8} />
                             </button>
                           </div>
                         </td>

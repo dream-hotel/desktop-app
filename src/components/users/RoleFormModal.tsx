@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, Search, X } from "lucide-react";
 import {
   ALL_PERMISSION_IDS,
   CreateRolePayload,
@@ -141,9 +142,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
             className="rounded-md p-1 text-text-secondary hover:bg-neutral-soft"
             aria-label="Cerrar"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={16} strokeWidth={1.8} />
           </button>
         </div>
 
@@ -182,16 +181,11 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2"
-                >
-                  <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.2" />
-                  <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-                </svg>
+                <Search
+                  size={13}
+                  strokeWidth={1.6}
+                  className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary"
+                />
                 <input
                   type="text"
                   placeholder="Buscar permiso..."
@@ -237,16 +231,12 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                       onClick={() => toggleModuleCollapsed(mod.module)}
                       className="flex min-w-0 flex-1 items-center gap-2 text-left"
                     >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
+                      <ChevronDown
+                        size={12}
+                        strokeWidth={1.8}
                         className="shrink-0 transition-transform"
                         style={{ transform: isCollapsed ? "rotate(-90deg)" : "none" }}
-                      >
-                        <path d="M3 4.5l3 3 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      />
                       <div className="flex min-w-0 flex-col">
                         <span className="truncate font-inter text-[13px] font-medium text-text-primary">{mod.label}</span>
                         <span className="truncate font-inter text-[11px] text-text-secondary">{mod.description}</span>

@@ -1,3 +1,4 @@
+import { Bell } from "lucide-react";
 import { User } from "../../types/response/AuthResponse";
 import { Announcement } from "../../types/models/Announcement";
 import NotificationsPanel from "./NotificationsPanel";
@@ -79,10 +80,7 @@ export default function DashboardHeader({
             onClick={onToggleNotifications}
             aria-label="Anuncios"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2a5 5 0 00-5 5v3l-1.3 2.6a.5.5 0 00.45.7h11.7a.5.5 0 00.45-.7L15 10V7a5 5 0 00-5-5z" stroke="#6b7280" strokeWidth="1.5" strokeLinejoin="round" />
-              <path d="M8 15a2 2 0 004 0" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Bell size={19} strokeWidth={1.6} className="text-text-secondary" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger px-1 font-inter text-[10px] font-semibold text-white">
                 {unreadCount > 9 ? "9+" : unreadCount}

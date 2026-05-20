@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { es as blocknoteEs } from "@blocknote/core/locales";
@@ -211,9 +212,7 @@ export default function ArticleEditor({
             className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-border bg-surface text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
             aria-label="Cerrar editor"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L4 8l6 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ArrowLeft size={16} strokeWidth={1.8} />
           </button>
           <div className="flex flex-col">
             <h1 className="font-alexandria text-[20px] font-medium leading-tight text-text-primary">

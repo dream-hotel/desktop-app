@@ -1,3 +1,4 @@
+import { CheckSquare, FileText, Megaphone, Pencil, Trash2 } from "lucide-react";
 import { Announcement, AnnouncementType } from "../../types/models/Announcement";
 
 interface AnnouncementDetailProps {
@@ -38,32 +39,9 @@ function typeDescription(t: AnnouncementType): string {
 }
 
 function TypeIcon({ type, size = 18 }: { type: AnnouncementType; size?: number }) {
-  if (type === "task") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M5 7l1.5 1.5L10 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (type === "article") {
-    return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-        <path d="M4 2h6l3 3v9H4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        <path d="M10 2v3h3M6 9h5M6 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <path
-        d="M3 4h10v7H7l-3 3v-3H3z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  if (type === "task") return <CheckSquare size={size} strokeWidth={1.7} />;
+  if (type === "article") return <FileText size={size} strokeWidth={1.7} />;
+  return <Megaphone size={size} strokeWidth={1.7} />;
 }
 
 export default function AnnouncementDetail({
@@ -86,15 +64,7 @@ export default function AnnouncementDetail({
       <div className="flex h-full flex-1 items-center justify-center bg-surface">
         <div className="flex max-w-sm flex-col items-center text-center">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M14 3v12l-9-4H3a1 1 0 01-1-1V8a1 1 0 011-1h2l9-4z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <path d="M5 11v2a2 2 0 002 2h1a1 1 0 001-1v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Megaphone size={22} strokeWidth={1.6} />
           </div>
           <h3 className="font-alexandria text-[17px] font-medium text-text-primary">
             Ningún anuncio seleccionado
@@ -142,15 +112,7 @@ export default function AnnouncementDetail({
               onClick={onEditClick}
               className="flex h-7 items-center gap-1.5 rounded-[8px] border border-primary/30 bg-primary/5 px-2.5 font-inter text-[11.5px] font-medium text-primary transition-colors hover:bg-primary/10"
             >
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M12.5 1.5a2.1 2.1 0 00-3 0L2 9l-1 4 4-1 7.5-7.5a2.1 2.1 0 000-3z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Pencil size={12} strokeWidth={1.8} />
               Editar
             </button>
             <button
@@ -158,9 +120,7 @@ export default function AnnouncementDetail({
               className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-border text-danger transition-colors hover:bg-danger/10"
               aria-label="Eliminar anuncio"
             >
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4l1 9h4l1-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Trash2 size={13} strokeWidth={1.8} />
             </button>
           </div>
         )}

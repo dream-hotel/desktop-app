@@ -1,3 +1,4 @@
+import { ArrowLeft, Check, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { WikiArticleDetail } from "../../types/models/Wiki";
 import MarkdownView from "./MarkdownView";
 
@@ -41,9 +42,7 @@ export default function ArticleFullView({
             className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-border bg-surface text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
             aria-label="Volver"
           >
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L4 8l6 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ArrowLeft size={15} strokeWidth={1.8} />
           </button>
 
           <div className="flex min-w-0 items-center gap-1.5 overflow-hidden font-inter text-[11.5px]">
@@ -62,9 +61,7 @@ export default function ArticleFullView({
                     {label}
                   </span>
                   {idx < breadcrumb.length - 1 && (
-                    <svg width="9" height="9" viewBox="0 0 12 12" fill="none" className="text-text-secondary">
-                      <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <ChevronRight size={10} strokeWidth={1.6} className="text-text-secondary" />
                   )}
                 </span>
               ))
@@ -81,9 +78,7 @@ export default function ArticleFullView({
                   disabled={publishing}
                   className="flex h-8 items-center gap-1.5 rounded-[8px] bg-success px-3 font-inter text-[12px] font-medium text-white transition-colors hover:bg-success-light disabled:opacity-60"
                 >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Check size={12} strokeWidth={2.2} />
                   {publishing ? "Publicando..." : "Publicar"}
                 </button>
               )}
@@ -91,15 +86,7 @@ export default function ArticleFullView({
                 onClick={onEditClick}
                 className="flex h-8 items-center gap-1.5 rounded-[8px] border border-primary/30 bg-primary/5 px-3 font-inter text-[12px] font-medium text-primary transition-colors hover:bg-primary/10"
               >
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M12.5 1.5a2.1 2.1 0 00-3 0L2 9l-1 4 4-1 7.5-7.5a2.1 2.1 0 000-3z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Pencil size={12} strokeWidth={1.8} />
                 Editar
               </button>
               <button
@@ -107,9 +94,7 @@ export default function ArticleFullView({
                 className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border text-danger transition-colors hover:bg-danger/10"
                 aria-label="Eliminar artículo"
               >
-                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4l1 9h4l1-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <Trash2 size={13} strokeWidth={1.8} />
               </button>
             </>
           )}

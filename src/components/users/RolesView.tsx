@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertTriangle, Pencil, Plus, Search, ShieldCheck, Trash2 } from "lucide-react";
 import {
   createRole,
   deleteRole,
@@ -126,16 +127,11 @@ export default function RolesView() {
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="absolute left-3 top-1/2 -translate-y-1/2"
-            >
-              <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.2" />
-              <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
+            <Search
+              size={15}
+              strokeWidth={1.6}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
+            />
             <input
               type="text"
               placeholder="Buscar rol..."
@@ -148,9 +144,7 @@ export default function RolesView() {
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 4.5v9M4.5 9h9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Plus size={16} strokeWidth={2} />
             Nuevo Rol
           </button>
         </div>
@@ -214,9 +208,7 @@ export default function RolesView() {
                     <td className="px-5 py-3 align-top">
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary-light text-primary">
-                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path d="M9 1l7 3v5c0 4-3 6.5-7 8-4-1.5-7-4-7-8V4l7-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                          </svg>
+                          <ShieldCheck size={18} strokeWidth={1.8} />
                         </div>
                         <div className="flex min-w-0 flex-col">
                           <div className="flex items-center gap-2">
@@ -292,9 +284,7 @@ export default function RolesView() {
                           title="Editar"
                           className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <path d="M2 12h10M9 2l3 3-7 7H2v-3l7-7z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <Pencil size={14} strokeWidth={1.8} />
                         </button>
                         <button
                           onClick={() => {
@@ -305,9 +295,7 @@ export default function RolesView() {
                           disabled={role.isSystem}
                           className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <path d="M2 3.5h10M5 3.5V2h4v1.5M3 3.5l1 8.5h6l1-8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <Trash2 size={14} strokeWidth={1.8} />
                         </button>
                       </div>
                     </td>
@@ -347,10 +335,7 @@ export default function RolesView() {
           >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/10">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 6v5M10 14h.01" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round" />
-                  <circle cx="10" cy="10" r="8" stroke="#dc2626" strokeWidth="1.5" />
-                </svg>
+                <AlertTriangle size={20} strokeWidth={1.8} className="text-danger" />
               </div>
               <div className="flex flex-col gap-1">
                 <h3 className="font-alexandria text-[18px] font-normal leading-[22px] text-text-primary">

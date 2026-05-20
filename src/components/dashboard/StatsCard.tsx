@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { ArrowRight } from "lucide-react";
 
 interface StatsCardProps {
   icon: ReactNode;
@@ -23,9 +24,7 @@ export default function StatsCard({
         <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-primary-light text-primary">
           {icon}
         </div>
-        <svg className="cursor-pointer opacity-50 transition-opacity hover:opacity-100" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M4 8h8M8 4l4 4-4 4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <ArrowRight size={16} strokeWidth={1.8} className="cursor-pointer text-text-secondary opacity-50 transition-opacity hover:opacity-100" />
       </div>
       <div className="flex flex-col gap-[2px]">
         <span className="font-inter text-[32px] leading-[38px] font-semibold text-text-primary">

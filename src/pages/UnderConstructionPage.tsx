@@ -1,3 +1,5 @@
+import { Construction } from "lucide-react";
+
 interface UnderConstructionPageProps {
   pageName: string;
 }
@@ -6,16 +8,7 @@ export default function UnderConstructionPage({ pageName }: UnderConstructionPag
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
       <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-light">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <path
-            d="M20 4L4 36h32L20 4z"
-            stroke="#492173"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-          <path d="M20 16v8" stroke="#492173" strokeWidth="2.5" strokeLinecap="round" />
-          <circle cx="20" cy="29" r="1.5" fill="#492173" />
-        </svg>
+        <Construction size={40} strokeWidth={1.8} className="text-primary" />
       </div>
       <h2 className="m-0 font-alexandria text-2xl font-medium text-text-primary">
         {pageName}

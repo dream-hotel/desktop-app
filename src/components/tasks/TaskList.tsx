@@ -1,5 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import {
+  Ban,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  CircleDashed,
+  CheckCircle2,
+  Clock,
+  Loader,
+  MessageSquare,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import { Task, TaskPriority, TaskStatus } from "../../types/response/TaskResponse";
 
 type FilterTab = "todos" | "pending" | "in_progress" | "done" | "archived";
@@ -15,33 +34,13 @@ const FILTER_TABS: { id: FilterTab; label: string }[] = [
 function StatusIcon({ status }: { status: TaskStatus }) {
   switch (status) {
     case "in_progress":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#c5a059" strokeWidth="1.2" />
-          <path d="M8 4.5v3.5l2 1.5" stroke="#c5a059" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
+      return <Loader size={16} strokeWidth={1.6} className="text-warning" />;
     case "pending":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#d1d5db" strokeWidth="1.2" />
-        </svg>
-      );
+      return <CircleDashed size={16} strokeWidth={1.6} className="text-text-secondary" />;
     case "done":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#76c7c2" strokeWidth="1.2" />
-          <path d="M5.5 8l2 2 3.5-3.5" stroke="#76c7c2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
+      return <CheckCircle2 size={16} strokeWidth={1.6} className="text-success" />;
     case "blocked":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#ef4444" strokeWidth="1.2" />
-          <path d="M8 5v3" stroke="#ef4444" strokeWidth="1.2" strokeLinecap="round" />
-          <circle cx="8" cy="10.5" r="0.6" fill="#ef4444" />
-        </svg>
-      );
+      return <Ban size={16} strokeWidth={1.6} className="text-danger" />;
   }
 }
 
@@ -95,14 +94,11 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
   return (
     <button onClick={onChange} className="flex shrink-0 items-center justify-center p-[3px]">
       {checked ? (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <rect x="0.5" y="0.5" width="9" height="9" rx="1.5" fill="#492173" stroke="#492173" />
-          <path d="M2.5 5l2 2 3.5-3.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <span className="flex h-[10px] w-[10px] items-center justify-center rounded-[2px] bg-primary text-white">
+          <Check size={8} strokeWidth={2.5} />
+        </span>
       ) : (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <rect x="0.5" y="0.5" width="9" height="9" rx="1.5" stroke="#9ca3af" />
-        </svg>
+        <span className="block h-[10px] w-[10px] rounded-[2px] border border-text-secondary/60" />
       )}
     </button>
   );
@@ -220,9 +216,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
           onClick={prevMonth}
           className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
         >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M6.5 2L3.5 5l3 3" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ChevronLeft size={10} strokeWidth={1.6} className="text-text-secondary" />
         </button>
         <span className="font-alexandria text-[10px] font-normal text-text-primary">
           {MONTH_NAMES_FULL[viewMonth]} {viewYear}
@@ -231,9 +225,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
           onClick={nextMonth}
           className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
         >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M3.5 2l3 3-3 3" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ChevronRight size={10} strokeWidth={1.6} className="text-text-secondary" />
         </button>
       </div>
 
@@ -303,11 +295,7 @@ function DatePickerField({ label, value, onChange }: DatePickerFieldProps) {
         onClick={() => (showCalendar ? setShowCalendar(false) : openCalendar())}
         className="flex w-[60px] items-center gap-1 overflow-hidden rounded-sm bg-neutral-mid py-px pl-[7px] pr-[9px]"
       >
-        <svg width="12" height="13" viewBox="0 0 12 13" fill="none" className="shrink-0">
-          <rect x="1" y="2.5" width="10" height="9" rx="1" stroke="#6b7280" strokeWidth="0.8" />
-          <path d="M1 5.5h10" stroke="#6b7280" strokeWidth="0.8" />
-          <path d="M4 1v2M8 1v2" stroke="#6b7280" strokeWidth="0.8" strokeLinecap="round" />
-        </svg>
+        <Calendar size={11} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
         <span className="font-alexandria text-[8px] font-light leading-[21px] text-text-secondary">
           {value ? formatDateShort(value) : "dd mmm"}
         </span>
@@ -360,23 +348,16 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
     onFilterChange(EMPTY_FILTER);
   }
 
-  // Filter icon SVG
   const filterIcon = (color: string) => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M1 3h12M3 7h8M5 11h4" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
+    <SlidersHorizontal size={13} strokeWidth={1.6} style={{ color }} />
   );
 
-  // Chevron SVG (up or down)
-  const chevron = (direction: "up" | "down", color: string) => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      {direction === "down" ? (
-        <path d="M4 6l3 3 3-3" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      ) : (
-        <path d="M4 9l3-3 3 3" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      )}
-    </svg>
-  );
+  const chevron = (direction: "up" | "down", color: string) =>
+    direction === "down" ? (
+      <ChevronDown size={13} strokeWidth={1.6} style={{ color }} />
+    ) : (
+      <ChevronUp size={13} strokeWidth={1.6} style={{ color }} />
+    );
 
   return (
     <div ref={containerRef} className="relative">
@@ -393,9 +374,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
             }}
             className="flex items-center justify-center"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M5 5l6 6M11 5l-6 6" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={14} strokeWidth={1.8} className="text-text-primary" />
           </button>
           {filterIcon("#1a1a1a")}
           Filtro
@@ -488,14 +467,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
             </p>
             {task.comments > 0 && (
               <div className="ml-2 flex shrink-0 items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M1.5 2.5h9a.5.5 0 01.5.5v5a.5.5 0 01-.5.5H4L2 10.5V8.5h-.5a.5.5 0 01-.5-.5V3a.5.5 0 01.5-.5z"
-                    stroke="#9ca3af"
-                    strokeWidth="1"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <MessageSquare size={11} strokeWidth={1.4} className="text-text-secondary" />
                 <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                   {task.comments}
                 </span>
@@ -506,19 +478,13 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
             <PriorityBadge priority={task.priority} />
             <StatusBadge status={task.status} />
             <div className="flex items-center gap-1">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <circle cx="5" cy="4" r="2" stroke="#9ca3af" strokeWidth="0.8" />
-                <path d="M1 9c0-2 1.5-3 4-3s4 1 4 3" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
-              </svg>
+              <UserIcon size={10} strokeWidth={1.4} className="text-text-secondary" />
               <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                 {task.assignee}
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <circle cx="5" cy="5" r="4" stroke="#9ca3af" strokeWidth="0.8" />
-                <path d="M5 2.5v2.5l2 1" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
-              </svg>
+              <Clock size={10} strokeWidth={1.4} className="text-text-secondary" />
               <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                 {task.deadline}
               </span>
@@ -574,9 +540,7 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
             onClick={onNewTask}
             className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 4.5v9M4.5 9h9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Plus size={16} strokeWidth={2} />
             Nueva Tarea
           </button>
         </div>
@@ -584,16 +548,7 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
         {/* Search + Filter row */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="absolute left-3 top-1/2 -translate-y-1/2"
-            >
-              <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.2" />
-              <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
+            <Search size={15} strokeWidth={1.6} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
               type="text"
               placeholder="Buscar tareas..."

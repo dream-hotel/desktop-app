@@ -1,3 +1,5 @@
+import { AlertTriangle } from "lucide-react";
+
 interface ConfirmDeleteModalProps {
   userName: string;
   loading: boolean;
@@ -24,10 +26,7 @@ export default function ConfirmDeleteModal({
       >
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/10">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 6v5M10 14h.01" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round" />
-              <circle cx="10" cy="10" r="8" stroke="#dc2626" strokeWidth="1.5" />
-            </svg>
+            <AlertTriangle size={20} strokeWidth={1.8} className="text-danger" />
           </div>
           <div className="flex flex-col gap-1">
             <h3 className="font-alexandria text-[18px] font-normal leading-[22px] text-text-primary">

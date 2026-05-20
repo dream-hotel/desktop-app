@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Bell, CheckCircle2, CheckSquare, FileText, Megaphone } from "lucide-react";
 import { Announcement, AnnouncementType } from "../../types/models/Announcement";
 
 interface WelcomeNotificationsModalProps {
@@ -40,12 +41,7 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
       label: "Tarea",
       bg: "bg-info/10",
       iconBg: "bg-info",
-      icon: (
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <rect x="2" y="3" width="12" height="11" rx="2" stroke="white" strokeWidth="1.5" />
-          <path d="M5 7l1.5 1.5L10 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      ),
+      icon: <CheckSquare size={14} strokeWidth={1.8} className="text-white" />,
     };
   }
   if (t === "article") {
@@ -53,23 +49,14 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
       label: "Artículo",
       bg: "bg-primary/10",
       iconBg: "bg-primary",
-      icon: (
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M4 2h6l3 3v9H4z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M10 2v3h3M6 9h5M6 11h4" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      ),
+      icon: <FileText size={14} strokeWidth={1.8} className="text-white" />,
     };
   }
   return {
     label: "Comunicado",
     bg: "bg-surface-2",
     iconBg: "bg-text-secondary",
-    icon: (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <path d="M3 4h10v7H7l-3 3v-3H3z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-      </svg>
-    ),
+    icon: <Megaphone size={14} strokeWidth={1.8} className="text-white" />,
   };
 }
 
@@ -139,10 +126,7 @@ export default function WelcomeNotificationsModal({
         <div className="flex flex-col gap-1 border-b border-border px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M11 2a6 6 0 00-6 6v3.5l-1.5 3a.5.5 0 00.45.7h14.1a.5.5 0 00.45-.7L17 11.5V8a6 6 0 00-6-6z" stroke="#492173" strokeWidth="1.8" strokeLinejoin="round" />
-                <path d="M9 17a2 2 0 004 0" stroke="#492173" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+              <Bell size={22} strokeWidth={1.8} className="text-primary" />
             </div>
             <div className="flex flex-1 flex-col">
               <h2 className="m-0 font-alexandria text-xl font-medium text-text-primary">
@@ -206,10 +190,7 @@ export default function WelcomeNotificationsModal({
                       </div>
                     </div>
                     {isRead && (
-                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="mt-[2px] shrink-0">
-                        <circle cx="9" cy="9" r="8" fill="#22c55e" />
-                        <path d="M5.5 9l2 2 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <CheckCircle2 size={18} strokeWidth={2} fill="#22c55e" className="mt-[2px] shrink-0 text-white" />
                     )}
                   </div>
                   <p className="m-0 mb-3 whitespace-pre-wrap pl-10 font-inter text-[13px] leading-5 text-text-body">

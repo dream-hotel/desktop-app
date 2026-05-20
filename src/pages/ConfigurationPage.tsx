@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Bell, Check, Info, Palette } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 import { ThemePreference } from "../state/ThemeContext";
 
@@ -62,11 +63,7 @@ function ThemeOption({ id, label, description, active, onSelect, preview }: Them
           }`}
           aria-hidden
         >
-          {active && (
-            <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6l3 3 5-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
+          {active && <Check size={10} strokeWidth={2.5} />}
         </span>
       </div>
     </button>
@@ -154,10 +151,7 @@ export default function ConfigurationPage() {
           <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M8 2.5v11M2.5 8h11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <Palette size={16} strokeWidth={1.8} />
               </div>
               <div className="flex flex-col">
                 <h2 className="font-alexandria text-[16px] font-medium leading-tight text-text-primary">
@@ -215,10 +209,7 @@ export default function ConfigurationPage() {
           <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 2a4 4 0 00-4 4v2.5l-1 2h10l-1-2V6a4 4 0 00-4-4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                  <path d="M6.5 12.5a1.5 1.5 0 003 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <Bell size={16} strokeWidth={1.8} />
               </div>
               <div className="flex flex-col">
                 <h2 className="font-alexandria text-[16px] font-medium leading-tight text-text-primary">
@@ -261,10 +252,7 @@ export default function ConfigurationPage() {
           <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M8 7v4M8 5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <Info size={16} strokeWidth={1.8} />
               </div>
               <div className="flex flex-col">
                 <h2 className="font-alexandria text-[16px] font-medium leading-tight text-text-primary">

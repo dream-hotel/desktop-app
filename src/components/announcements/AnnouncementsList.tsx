@@ -1,3 +1,4 @@
+import { CheckSquare, Clock, FileText, Megaphone, Plus } from "lucide-react";
 import { Announcement, AnnouncementType } from "../../types/models/Announcement";
 
 interface AnnouncementsListProps {
@@ -49,32 +50,9 @@ function previewText(description: string | null, type: AnnouncementType, ref: nu
 }
 
 function TypeIcon({ type }: { type: AnnouncementType }) {
-  if (type === "task") {
-    return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M5 7l1.5 1.5L10 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (type === "article") {
-    return (
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <path d="M4 2h6l3 3v9H4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-        <path d="M10 2v3h3M6 9h5M6 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M3 4h10v7H7l-3 3v-3H3z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  if (type === "task") return <CheckSquare size={13} strokeWidth={1.8} />;
+  if (type === "article") return <FileText size={13} strokeWidth={1.8} />;
+  return <Megaphone size={13} strokeWidth={1.8} />;
 }
 
 const FILTERS: { id: AnnouncementType | "all"; label: string }[] = [
@@ -112,9 +90,7 @@ export default function AnnouncementsList({
               onClick={onCreateClick}
               className="flex h-7 items-center justify-center gap-1 rounded-[8px] bg-primary px-2.5 font-inter text-[11.5px] font-medium text-white transition-colors hover:bg-primary-hover"
             >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+              <Plus size={12} strokeWidth={2.2} />
               Crear
             </button>
           )}
@@ -144,14 +120,7 @@ export default function AnnouncementsList({
           </div>
         ) : announcements.length === 0 ? (
           <div className="flex flex-col items-center px-6 py-12 text-center">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="mb-2 text-text-secondary/40">
-              <path
-                d="M14 3v12l-9-4H3a1 1 0 01-1-1V8a1 1 0 011-1h2l9-4z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Megaphone size={34} strokeWidth={1.4} className="mb-2 text-text-secondary/40" />
             <h3 className="font-inter text-[13px] font-medium text-text-primary">
               Sin anuncios
             </h3>
@@ -208,10 +177,7 @@ export default function AnnouncementsList({
                               : "bg-warning/10 text-warning"
                           }`}
                         >
-                          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                            <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.3" />
-                            <path d="M6 3v3l2 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                          </svg>
+                          <Clock size={10} strokeWidth={1.6} />
                           {expired ? "Vencido" : `Hasta ${formatDate(a.visibleUntil)}`}
                         </span>
                       ) : (

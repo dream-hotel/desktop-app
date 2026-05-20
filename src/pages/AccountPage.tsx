@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AlertCircle, CheckCircle2, Eye, EyeOff, LogOut, Lock } from "lucide-react";
 import { User } from "../types/response/AuthResponse";
 import * as userService from "../service/userService";
 import { ApiError } from "../service/apiClient";
@@ -148,10 +149,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
           <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <Lock size={16} strokeWidth={1.8} />
               </div>
               <div className="flex flex-col">
                 <h3 className="font-alexandria text-[16px] font-medium leading-tight text-text-primary">
@@ -189,16 +187,9 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
                       {showPassword ? (
-                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                          <path d="M2 8s2.5-4.5 6-4.5S14 8 14 8s-2.5 4.5-6 4.5S2 8 2 8z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                          <circle cx="8" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.4" />
-                          <path d="M2 2l12 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                        </svg>
+                        <EyeOff size={15} strokeWidth={1.6} />
                       ) : (
-                        <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                          <path d="M2 8s2.5-4.5 6-4.5S14 8 14 8s-2.5 4.5-6 4.5S2 8 2 8z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                          <circle cx="8" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.4" />
-                        </svg>
+                        <Eye size={15} strokeWidth={1.6} />
                       )}
                     </button>
                   </div>
@@ -224,19 +215,13 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
 
               {error && (
                 <div className="flex items-start gap-2 rounded-[10px] border border-danger/30 bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
-                    <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M8 5v3.5M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
+                  <AlertCircle size={14} strokeWidth={1.7} className="mt-0.5 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
               {success && (
                 <div className="flex items-start gap-2 rounded-[10px] border border-success/30 bg-success/10 px-3 py-2 font-inter text-[12px] text-success">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
-                    <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M5 8l2 2 4-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <CheckCircle2 size={14} strokeWidth={1.7} className="mt-0.5 shrink-0" />
                   <span>Contraseña actualizada correctamente.</span>
                 </div>
               )}
@@ -270,15 +255,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
           <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-danger/10 text-danger">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M10 11l3-3-3-3M13 8H6M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <LogOut size={16} strokeWidth={1.8} />
               </div>
               <div className="flex flex-col">
                 <h3 className="font-alexandria text-[16px] font-medium leading-tight text-text-primary">
@@ -319,15 +296,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                   onClick={() => setLogoutOpen(true)}
                   className="flex items-center gap-1.5 rounded-[10px] border border-danger/30 bg-danger/5 px-3 py-1.5 font-inter text-[12px] font-medium text-danger transition-colors hover:bg-danger/10"
                 >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-                    <path
-                      d="M10 11l3-3-3-3M13 8H6M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h5"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  <LogOut size={13} strokeWidth={1.8} />
                   Cerrar sesión
                 </button>
               )}

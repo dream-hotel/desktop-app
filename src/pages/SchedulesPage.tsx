@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { BackendUserListItem } from "../types/models/Users";
 import {
   DailyBlock,
@@ -218,16 +219,10 @@ export default function SchedulesPage() {
             className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-surface text-text-secondary hover:bg-neutral-soft"
             title="Semana anterior"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M9 3L5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ChevronLeft size={14} strokeWidth={1.8} />
           </button>
           <div className="flex items-center gap-2 rounded-[8px] border border-border bg-surface px-3 py-1.5">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="#6b7280" strokeWidth="1" />
-              <path d="M1.5 5.5h11" stroke="#6b7280" strokeWidth="1" />
-              <path d="M4.5 1v2M9.5 1v2" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-            </svg>
+            <Calendar size={13} strokeWidth={1.6} className="text-text-secondary" />
             <span className="font-inter text-[13px] text-text-primary">
               {formatRange(weekStart, daysToShow)}
             </span>
@@ -237,9 +232,7 @@ export default function SchedulesPage() {
             className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-surface text-text-secondary hover:bg-neutral-soft"
             title="Semana siguiente"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ChevronRight size={14} strokeWidth={1.8} />
           </button>
           <button
             onClick={() => setWeekStart(startOfWeek(new Date()))}
@@ -259,9 +252,7 @@ export default function SchedulesPage() {
               className="rounded-full p-0.5 hover:bg-surface"
               title="Limpiar selección"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <X size={12} strokeWidth={1.8} />
             </button>
           </div>
         )}

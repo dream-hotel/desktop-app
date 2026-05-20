@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  BookOpen,
+  ChevronRight,
+  FileText,
+  Folder,
+  Layers,
+  MoreHorizontal,
+  Plus,
+} from "lucide-react";
+import {
   WikiArticleSummary,
   WikiCategoryNode,
 } from "../../types/models/Wiki";
@@ -56,21 +65,7 @@ function ArticleLeaf({
       style={{ paddingLeft: `${depth * 16 + 26}px` }}
       title={article.title}
     >
-      <svg
-        width="12"
-        height="12"
-        viewBox="0 0 16 16"
-        fill="none"
-        className="shrink-0"
-      >
-        <path
-          d="M4 2h6l3 3v9H4z"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinejoin="round"
-        />
-        <path d="M10 2v3h3" stroke="currentColor" strokeWidth="1.4" />
-      </svg>
+      <FileText size={12} strokeWidth={1.6} className="shrink-0" />
       <span
         className={`truncate font-inter text-[12px] ${
           selected ? "font-medium" : "font-normal"
@@ -127,35 +122,22 @@ function NodeRow({
           className="flex flex-1 items-center gap-2 overflow-hidden text-left"
         >
           {isExpandable ? (
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
+            <ChevronRight
+              size={12}
+              strokeWidth={1.8}
               className={`shrink-0 text-text-secondary transition-transform ${
                 isOpen ? "rotate-90" : ""
               }`}
-            >
-              <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            />
           ) : (
             <span className="inline-block w-3 shrink-0" />
           )}
 
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 16 16"
-            fill="none"
+          <Folder
+            size={15}
+            strokeWidth={1.6}
             className={`shrink-0 ${isSelected ? "text-primary" : "text-text-secondary"}`}
-          >
-            <path
-              d="M2 4a2 2 0 012-2h3l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V4z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-            />
-          </svg>
+          />
 
           <span
             className={`truncate font-inter text-[12.5px] ${
@@ -182,11 +164,7 @@ function NodeRow({
               className="flex h-6 w-6 items-center justify-center rounded text-text-secondary opacity-0 transition-opacity hover:bg-border hover:text-text-primary group-hover:opacity-100"
               aria-label="Acciones de carpeta"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="3" cy="7" r="1" fill="currentColor" />
-                <circle cx="7" cy="7" r="1" fill="currentColor" />
-                <circle cx="11" cy="7" r="1" fill="currentColor" />
-              </svg>
+              <MoreHorizontal size={14} strokeWidth={2} />
             </button>
 
             {menuOpen && (
@@ -312,16 +290,7 @@ export default function WikiSidebar({
     <div className="flex h-full w-[260px] flex-col border-r border-border bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="text-primary">
-            <path
-              d="M4 3h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path d="M6 3v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <BookOpen size={17} strokeWidth={1.7} className="text-primary" />
           <h2 className="font-alexandria text-[14px] font-medium text-text-primary">
             Directorio
           </h2>
@@ -337,10 +306,7 @@ export default function WikiSidebar({
               : "text-text-primary hover:bg-primary/5"
           }`}
         >
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-            <path d="M2 4h12v9H2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-            <path d="M2 7h12" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
+          <Layers size={15} strokeWidth={1.6} />
           <span className="font-inter text-[12.5px] font-medium">Todos los artículos</span>
         </button>
 
@@ -376,9 +342,7 @@ export default function WikiSidebar({
             onClick={onCreateRoot}
             className="flex w-full items-center justify-center gap-2 rounded-[10px] border border-dashed border-primary/40 bg-primary/5 px-3 py-1.5 font-inter text-[12px] font-medium text-primary transition-colors hover:bg-primary/10"
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
+            <Plus size={12} strokeWidth={1.9} />
             Nueva carpeta
           </button>
         </div>

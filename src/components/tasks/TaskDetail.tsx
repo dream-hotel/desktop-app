@@ -1,3 +1,4 @@
+import { Ban, CheckCircle2, CircleDashed, Loader, MoreVertical } from "lucide-react";
 import { Task, TaskPriority, TaskStatus } from "../../types/response/TaskResponse";
 
 const STATUS_LABEL: Record<TaskStatus, string> = {
@@ -46,28 +47,10 @@ export default function TaskDetail({ task }: TaskDetailProps) {
       <div className="border-b border-border p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-              {task.status === "in_progress" && (
-                <>
-                  <circle cx="8" cy="8" r="6.5" stroke="#c5a059" strokeWidth="1.2" />
-                  <path d="M8 4.5v3.5l2 1.5" stroke="#c5a059" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              )}
-              {task.status === "pending" && <circle cx="8" cy="8" r="6.5" stroke="#d1d5db" strokeWidth="1.2" />}
-              {task.status === "done" && (
-                <>
-                  <circle cx="8" cy="8" r="6.5" stroke="#76c7c2" strokeWidth="1.2" />
-                  <path d="M5.5 8l2 2 3.5-3.5" stroke="#76c7c2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              )}
-              {task.status === "blocked" && (
-                <>
-                  <circle cx="8" cy="8" r="6.5" stroke="#ef4444" strokeWidth="1.2" />
-                  <path d="M8 5v3" stroke="#ef4444" strokeWidth="1.2" strokeLinecap="round" />
-                  <circle cx="8" cy="10.5" r="0.6" fill="#ef4444" />
-                </>
-              )}
-            </svg>
+            {task.status === "in_progress" && <Loader size={16} strokeWidth={1.6} className="shrink-0 text-warning" />}
+            {task.status === "pending" && <CircleDashed size={16} strokeWidth={1.6} className="shrink-0 text-text-secondary" />}
+            {task.status === "done" && <CheckCircle2 size={16} strokeWidth={1.6} className="shrink-0 text-success" />}
+            {task.status === "blocked" && <Ban size={16} strokeWidth={1.6} className="shrink-0 text-danger" />}
             <span
               className={`inline-flex items-center rounded-full border px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text}`}
             >
@@ -75,11 +58,7 @@ export default function TaskDetail({ task }: TaskDetailProps) {
             </span>
           </div>
           <button className="flex h-[26px] w-[26px] items-center justify-center rounded text-text-secondary hover:bg-neutral-soft">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="4" r="1" fill="#6b7280" />
-              <circle cx="9" cy="9" r="1" fill="#6b7280" />
-              <circle cx="9" cy="14" r="1" fill="#6b7280" />
-            </svg>
+            <MoreVertical size={16} strokeWidth={1.8} className="text-text-secondary" />
           </button>
         </div>
 

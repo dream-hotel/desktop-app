@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Clock, Database, Wifi, WifiOff } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useSystemStatus } from "../../hooks/useSystemStatus";
 import { UserRole } from "../../types/response/AuthResponse";
@@ -106,11 +107,7 @@ export default function StatusBar() {
           title={`${dbInfo.label}. Haga clic para volver a verificar.`}
           className="flex items-center gap-[6px] rounded-md px-1 py-0.5 font-inter text-[11px] leading-[16.5px] transition-colors hover:bg-neutral-soft"
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <ellipse cx="6" cy="3" rx="4" ry="1.5" stroke="#6b7280" strokeWidth="1" />
-            <path d="M2 3v6c0 .8 1.8 1.5 4 1.5s4-.7 4-1.5V3" stroke="#6b7280" strokeWidth="1" />
-            <path d="M2 6c0 .8 1.8 1.5 4 1.5s4-.7 4-1.5" stroke="#6b7280" strokeWidth="1" />
-          </svg>
+          <Database size={11} strokeWidth={1.6} className="text-text-secondary" />
           <span className={TONE_TEXT[dbInfo.tone]}>{dbInfo.label}</span>
           <span className={`h-[6px] w-[6px] rounded-full ${TONE_DOT[dbInfo.tone]}`} />
         </button>
@@ -119,20 +116,11 @@ export default function StatusBar() {
           className="flex items-center gap-[6px] font-inter text-[11px] leading-[16.5px]"
           title={serverInfo.label}
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            {status.network === "online" && status.server === "online" ? (
-              <>
-                <path d="M2 7a4 4 0 018 0" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-                <path d="M4 8.5a2 2 0 014 0" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-                <circle cx="6" cy="10" r="0.6" fill="#6b7280" />
-              </>
-            ) : (
-              <>
-                <path d="M2 7a4 4 0 018 0" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-                <path d="M2 2l8 8" stroke="#dc2626" strokeWidth="1" strokeLinecap="round" />
-              </>
-            )}
-          </svg>
+          {status.network === "online" && status.server === "online" ? (
+            <Wifi size={11} strokeWidth={1.6} className="text-text-secondary" />
+          ) : (
+            <WifiOff size={11} strokeWidth={1.6} className="text-danger" />
+          )}
           <span className={TONE_TEXT[serverInfo.tone]}>{serverInfo.label}</span>
           <span className={`h-[6px] w-[6px] rounded-full ${TONE_DOT[serverInfo.tone]}`} />
         </div>
@@ -153,10 +141,7 @@ export default function StatusBar() {
           className="flex items-center gap-[6px] font-inter text-[11px] text-text-secondary"
           title={formatDate(now)}
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle cx="6" cy="6" r="5" stroke="#6b7280" strokeWidth="1" />
-            <path d="M6 3v3l2 1" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-          </svg>
+          <Clock size={11} strokeWidth={1.6} className="text-text-secondary" />
           <span>{formatTime(now)}</span>
         </div>
       </div>

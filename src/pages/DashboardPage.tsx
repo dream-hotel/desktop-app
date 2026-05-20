@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { AlertTriangle, ClipboardCheck, ListChecks, PieChart } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAnnouncementBell, onNavigateRequest } from "../hooks/useAnnouncementBell";
@@ -98,24 +99,14 @@ export default function DashboardPage() {
             <div className="flex flex-1 flex-col gap-5 px-8 pb-6 pt-0">
               <div className="flex gap-4">
                 <StatsCard
-                  icon={
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M3 5h8M3 10h8M3 15h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      <path d="M14 5l1 1 3-3M14 10l1 1 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  }
+                  icon={<ListChecks size={20} strokeWidth={1.7} />}
                   value={data.stats.tareasActivas}
                   label="Tareas activas"
                   diff={data.stats.tareasActivasDiff}
                   diffColor="#16a34a"
                 />
                 <StatsCard
-                  icon={
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
-                      <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  }
+                  icon={<PieChart size={20} strokeWidth={1.7} />}
                   value={data.stats.porcentajeCompletado}
                   suffix="%"
                   label="Porcentaje completado"
@@ -123,23 +114,14 @@ export default function DashboardPage() {
                   diffColor="#16a34a"
                 />
                 <StatsCard
-                  icon={
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M4 4h12v12H4z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                      <path d="M4 8h12M8 4v12" stroke="currentColor" strokeWidth="1.5" />
-                    </svg>
-                  }
+                  icon={<ClipboardCheck size={20} strokeWidth={1.7} />}
                   value={data.stats.checkInsPendientes}
                   label="Check-ins pendientes"
                   diff={data.stats.checkInsPendientesDiff}
                   diffColor="#f59e0b"
                 />
                 <StatsCard
-                  icon={
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M10 3l1.5 4.5H16l-3.5 2.8 1.2 4.5L10 12l-3.7 2.8 1.2-4.5L4 7.5h4.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                    </svg>
-                  }
+                  icon={<AlertTriangle size={20} strokeWidth={1.7} />}
                   value={data.stats.alertasCriticas}
                   label="Alertas críticas"
                   diff={data.stats.alertasCriticasDiff}

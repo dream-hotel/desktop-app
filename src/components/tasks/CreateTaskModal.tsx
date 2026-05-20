@@ -1,4 +1,16 @@
 import { useState, useRef } from "react";
+import {
+  Calendar,
+  Check,
+  ChevronDown,
+  Clock,
+  Film,
+  Image as ImageIcon,
+  Sun,
+  Upload,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 
 type Priority = "high" | "medium" | "low";
 
@@ -87,19 +99,13 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
           onClick={onClose}
           className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-text-secondary hover:bg-neutral-soft"
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M3 3l8 8M11 3l-8 8" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+          <X size={14} strokeWidth={1.8} className="text-text-secondary" />
         </button>
       </div>
 
       {/* Shift banner */}
       <div className="mx-5 mt-3.5 flex items-center gap-2.5 rounded-lg border border-primary/30 bg-primary-light px-3 py-2">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
-          <circle cx="6" cy="6" r="5" stroke="#492173" strokeWidth="0.8" />
-          <circle cx="6" cy="6" r="1" fill="#492173" />
-          <path d="M6 1.5v1M6 9.5v1M1.5 6h1M9.5 6h1" stroke="#492173" strokeWidth="0.8" strokeLinecap="round" />
-        </svg>
+        <Sun size={12} strokeWidth={1.6} className="shrink-0 text-primary" />
         <span className="font-inter text-[10px] font-medium text-primary">Turno de origen:</span>
         <span className="font-inter text-[10px] text-text-primary">Afternoon Shift (14:00–22:00)</span>
       </div>
@@ -132,10 +138,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
           {/* Responsable(s) */}
           <FieldGroup label="Responsable(s)" required>
             <div className="flex items-center gap-2 rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
-                <circle cx="6" cy="4" r="2.5" stroke="#9ca3af" strokeWidth="0.8" />
-                <path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
-              </svg>
+              <UserIcon size={12} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
               <input
                 type="text"
                 value={form.assignee}
@@ -143,9 +146,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 placeholder="Buscar colaborador..."
                 className="min-w-0 flex-1 font-inter text-[11px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
               />
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
-                <path d="M3 5l3 3 3-3" stroke="#9ca3af" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronDown size={12} strokeWidth={1.6} className="shrink-0 text-text-secondary" />
             </div>
           </FieldGroup>
 
@@ -206,11 +207,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 Fecha de inicio
               </span>
               <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
-                  <rect x="1" y="2.5" width="10" height="8.5" rx="1" stroke="currentColor" strokeWidth="0.8" />
-                  <path d="M1 5h10" stroke="currentColor" strokeWidth="0.8" />
-                  <path d="M4 1v2M8 1v2" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
-                </svg>
+                <Calendar size={12} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
                 <input
                   type="date"
                   value={form.startDate}
@@ -229,10 +226,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               </div>
               {!form.startAllDay && (
                 <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
-                    <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="0.8" />
-                    <path d="M6 3v3l2 1.5" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
-                  </svg>
+                  <Clock size={12} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
                   <input
                     type="time"
                     value={form.startTime}
@@ -249,11 +243,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 Fecha límite
               </span>
               <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
-                  <rect x="1" y="2.5" width="10" height="8.5" rx="1" stroke="currentColor" strokeWidth="0.8" />
-                  <path d="M1 5h10" stroke="currentColor" strokeWidth="0.8" />
-                  <path d="M4 1v2M8 1v2" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
-                </svg>
+                <Calendar size={12} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
                 <input
                   type="date"
                   value={form.endDate}
@@ -272,10 +262,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               </div>
               {!form.endAllDay && (
                 <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
-                    <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="0.8" />
-                    <path d="M6 3v3l2 1.5" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
-                  </svg>
+                  <Clock size={12} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
                   <input
                     type="time"
                     value={form.endTime}
@@ -295,10 +282,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               onClick={() => fileInputRef.current?.click()}
               className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[rgba(0,0,0,0.12)] bg-surface py-5"
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 2v10M5 6l4-4 4 4" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12v3a1 1 0 001 1h12a1 1 0 001-1v-3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
+              <Upload size={18} strokeWidth={1.4} className="text-text-secondary" />
               <div className="flex flex-col items-center">
                 <span className="font-inter text-[11px] text-text-secondary">
                   Arrastra archivos o haz clic para seleccionar
@@ -309,18 +293,11 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               </div>
               <div className="flex items-center gap-3.5">
                 <div className="flex items-center gap-1">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <rect x="1" y="1" width="8" height="8" rx="1" stroke="#9ca3af" strokeWidth="0.7" />
-                    <circle cx="3.5" cy="4" r="1" stroke="#9ca3af" strokeWidth="0.5" />
-                    <path d="M1 7l2.5-2.5L5 6l1.5-1.5L9 7" stroke="#9ca3af" strokeWidth="0.5" />
-                  </svg>
+                  <ImageIcon size={10} strokeWidth={1.4} className="text-text-secondary" />
                   <span className="font-inter text-[9.5px] text-text-secondary">Imágenes</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <rect x="1" y="2" width="8" height="6" rx="1" stroke="#9ca3af" strokeWidth="0.7" />
-                    <path d="M4.5 4l2 1-2 1V4z" fill="#9ca3af" />
-                  </svg>
+                  <Film size={10} strokeWidth={1.4} className="text-text-secondary" />
                   <span className="font-inter text-[9.5px] text-text-secondary">Vídeos</span>
                 </div>
               </div>
@@ -348,9 +325,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                       }}
                       className="ml-0.5 text-text-secondary hover:text-text-primary"
                     >
-                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                        <path d="M2 2l4 4M6 2l-4 4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-                      </svg>
+                      <X size={8} strokeWidth={1.8} />
                     </button>
                   </div>
                 ))}
@@ -379,9 +354,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
             onClick={handleSubmit}
             className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M4 9l4 4 6-7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <Check size={16} strokeWidth={2} />
             Crear tarea
           </button>
         </div>

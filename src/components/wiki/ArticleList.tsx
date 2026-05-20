@@ -1,3 +1,4 @@
+import { FileText, Plus, Search } from "lucide-react";
 import { WikiArticleSummary } from "../../types/models/Wiki";
 
 interface ArticleListProps {
@@ -50,24 +51,14 @@ export default function ArticleList({
               onClick={onCreateClick}
               className="flex h-7 items-center justify-center gap-1 rounded-[8px] bg-primary px-2.5 font-inter text-[11.5px] font-medium text-white transition-colors hover:bg-primary-hover"
             >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                <path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+              <Plus size={12} strokeWidth={2.2} />
               Crear
             </button>
           )}
         </div>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" className="text-text-secondary">
-              <path
-                d="M7 13A6 6 0 107 1a6 6 0 000 12zM11 11l4 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Search size={13} strokeWidth={1.6} className="text-text-secondary" />
           </div>
           <input
             type="text"
@@ -86,21 +77,7 @@ export default function ArticleList({
           </div>
         ) : articles.length === 0 ? (
           <div className="flex flex-col items-center px-6 py-10 text-center">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="mb-2 text-text-secondary/50"
-            >
-              <path
-                d="M4 4h12l4 4v12H4z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <path d="M16 4v4h4" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
+            <FileText size={32} strokeWidth={1.4} className="mb-2 text-text-secondary/50" />
             <h3 className="font-inter text-[13px] font-medium text-text-primary">
               Sin artículos
             </h3>

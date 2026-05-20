@@ -1,3 +1,5 @@
+import { AlertTriangle } from "lucide-react";
+
 interface ConfirmDialogProps {
   title: string;
   message: string;
@@ -41,16 +43,11 @@ export default function ConfirmDialog({
               tone === "danger" ? "bg-danger/10" : "bg-primary/10"
             }`}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
+            <AlertTriangle
+              size={20}
+              strokeWidth={1.8}
               className={tone === "danger" ? "text-danger" : "text-primary"}
-            >
-              <path d="M10 6v5M10 14h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
+            />
           </div>
           <div className="flex flex-col gap-1">
             <h3 className="font-alexandria text-[18px] font-normal leading-[22px] text-text-primary">
