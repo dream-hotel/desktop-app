@@ -120,7 +120,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="flex max-h-[90vh] w-[680px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+        className="flex max-h-[90vh] w-[680px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
       >
         <div className="flex shrink-0 items-start justify-between">
           <div>
@@ -138,7 +138,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-text-secondary hover:bg-[#f3f4f6]"
+            className="rounded-md p-1 text-text-secondary hover:bg-neutral-soft"
             aria-label="Cerrar"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -157,7 +157,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ej: Supervisor de turno"
-              className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary disabled:bg-[#f9fafb] disabled:text-text-secondary"
+              className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary disabled:bg-surface-2 disabled:text-text-secondary"
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -167,7 +167,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Breve descripción del rol"
-              className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -197,13 +197,13 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                   placeholder="Buscar permiso..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-[200px] min-w-0 rounded-[8px] bg-[#f3f4f6] py-1.5 pl-7 pr-3 font-inter text-[12px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+                  className="w-[200px] min-w-0 rounded-[8px] bg-neutral-soft py-1.5 pl-7 pr-3 font-inter text-[12px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
                 />
               </div>
               <button
                 type="button"
                 onClick={toggleAll}
-                className="shrink-0 whitespace-nowrap rounded-[8px] border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-body hover:border-primary hover:text-primary"
+                className="shrink-0 whitespace-nowrap rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body hover:border-primary hover:text-primary"
               >
                 {allSelected ? "Deseleccionar todo" : "Seleccionar todo"}
               </button>
@@ -211,7 +211,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
           </div>
 
           <div
-            className="flex flex-col gap-2 overflow-y-auto rounded-[10px] border border-border bg-[#fafafa] p-2"
+            className="flex flex-col gap-2 overflow-y-auto rounded-[10px] border border-border bg-surface-2 p-2"
             style={{ height: "min(420px, 55vh)" }}
           >
             {filteredModules.length === 0 && (
@@ -229,7 +229,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
               return (
                 <div
                   key={mod.module}
-                  className="shrink-0 overflow-hidden rounded-[8px] border border-border bg-white"
+                  className="shrink-0 overflow-hidden rounded-[8px] border border-border bg-surface"
                 >
                   <div className="flex items-center gap-2 border-b border-border px-3 py-2">
                     <button
@@ -252,7 +252,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                         <span className="truncate font-inter text-[11px] text-text-secondary">{mod.description}</span>
                       </div>
                     </button>
-                    <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full bg-[#f3f4f6] px-2.5 py-1">
+                    <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full bg-neutral-soft px-2.5 py-1">
                       <input
                         type="checkbox"
                         checked={allOn}
@@ -275,7 +275,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                           <label
                             key={perm.id}
                             className={`flex min-w-0 cursor-pointer items-start gap-2 rounded-[6px] px-2 py-2 transition-colors ${
-                              checked ? "bg-primary-light" : "hover:bg-[#f5f3f7]"
+                              checked ? "bg-primary-light" : "hover:bg-surface-hover"
                             }`}
                           >
                             <input
@@ -308,7 +308,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
         </div>
 
         {error && (
-          <div className="shrink-0 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+          <div className="shrink-0 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
             {error}
           </div>
         )}
@@ -318,7 +318,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-[10px] bg-[#f3f4f6] px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+            className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
           >
             Cancelar
           </button>

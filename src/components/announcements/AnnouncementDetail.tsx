@@ -75,7 +75,7 @@ export default function AnnouncementDetail({
 }: AnnouncementDetailProps) {
   if (loading) {
     return (
-      <div className="flex h-full flex-1 items-center justify-center bg-white font-inter text-[13px] text-text-secondary">
+      <div className="flex h-full flex-1 items-center justify-center bg-surface font-inter text-[13px] text-text-secondary">
         Cargando anuncio...
       </div>
     );
@@ -83,7 +83,7 @@ export default function AnnouncementDetail({
 
   if (!announcement) {
     return (
-      <div className="flex h-full flex-1 items-center justify-center bg-white">
+      <div className="flex h-full flex-1 items-center justify-center bg-surface">
         <div className="flex max-w-sm flex-col items-center text-center">
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -116,7 +116,7 @@ export default function AnnouncementDetail({
         : null;
 
   return (
-    <div className="flex h-full flex-1 flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-1 flex-col overflow-hidden bg-surface">
       <div className="flex w-full items-center justify-between gap-3 border-b border-border px-6 py-3">
         <div className="flex items-center gap-2">
           <span
@@ -185,7 +185,7 @@ export default function AnnouncementDetail({
           </div>
 
           {(announcement.type === "task" || announcement.type === "article") && (
-            <div className="mt-4 flex items-center gap-3 rounded-[12px] border border-border bg-white px-4 py-3">
+            <div className="mt-4 flex items-center gap-3 rounded-[12px] border border-border bg-surface px-4 py-3">
               <div
                 className={`flex h-9 w-9 items-center justify-center rounded-[10px] ${
                   announcement.type === "task" ? "bg-info/10 text-info" : "bg-primary/10 text-primary"

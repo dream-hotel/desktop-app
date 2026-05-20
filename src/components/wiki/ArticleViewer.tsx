@@ -36,7 +36,7 @@ export default function ArticleViewer({
 }: ArticleViewerProps) {
   if (loading) {
     return (
-      <div className="flex h-full flex-1 items-center justify-center bg-white font-inter text-[13px] text-text-secondary">
+      <div className="flex h-full flex-1 items-center justify-center bg-surface font-inter text-[13px] text-text-secondary">
         Cargando artículo...
       </div>
     );
@@ -44,7 +44,7 @@ export default function ArticleViewer({
 
   if (!article) {
     return (
-      <div className="flex h-full flex-1 items-center justify-center bg-white">
+      <div className="flex h-full flex-1 items-center justify-center bg-surface">
         <div className="flex max-w-sm flex-col items-center text-center">
           <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -70,7 +70,7 @@ export default function ArticleViewer({
   }
 
   return (
-    <div className="flex h-full flex-1 flex-col overflow-hidden bg-white">
+    <div className="flex h-full flex-1 flex-col overflow-hidden bg-surface">
       <div className="flex w-full items-center justify-between gap-3 border-b border-border px-6 py-3">
         <div className="flex min-w-0 items-center gap-1.5 overflow-hidden font-inter text-[11.5px]">
           {breadcrumb.length === 0 ? (
@@ -100,7 +100,7 @@ export default function ArticleViewer({
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={onExpandClick}
-            className="flex h-7 items-center gap-1.5 rounded-[8px] border border-border bg-white px-2.5 font-inter text-[11.5px] font-medium text-text-primary transition-colors hover:bg-bg"
+            className="flex h-7 items-center gap-1.5 rounded-[8px] border border-border bg-surface px-2.5 font-inter text-[11.5px] font-medium text-text-primary transition-colors hover:bg-bg"
           >
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
               <path

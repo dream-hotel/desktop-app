@@ -12,16 +12,16 @@ const ROLE_LABEL: Record<UserRole, string> = {
 type Tone = "ok" | "warn" | "error" | "neutral";
 
 const TONE_DOT: Record<Tone, string> = {
-  ok: "bg-[#16a34a]",
-  warn: "bg-[#f59e0b]",
-  error: "bg-[#dc2626]",
-  neutral: "bg-[#9ca3af]",
+  ok: "bg-success",
+  warn: "bg-warning",
+  error: "bg-danger",
+  neutral: "bg-neutral-mid",
 };
 
 const TONE_TEXT: Record<Tone, string> = {
-  ok: "text-[#065f46]",
-  warn: "text-[#92400e]",
-  error: "text-[#991b1b]",
+  ok: "text-success",
+  warn: "text-warning",
+  error: "text-danger",
   neutral: "text-text-secondary",
 };
 
@@ -98,13 +98,13 @@ export default function StatusBar() {
   const roleLabel = user ? ROLE_LABEL[user.role] : "Sin sesión";
 
   return (
-    <footer className="flex h-8 w-full shrink-0 items-center justify-between border-t border-border bg-white px-4">
+    <footer className="flex h-8 w-full shrink-0 items-center justify-between border-t border-border bg-surface px-4">
       <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={status.refresh}
           title={`${dbInfo.label}. Haga clic para volver a verificar.`}
-          className="flex items-center gap-[6px] rounded-md px-1 py-0.5 font-inter text-[11px] leading-[16.5px] transition-colors hover:bg-[#f3f4f6]"
+          className="flex items-center gap-[6px] rounded-md px-1 py-0.5 font-inter text-[11px] leading-[16.5px] transition-colors hover:bg-neutral-soft"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <ellipse cx="6" cy="3" rx="4" ry="1.5" stroke="#6b7280" strokeWidth="1" />
@@ -138,7 +138,7 @@ export default function StatusBar() {
         </div>
 
         {hasConnectionIssue && (
-          <span className="font-inter text-[11px] text-[#991b1b]" title={lastConnectionLabel}>
+          <span className="font-inter text-[11px] text-danger" title={lastConnectionLabel}>
             {lastConnectionLabel}
           </span>
         )}
@@ -148,7 +148,7 @@ export default function StatusBar() {
         <span className="font-inter text-[11px] text-text-secondary">
           {user ? `Vista de ${roleLabel}` : "Sin sesión"}
         </span>
-        <div className="h-3 w-px bg-black/10" />
+        <div className="h-3 w-px bg-border-strong" />
         <div
           className="flex items-center gap-[6px] font-inter text-[11px] text-text-secondary"
           title={formatDate(now)}

@@ -8,10 +8,10 @@ const STATUS_LABEL: Record<TaskStatus, string> = {
 };
 
 const STATUS_STYLE: Record<TaskStatus, { bg: string; border: string; text: string }> = {
-  in_progress: { bg: "bg-[#fef3c7]", border: "border-[rgba(197,160,89,0.2)]", text: "text-[#92400e]" },
-  pending: { bg: "bg-[#f3f4f6]", border: "border-[rgba(209,213,219,0.3)]", text: "text-text-secondary" },
-  done: { bg: "bg-[#ecfdf5]", border: "border-[rgba(118,199,194,0.2)]", text: "text-[#065f46]" },
-  blocked: { bg: "bg-[#fee2e2]", border: "border-[rgba(239,68,68,0.2)]", text: "text-[#991b1b]" },
+  in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
+  pending: { bg: "bg-neutral-soft", border: "border-[rgba(209,213,219,0.3)]", text: "text-text-secondary" },
+  done: { bg: "bg-success/10", border: "border-[rgba(118,199,194,0.2)]", text: "text-success" },
+  blocked: { bg: "bg-danger/10", border: "border-[rgba(239,68,68,0.2)]", text: "text-danger" },
 };
 
 const PRIORITY_LABEL: Record<TaskPriority, string> = {
@@ -41,7 +41,7 @@ export default function TaskDetail({ task }: TaskDetailProps) {
   const statusStyle = STATUS_STYLE[task.status];
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-surface">
       {/* Header: status + menu */}
       <div className="border-b border-border p-5">
         <div className="flex items-start justify-between">
@@ -74,7 +74,7 @@ export default function TaskDetail({ task }: TaskDetailProps) {
               {STATUS_LABEL[task.status]}
             </span>
           </div>
-          <button className="flex h-[26px] w-[26px] items-center justify-center rounded text-text-secondary hover:bg-[#f3f4f6]">
+          <button className="flex h-[26px] w-[26px] items-center justify-center rounded text-text-secondary hover:bg-neutral-soft">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <circle cx="9" cy="4" r="1" fill="#6b7280" />
               <circle cx="9" cy="9" r="1" fill="#6b7280" />
@@ -97,19 +97,19 @@ export default function TaskDetail({ task }: TaskDetailProps) {
       {/* Metadata grid */}
       <div className="flex flex-wrap gap-4 border-b border-border p-5">
         <div className="flex w-[175px] flex-col gap-[2px]">
-          <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">Asignado a</span>
+          <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">Asignado a</span>
           <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
             {task.assignee}
           </span>
         </div>
         <div className="flex w-[175px] flex-col gap-[2px]">
-          <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">Hora límite</span>
+          <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">Hora límite</span>
           <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
             {task.deadline}
           </span>
         </div>
         <div className="flex w-[175px] flex-col gap-[2px]">
-          <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">Prioridad</span>
+          <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">Prioridad</span>
           <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
             {PRIORITY_LABEL[task.priority]}
           </span>
@@ -137,7 +137,7 @@ export default function TaskDetail({ task }: TaskDetailProps) {
                 <div className="flex shrink-0 items-start justify-center pt-1" style={{ width: 15 }}>
                   <div
                     className={`h-[10px] w-[10px] rounded-full ${
-                      index === 0 ? "bg-[#c5a059]" : "bg-[#d1d5db]"
+                      index === 0 ? "bg-[#c5a059]" : "bg-neutral-mid"
                     }`}
                   />
                 </div>
@@ -146,7 +146,7 @@ export default function TaskDetail({ task }: TaskDetailProps) {
                     <span className="font-medium text-text-primary">{entry.authorName}</span>{" "}
                     <span className="text-text-secondary">{entry.action}</span>
                   </p>
-                  <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
+                  <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                     {entry.time}
                   </span>
                 </div>

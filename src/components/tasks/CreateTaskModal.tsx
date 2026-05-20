@@ -79,13 +79,13 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
   return (
     <div className="flex h-full flex-col border-l border-[rgba(0,0,0,0.08)] bg-bg shadow-[0px_22px_43px_0px_rgba(0,0,0,0.25)]">
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border bg-white px-5 py-4">
+      <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-5 py-4">
         <h2 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
           Nueva Tarea
         </h2>
         <button
           onClick={onClose}
-          className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-text-secondary hover:bg-[#f3f4f6]"
+          className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-text-secondary hover:bg-neutral-soft"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M3 3l8 8M11 3l-8 8" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
@@ -94,7 +94,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
       </div>
 
       {/* Shift banner */}
-      <div className="mx-5 mt-3.5 flex items-center gap-2.5 rounded-lg border border-[#d9b5ff] bg-[#f9f3ff] px-3 py-2">
+      <div className="mx-5 mt-3.5 flex items-center gap-2.5 rounded-lg border border-primary/30 bg-primary-light px-3 py-2">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
           <circle cx="6" cy="6" r="5" stroke="#492173" strokeWidth="0.8" />
           <circle cx="6" cy="6" r="1" fill="#492173" />
@@ -114,7 +114,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               value={form.title}
               onChange={(e) => update("title", e.target.value)}
               placeholder="Ej. Suite 301 — Revisión de climatización"
-              className="w-full rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-3.5 py-2 font-inter text-xs text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
             />
           </FieldGroup>
 
@@ -125,13 +125,13 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               onChange={(e) => update("description", e.target.value)}
               placeholder="Detalla el alcance de la tarea, instrucciones especiales..."
               rows={3}
-              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
             />
           </FieldGroup>
 
           {/* Responsable(s) */}
           <FieldGroup label="Responsable(s)" required>
-            <div className="flex items-center gap-2 rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-3.5 py-2">
+            <div className="flex items-center gap-2 rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0">
                 <circle cx="6" cy="4" r="2.5" stroke="#9ca3af" strokeWidth="0.8" />
                 <path d="M1.5 11c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
@@ -163,20 +163,20 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                     onClick={() => update("priority", opt.value)}
                     className={`flex flex-1 flex-col items-center justify-center rounded-lg border-2 py-3 transition-colors ${
                       selected
-                        ? "border-[#065f46] bg-[rgba(118,199,194,0.15)]"
-                        : "border-[rgba(0,0,0,0.08)] bg-white"
+                        ? "border-success bg-[rgba(118,199,194,0.15)]"
+                        : "border-[rgba(0,0,0,0.08)] bg-surface"
                     }`}
                   >
                     <span
                       className={`font-inter text-[11px] font-semibold ${
-                        selected ? "text-[#065f46]" : "text-text-secondary"
+                        selected ? "text-success" : "text-text-secondary"
                       }`}
                     >
                       {opt.label}
                     </span>
                     <span
                       className={`font-inter text-[9.5px] font-medium opacity-75 ${
-                        selected ? "text-[#065f46]" : "text-text-secondary"
+                        selected ? "text-success" : "text-text-secondary"
                       }`}
                     >
                       {opt.sub}
@@ -194,7 +194,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               onChange={(e) => update("context", e.target.value)}
               placeholder="Ej. Piezas en camino, esperando confirmación del proveedor..."
               rows={2}
-              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
             />
           </FieldGroup>
 
@@ -205,7 +205,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               <span className="font-inter text-[10px] font-medium leading-4 text-text-body">
                 Fecha de inicio
               </span>
-              <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-2.5 py-2">
+              <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
                   <rect x="1" y="2.5" width="10" height="8.5" rx="1" stroke="currentColor" strokeWidth="0.8" />
                   <path d="M1 5h10" stroke="currentColor" strokeWidth="0.8" />
@@ -228,7 +228,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 </span>
               </div>
               {!form.startAllDay && (
-                <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-2.5 py-2">
+                <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
                     <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="0.8" />
                     <path d="M6 3v3l2 1.5" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
@@ -248,7 +248,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               <span className="font-inter text-[10px] font-medium leading-4 text-text-body">
                 Fecha límite
               </span>
-              <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-2.5 py-2">
+              <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
                   <rect x="1" y="2.5" width="10" height="8.5" rx="1" stroke="currentColor" strokeWidth="0.8" />
                   <path d="M1 5h10" stroke="currentColor" strokeWidth="0.8" />
@@ -271,7 +271,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 </span>
               </div>
               {!form.endAllDay && (
-                <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-white px-2.5 py-2">
+                <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="shrink-0 text-text-secondary">
                     <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="0.8" />
                     <path d="M6 3v3l2 1.5" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
@@ -293,7 +293,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleFileDrop}
               onClick={() => fileInputRef.current?.click()}
-              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[rgba(0,0,0,0.12)] bg-white py-5"
+              className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[rgba(0,0,0,0.12)] bg-surface py-5"
             >
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M9 2v10M5 6l4-4 4 4" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -303,7 +303,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 <span className="font-inter text-[11px] text-text-secondary">
                   Arrastra archivos o haz clic para seleccionar
                 </span>
-                <span className="font-inter text-[9.5px] text-[#9ca3af]">
+                <span className="font-inter text-[9.5px] text-text-secondary">
                   JPG, PNG, WEBP, GIF, MP4, MOV
                 </span>
               </div>
@@ -314,14 +314,14 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                     <circle cx="3.5" cy="4" r="1" stroke="#9ca3af" strokeWidth="0.5" />
                     <path d="M1 7l2.5-2.5L5 6l1.5-1.5L9 7" stroke="#9ca3af" strokeWidth="0.5" />
                   </svg>
-                  <span className="font-inter text-[9.5px] text-[#9ca3af]">Imágenes</span>
+                  <span className="font-inter text-[9.5px] text-text-secondary">Imágenes</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                     <rect x="1" y="2" width="8" height="6" rx="1" stroke="#9ca3af" strokeWidth="0.7" />
                     <path d="M4.5 4l2 1-2 1V4z" fill="#9ca3af" />
                   </svg>
-                  <span className="font-inter text-[9.5px] text-[#9ca3af]">Vídeos</span>
+                  <span className="font-inter text-[9.5px] text-text-secondary">Vídeos</span>
                 </div>
               </div>
               <input
@@ -338,7 +338,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                 {form.files.map((file, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-1 rounded bg-[#f3f4f6] px-2 py-1 font-inter text-[9px] text-text-secondary"
+                    className="flex items-center gap-1 rounded bg-neutral-soft px-2 py-1 font-inter text-[9px] text-text-secondary"
                   >
                     <span className="max-w-[100px] truncate">{file.name}</span>
                     <button
@@ -346,7 +346,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
                         e.stopPropagation();
                         update("files", form.files.filter((_, j) => j !== i));
                       }}
-                      className="ml-0.5 text-[#9ca3af] hover:text-text-primary"
+                      className="ml-0.5 text-text-secondary hover:text-text-primary"
                     >
                       <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                         <path d="M2 2l4 4M6 2l-4 4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
@@ -361,7 +361,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
       </div>
 
       {/* Footer */}
-      <div className="flex shrink-0 items-center justify-between border-t border-border bg-white px-5 py-3.5">
+      <div className="flex shrink-0 items-center justify-between border-t border-border bg-surface px-5 py-3.5">
         <button
           onClick={onClose}
           className="font-inter text-[11px] font-medium text-text-secondary"
@@ -371,7 +371,7 @@ export default function CreateTaskModal({ onClose, onCreate }: CreateTaskModalPr
         <div className="flex items-center gap-2">
           <button
             onClick={handleClear}
-            className="rounded-[10px] border border-[#e5e5ea] px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-[#636366]"
+            className="rounded-[10px] border border-border-strong px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-text-secondary"
           >
             Limpiar
           </button>
@@ -410,8 +410,8 @@ function FieldGroup({
       <span className="font-inter text-[10px] font-medium leading-4 text-text-body">
         {label}{" "}
         {required && <span className="text-danger">*</span>}
-        {optional && <span className="text-[#9ca3af]">(opcional)</span>}
-        {optionalText && <span className="text-[#9ca3af]">{optionalText}</span>}
+        {optional && <span className="text-text-secondary">(opcional)</span>}
+        {optionalText && <span className="text-text-secondary">{optionalText}</span>}
       </span>
       {children}
     </div>
@@ -429,11 +429,11 @@ function ToggleSwitch({
     <button
       onClick={() => onChange(!checked)}
       className={`relative h-[14px] w-[28px] rounded-full transition-colors ${
-        checked ? "bg-primary" : "bg-[#d1d5db]"
+        checked ? "bg-primary" : "bg-neutral-mid"
       }`}
     >
       <div
-        className={`absolute top-[2px] h-[10px] w-[10px] rounded-full bg-white shadow-[0px_1px_2.5px_rgba(0,0,0,0.1),0px_1px_1.7px_rgba(0,0,0,0.1)] transition-transform ${
+        className={`absolute top-[2px] h-[10px] w-[10px] rounded-full bg-surface shadow-[0px_1px_2.5px_rgba(0,0,0,0.1),0px_1px_1.7px_rgba(0,0,0,0.1)] transition-transform ${
           checked ? "translate-x-[16px]" : "translate-x-[2px]"
         }`}
       />

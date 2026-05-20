@@ -54,7 +54,7 @@ export default function DashboardHeader({
   customTitle,
 }: DashboardHeaderProps) {
   return (
-    <header className="flex items-start justify-between border-b border-border bg-white px-8 pb-4 pt-6">
+    <header className="flex items-start justify-between border-b border-border bg-surface px-8 pb-4 pt-6">
       <div className="flex flex-col gap-[2px]">
         {customTitle ? (
           <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
@@ -75,7 +75,7 @@ export default function DashboardHeader({
       <div className="flex items-center gap-4">
         <div className="relative">
           <button
-            className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/8 bg-transparent shadow-none transition-colors hover:bg-[#f5f3f7]"
+            className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-border bg-transparent shadow-none transition-colors hover:bg-surface-hover"
             onClick={onToggleNotifications}
             aria-label="Anuncios"
           >

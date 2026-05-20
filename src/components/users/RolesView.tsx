@@ -141,7 +141,7 @@ export default function RolesView() {
               placeholder="Buscar rol..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-[240px] rounded-[10px] bg-[#f3f4f6] py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-[240px] rounded-[10px] bg-neutral-soft py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
             />
           </div>
           <button
@@ -157,12 +157,12 @@ export default function RolesView() {
       </div>
 
       {error && (
-        <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+        <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
           {error}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-[12px] border border-border bg-white">
+      <div className="overflow-hidden rounded-[12px] border border-border bg-surface">
         <table className="w-full table-fixed">
           <colgroup>
             <col className="w-[28%]" />
@@ -172,7 +172,7 @@ export default function RolesView() {
             <col className="w-[10%]" />
           </colgroup>
           <thead>
-            <tr className="border-b border-border bg-[#fafafa]">
+            <tr className="border-b border-border bg-surface-2">
               <th className="px-5 py-3 text-left font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                 Rol
               </th>
@@ -210,7 +210,7 @@ export default function RolesView() {
                 const summary = permissionSummary(role);
                 const mods = modulesCovered(role);
                 return (
-                  <tr key={role.id} className="border-b border-border last:border-b-0 hover:bg-[#fcfbfd]">
+                  <tr key={role.id} className="border-b border-border last:border-b-0 hover:bg-surface-2">
                     <td className="px-5 py-3 align-top">
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary-light text-primary">
@@ -224,7 +224,7 @@ export default function RolesView() {
                               {roleDisplayName(role.name)}
                             </span>
                             {role.isSystem && (
-                              <span className="shrink-0 rounded-full bg-[#fef3c7] px-2 py-[1.5px] font-inter text-[10px] font-medium text-[#92400e]">
+                              <span className="shrink-0 rounded-full bg-warning/15 px-2 py-[1.5px] font-inter text-[10px] font-medium text-warning">
                                 Sistema
                               </span>
                             )}
@@ -241,18 +241,18 @@ export default function RolesView() {
                       <span
                         className={`inline-flex max-w-full items-center gap-[5px] whitespace-nowrap rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${
                           summary.tone === "all"
-                            ? "bg-[#ecfdf5] text-[#065f46]"
+                            ? "bg-success/10 text-success"
                             : summary.tone === "none"
-                            ? "bg-[#fee2e2] text-[#991b1b]"
+                            ? "bg-danger/10 text-danger"
                             : "bg-primary-light text-primary"
                         }`}
                       >
                         <span
                           className={`h-[6px] w-[6px] shrink-0 rounded-full ${
                             summary.tone === "all"
-                              ? "bg-[#16a34a]"
+                              ? "bg-success"
                               : summary.tone === "none"
-                              ? "bg-[#dc2626]"
+                              ? "bg-danger"
                               : "bg-primary"
                           }`}
                         />
@@ -267,14 +267,14 @@ export default function RolesView() {
                         {mods.slice(0, 4).map((m) => (
                           <span
                             key={m}
-                            className="whitespace-nowrap rounded-full bg-[#f3f4f6] px-2 py-[2px] font-inter text-[11px] text-text-body"
+                            className="whitespace-nowrap rounded-full bg-neutral-soft px-2 py-[2px] font-inter text-[11px] text-text-body"
                           >
                             {m}
                           </span>
                         ))}
                         {mods.length > 4 && (
                           <span
-                            className="whitespace-nowrap rounded-full bg-[#f3f4f6] px-2 py-[2px] font-inter text-[11px] text-text-body"
+                            className="whitespace-nowrap rounded-full bg-neutral-soft px-2 py-[2px] font-inter text-[11px] text-text-body"
                             title={mods.slice(4).join(", ")}
                           >
                             +{mods.length - 4}
@@ -303,7 +303,7 @@ export default function RolesView() {
                           }}
                           title={role.isSystem ? "Roles del sistema no se pueden eliminar" : "Eliminar"}
                           disabled={role.isSystem}
-                          className="rounded-md p-1.5 text-text-secondary hover:bg-[#fee2e2] hover:text-[#dc2626] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
+                          className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
                         >
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                             <path d="M2 3.5h10M5 3.5V2h4v1.5M3 3.5l1 8.5h6l1-8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -343,10 +343,10 @@ export default function RolesView() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex w-[420px] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+            className="flex w-[420px] flex-col gap-4 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fee2e2]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/10">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M10 6v5M10 14h.01" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round" />
                   <circle cx="10" cy="10" r="8" stroke="#dc2626" strokeWidth="1.5" />
@@ -364,7 +364,7 @@ export default function RolesView() {
             </div>
 
             {deleteError && (
-              <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+              <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
                 {deleteError}
               </div>
             )}
@@ -376,14 +376,14 @@ export default function RolesView() {
                   setDeleteError(null);
                 }}
                 disabled={deleteBusy}
-                className="rounded-[10px] bg-[#f3f4f6] px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+                className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleteBusy}
-                className="rounded-[10px] bg-[#dc2626] px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+                className="rounded-[10px] bg-danger px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
               >
                 {deleteBusy ? "Eliminando..." : "Eliminar rol"}
               </button>

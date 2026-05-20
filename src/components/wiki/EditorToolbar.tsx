@@ -116,7 +116,7 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-border bg-white px-3 py-2">
+    <div className="flex flex-wrap items-center gap-1 border-b border-border bg-surface px-3 py-2">
       <select
         value={blockSelectValue}
         onMouseDown={(e) => e.stopPropagation()}
@@ -124,7 +124,7 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
           applyBlockOption(editor, e.target.value);
           editor.focus();
         }}
-        className="h-8 rounded-[6px] border border-border bg-white px-2 font-inter text-[12px] text-text-primary outline-none focus:border-primary/50"
+        className="h-8 rounded-[6px] border border-border bg-surface px-2 font-inter text-[12px] text-text-primary outline-none focus:border-primary/50"
         title="Tipo de bloque"
         aria-label="Tipo de bloque"
       >

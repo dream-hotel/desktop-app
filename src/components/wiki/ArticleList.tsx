@@ -34,7 +34,7 @@ export default function ArticleList({
   totalCount,
 }: ArticleListProps) {
   return (
-    <div className="flex h-full w-[320px] flex-col border-r border-border bg-white">
+    <div className="flex h-full w-[320px] flex-col border-r border-border bg-surface">
       <div className="flex flex-col gap-2.5 border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-2">
@@ -71,7 +71,7 @@ export default function ArticleList({
           </div>
           <input
             type="text"
-            className="block w-full rounded-[10px] border border-border bg-bg py-1.5 pl-8 pr-3 font-inter text-[12.5px] text-text-primary outline-none placeholder:text-text-secondary focus:border-primary/50 focus:bg-white"
+            className="block w-full rounded-[10px] border border-border bg-bg py-1.5 pl-8 pr-3 font-inter text-[12.5px] text-text-primary outline-none placeholder:text-text-secondary focus:border-primary/50 focus:bg-surface"
             placeholder="Buscar por título o contenido..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}

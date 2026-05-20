@@ -34,11 +34,11 @@ export default function ArticleFullView({
 }: ArticleFullViewProps) {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
-      <header className="flex shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3">
+      <header className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-6 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-border bg-white text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
+            className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-border bg-surface text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
             aria-label="Volver"
           >
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none">

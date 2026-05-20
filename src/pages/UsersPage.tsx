@@ -204,7 +204,7 @@ export default function UsersPage() {
                 placeholder="Buscar por nombre, apellido o email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-[10px] bg-[#f3f4f6] py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+                className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
               />
             </div>
 
@@ -213,7 +213,7 @@ export default function UsersPage() {
               onChange={(e) =>
                 setRoleFilter(e.target.value === "all" ? "all" : Number(e.target.value))
               }
-              className="rounded-[10px] bg-[#f3f4f6] px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
+              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
             >
               <option value="all">Todos los roles</option>
               {ROLE_OPTIONS.map((r) => (
@@ -223,7 +223,7 @@ export default function UsersPage() {
               ))}
             </select>
 
-            <div className="flex items-center gap-1 rounded-[10px] bg-[#f3f4f6] p-1">
+            <div className="flex items-center gap-1 rounded-[10px] bg-neutral-soft p-1">
               {(["all", "active", "inactive"] as ActiveFilter[]).map((f) => (
                 <button
                   key={f}
@@ -248,15 +248,15 @@ export default function UsersPage() {
         ) : (
           <>
             {error && (
-              <div className="mb-4 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+              <div className="mb-4 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
                 {error}
               </div>
             )}
 
-            <div className="overflow-hidden rounded-[12px] border border-border bg-white">
+            <div className="overflow-hidden rounded-[12px] border border-border bg-surface">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border bg-[#fafafa]">
+                  <tr className="border-b border-border bg-surface-2">
                     <th className="px-5 py-3 text-left font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                       Usuario
                     </th>
@@ -294,7 +294,7 @@ export default function UsersPage() {
                   )}
                   {!loading &&
                     users.map((u) => (
-                      <tr key={u.id} className="border-b border-border last:border-b-0 hover:bg-[#fcfbfd]">
+                      <tr key={u.id} className="border-b border-border last:border-b-0 hover:bg-surface-2">
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-light font-inter text-[12px] font-medium text-primary">
@@ -318,13 +318,13 @@ export default function UsersPage() {
                           <span
                             className={`inline-flex items-center gap-[5px] rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${
                               u.isActive
-                                ? "bg-[#ecfdf5] text-[#065f46]"
-                                : "bg-[#fee2e2] text-[#991b1b]"
+                                ? "bg-success/10 text-success"
+                                : "bg-danger/10 text-danger"
                             }`}
                           >
                             <span
                               className={`h-[6px] w-[6px] rounded-full ${
-                                u.isActive ? "bg-[#16a34a]" : "bg-[#dc2626]"
+                                u.isActive ? "bg-success" : "bg-danger"
                               }`}
                             />
                             {u.isActive ? "Activo" : "Inactivo"}
@@ -350,7 +350,7 @@ export default function UsersPage() {
                                 setDeleteError(null);
                               }}
                               title="Eliminar"
-                              className="rounded-md p-1.5 text-text-secondary hover:bg-[#fee2e2] hover:text-[#dc2626]"
+                              className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger"
                             >
                               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                 <path d="M2 3.5h10M5 3.5V2h4v1.5M3 3.5l1 8.5h6l1-8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -373,14 +373,14 @@ export default function UsersPage() {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1 || loading}
-                    className="rounded-md border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
+                    className="rounded-md border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
                   >
                     Anterior
                   </button>
                   <button
                     onClick={() => setPage((p) => Math.min(meta.pages, p + 1))}
                     disabled={page >= meta.pages || loading}
-                    className="rounded-md border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
+                    className="rounded-md border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
                   >
                     Siguiente
                   </button>

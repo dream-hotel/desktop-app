@@ -80,7 +80,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
-      <header className="flex items-start justify-between border-b border-border bg-white px-8 pb-4 pt-6">
+      <header className="flex items-start justify-between border-b border-border bg-surface px-8 pb-4 pt-6">
         <div className="flex flex-col gap-[2px]">
           <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
             Mi cuenta
@@ -94,7 +94,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="mx-auto flex max-w-[840px] flex-col gap-5">
           {/* Profile card */}
-          <section className="overflow-hidden rounded-[14px] border border-border bg-white">
+          <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-center gap-5 border-b border-border px-6 py-5">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary font-inter text-[20px] font-semibold text-white">
                 {getInitials(user.fullName)}
@@ -145,7 +145,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
           </section>
 
           {/* Change password */}
-          <section className="overflow-hidden rounded-[14px] border border-border bg-white">
+          <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -180,7 +180,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                       }}
                       placeholder="••••••••"
                       autoComplete="new-password"
-                      className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 pr-10 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-white"
+                      className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 pr-10 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
                     />
                     <button
                       type="button"
@@ -217,7 +217,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                     }}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-white"
+                    className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                     setSuccess(false);
                   }}
                   disabled={saving || (!newPassword && !confirmPassword)}
-                  className="rounded-[10px] border border-border bg-white px-4 py-2 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-40"
+                  className="rounded-[10px] border border-border bg-surface px-4 py-2 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-40"
                 >
                   Limpiar
                 </button>
@@ -267,7 +267,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
           </section>
 
           {/* Session */}
-          <section className="overflow-hidden rounded-[14px] border border-border bg-white">
+          <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-start gap-3 border-b border-border px-6 py-4">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-danger/10 text-danger">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -303,7 +303,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setLogoutOpen(false)}
-                    className="rounded-[10px] border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg"
+                    className="rounded-[10px] border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg"
                   >
                     Cancelar
                   </button>

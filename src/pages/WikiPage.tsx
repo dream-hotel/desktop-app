@@ -348,7 +348,7 @@ export default function WikiPage() {
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {treeLoading ? (
-          <div className="flex h-full w-[260px] items-center justify-center border-r border-border bg-white font-inter text-[12px] text-text-secondary">
+          <div className="flex h-full w-[260px] items-center justify-center border-r border-border bg-surface font-inter text-[12px] text-text-secondary">
             Cargando carpetas...
           </div>
         ) : (

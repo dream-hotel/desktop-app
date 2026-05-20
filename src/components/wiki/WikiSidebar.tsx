@@ -179,7 +179,7 @@ function NodeRow({
                 e.stopPropagation();
                 setMenuOpen((v) => !v);
               }}
-              className="flex h-6 w-6 items-center justify-center rounded text-text-secondary opacity-0 transition-opacity hover:bg-black/5 hover:text-text-primary group-hover:opacity-100"
+              className="flex h-6 w-6 items-center justify-center rounded text-text-secondary opacity-0 transition-opacity hover:bg-border hover:text-text-primary group-hover:opacity-100"
               aria-label="Acciones de carpeta"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -195,7 +195,7 @@ function NodeRow({
                   className="fixed inset-0 z-10 cursor-default"
                   onClick={() => setMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-7 z-20 flex w-44 flex-col rounded-[10px] border border-border bg-white py-1 shadow-[0px_12px_30px_rgba(0,0,0,0.12)]">
+                <div className="absolute right-0 top-7 z-20 flex w-44 flex-col rounded-[10px] border border-border bg-surface py-1 shadow-[0px_12px_30px_rgba(0,0,0,0.12)]">
                   <button
                     onClick={() => {
                       setMenuOpen(false);
@@ -309,7 +309,7 @@ export default function WikiSidebar({
     });
 
   return (
-    <div className="flex h-full w-[260px] flex-col border-r border-border bg-white">
+    <div className="flex h-full w-[260px] flex-col border-r border-border bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="text-primary">

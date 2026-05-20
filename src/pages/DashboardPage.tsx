@@ -17,6 +17,7 @@ import UsersPage from "./UsersPage";
 import ActivityLogPage from "./ActivityLogPage";
 import SchedulesPage from "./SchedulesPage";
 import AccountPage from "./AccountPage";
+import ConfigurationPage, { readWelcomeModalEnabled } from "./ConfigurationPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -58,9 +59,12 @@ export default function DashboardPage() {
   }
 
   const unseenAnnouncements = bell.announcements.filter((a) => bell.isUnread(a.id));
-  const showWelcomeModal = !welcomeDismissed && unseenAnnouncements.length > 0;
+  const showWelcomeModal =
+    readWelcomeModalEnabled() && !welcomeDismissed && unseenAnnouncements.length > 0;
 
-  const FULL_HEIGHT_PAGES = ["tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios", "cuenta"];
+  const FULL_HEIGHT_PAGES = [
+    "tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios", "cuenta", "configuracion",
+  ];
   const isFullHeightPage = FULL_HEIGHT_PAGES.includes(activeNav);
 
   const handleAnnouncementClick = (id: number) => {
@@ -164,6 +168,8 @@ export default function DashboardPage() {
             <SchedulesPage />
           ) : activeNav === "cuenta" ? (
             <AccountPage user={user} onLogout={logout} />
+          ) : activeNav === "configuracion" ? (
+            <ConfigurationPage />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}

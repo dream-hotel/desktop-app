@@ -15,7 +15,7 @@ function getTurnoColor(turno: string): string {
 
 export default function RecentTasks({ tasks }: RecentTasksProps) {
   return (
-    <div className="flex-1 rounded-2xl border border-border bg-white px-6 py-5">
+    <div className="flex-1 rounded-2xl border border-border bg-surface px-6 py-5">
       <h2 className="m-0 mb-4 font-inter text-lg leading-6 font-semibold text-text-primary">
         Tareas Recientes
       </h2>

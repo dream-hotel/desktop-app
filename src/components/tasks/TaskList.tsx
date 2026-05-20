@@ -48,9 +48,9 @@ function StatusIcon({ status }: { status: TaskStatus }) {
 function PriorityBadge({ priority }: { priority: TaskPriority }) {
   const config: Record<TaskPriority, { bg: string; border: string; text: string; label: string }> = {
     critical: { bg: "bg-[#c5a059]", border: "", text: "text-white", label: "Critical" },
-    high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-[#92400e]", label: "High" },
-    medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-[#065f46]", label: "Medium" },
-    low: { bg: "bg-[#f3f4f6]", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Low" },
+    high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-warning", label: "High" },
+    medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-success", label: "Medium" },
+    low: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Low" },
   };
   const c = config[priority];
   return (
@@ -62,10 +62,10 @@ function PriorityBadge({ priority }: { priority: TaskPriority }) {
 
 function StatusBadge({ status }: { status: TaskStatus }) {
   const config: Record<TaskStatus, { bg: string; border: string; text: string; label: string }> = {
-    in_progress: { bg: "bg-[#fef3c7]", border: "border border-[rgba(197,160,89,0.2)]", text: "text-[#92400e]", label: "In Progress" },
-    pending: { bg: "bg-[#f3f4f6]", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Pending" },
-    done: { bg: "bg-[#ecfdf5]", border: "border border-[rgba(118,199,194,0.2)]", text: "text-[#065f46]", label: "Done" },
-    blocked: { bg: "bg-[#fee2e2]", border: "border border-[rgba(239,68,68,0.2)]", text: "text-[#991b1b]", label: "Blocked" },
+    in_progress: { bg: "bg-warning/15", border: "border border-[rgba(197,160,89,0.2)]", text: "text-warning", label: "In Progress" },
+    pending: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Pending" },
+    done: { bg: "bg-success/10", border: "border border-[rgba(118,199,194,0.2)]", text: "text-success", label: "Done" },
+    blocked: { bg: "bg-danger/10", border: "border border-[rgba(239,68,68,0.2)]", text: "text-danger", label: "Blocked" },
   };
   const c = config[status];
   return (
@@ -211,14 +211,14 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
     <div
       ref={calRef}
       data-mini-calendar
-      className="w-[180px] rounded-md bg-white p-2 shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
+      className="w-[180px] rounded-md bg-surface p-2 shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
       style={style}
     >
       {/* Month/year header */}
       <div className="mb-1 flex items-center justify-between">
         <button
           onClick={prevMonth}
-          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-[#f3f4f6]"
+          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path d="M6.5 2L3.5 5l3 3" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
@@ -229,7 +229,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
         </span>
         <button
           onClick={nextMonth}
-          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-[#f3f4f6]"
+          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path d="M3.5 2l3 3-3 3" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
@@ -240,7 +240,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
       {/* Day headers */}
       <div className="grid grid-cols-7 gap-px">
         {DAY_HEADERS.map((d) => (
-          <div key={d} className="flex h-5 items-center justify-center font-inter text-[8px] font-medium text-[#9ca3af]">
+          <div key={d} className="flex h-5 items-center justify-center font-inter text-[8px] font-medium text-text-secondary">
             {d}
           </div>
         ))}
@@ -261,7 +261,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
                     ? "bg-primary text-white"
                     : isToday(day)
                       ? "bg-primary-light text-primary"
-                      : "text-text-primary hover:bg-[#f3f4f6]"
+                      : "text-text-primary hover:bg-neutral-soft"
                 }`}
               >
                 {day}
@@ -301,7 +301,7 @@ function DatePickerField({ label, value, onChange }: DatePickerFieldProps) {
       <button
         ref={btnRef}
         onClick={() => (showCalendar ? setShowCalendar(false) : openCalendar())}
-        className="flex w-[60px] items-center gap-1 overflow-hidden rounded-sm bg-[#e5e5ea] py-px pl-[7px] pr-[9px]"
+        className="flex w-[60px] items-center gap-1 overflow-hidden rounded-sm bg-neutral-mid py-px pl-[7px] pr-[9px]"
       >
         <svg width="12" height="13" viewBox="0 0 12 13" fill="none" className="shrink-0">
           <rect x="1" y="2.5" width="10" height="9" rx="1" stroke="#6b7280" strokeWidth="0.8" />
@@ -384,7 +384,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
       {active && !expanded ? (
         <button
           onClick={() => setExpanded(true)}
-          className="flex items-center gap-[6px] rounded-[10px] border border-[#1aba1a] bg-[rgba(26,186,26,0.15)] px-3 py-[7px] font-inter text-[13px] font-medium text-text-primary"
+          className="flex items-center gap-[6px] rounded-[10px] border border-success bg-[rgba(26,186,26,0.15)] px-3 py-[7px] font-inter text-[13px] font-medium text-text-primary"
         >
           <button
             onClick={(e) => {
@@ -404,7 +404,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
       ) : (
         <button
           onClick={() => setExpanded(!expanded)}
-          className={`flex items-center gap-[6px] rounded-[10px] bg-[#f3f4f6] px-3 py-[7px] font-inter text-[13px] font-medium text-text-secondary`}
+          className={`flex items-center gap-[6px] rounded-[10px] bg-neutral-soft px-3 py-[7px] font-inter text-[13px] font-medium text-text-secondary`}
         >
           {filterIcon("#6b7280")}
           Filtro
@@ -414,7 +414,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
 
       {/* Dropdown */}
       {expanded && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-10 flex w-[112px] flex-col gap-[2px] rounded-sm bg-white px-[9px] py-[6px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
+        <div className="absolute right-0 top-[calc(100%+8px)] z-10 flex w-[112px] flex-col gap-[2px] rounded-sm bg-surface px-[9px] py-[6px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
           {/* Fecha section */}
           <p className="font-alexandria text-[11px] font-light leading-[21px] text-primary underline">
             Fecha
@@ -469,7 +469,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
       onClick={onClick}
       className={`flex w-full flex-col items-start border-b pb-[1px] pt-4 text-left ${
         isSelected
-          ? "border-b-border border-l-2 border-l-primary bg-[#fcf9ff] pl-[22px] pr-5"
+          ? "border-b-border border-l-2 border-l-primary bg-primary-light pl-[22px] pr-5"
           : "border-b-[rgba(0,0,0,0.04)] px-5"
       }`}
     >
@@ -496,7 +496,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
+                <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                   {task.comments}
                 </span>
               </div>
@@ -510,7 +510,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
                 <circle cx="5" cy="4" r="2" stroke="#9ca3af" strokeWidth="0.8" />
                 <path d="M1 9c0-2 1.5-3 4-3s4 1 4 3" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
               </svg>
-              <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
+              <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                 {task.assignee}
               </span>
             </div>
@@ -519,7 +519,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
                 <circle cx="5" cy="5" r="4" stroke="#9ca3af" strokeWidth="0.8" />
                 <path d="M5 2.5v2.5l2 1" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
               </svg>
-              <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
+              <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
                 {task.deadline}
               </span>
             </div>
@@ -599,7 +599,7 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
               placeholder="Buscar tareas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-[10px] bg-[#f3f4f6] py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
             />
           </div>
           <FilterButton filter={advancedFilter} onFilterChange={setAdvancedFilter} />
@@ -614,7 +614,7 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
               className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] ${
                 activeFilter === tab.id
                   ? "bg-primary text-white"
-                  : "bg-[#f3f4f6] text-text-secondary"
+                  : "bg-neutral-soft text-text-secondary"
               }`}
             >
               {tab.label}

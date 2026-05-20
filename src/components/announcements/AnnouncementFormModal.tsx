@@ -133,7 +133,7 @@ export default function AnnouncementFormModal({
         onClick={() => !saving && onCancel()}
         aria-label="Cerrar modal"
       />
-      <div className="relative z-10 flex w-full max-w-[560px] flex-col overflow-hidden rounded-[16px] border border-border bg-white shadow-[0px_20px_50px_rgba(0,0,0,0.18)]">
+      <div className="relative z-10 flex w-full max-w-[560px] flex-col overflow-hidden rounded-[16px] border border-border bg-surface shadow-[0px_20px_50px_rgba(0,0,0,0.18)]">
         <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div className="flex flex-col">
             <h2 className="font-alexandria text-[18px] font-medium leading-tight text-text-primary">
@@ -171,7 +171,7 @@ export default function AnnouncementFormModal({
                       className={`flex flex-col items-start gap-1 rounded-[10px] border px-3 py-2.5 text-left transition-colors ${
                         type === opt.id
                           ? "border-primary bg-primary/5"
-                          : "border-border bg-white hover:border-primary/30 hover:bg-bg"
+                          : "border-border bg-surface hover:border-primary/30 hover:bg-bg"
                       }`}
                     >
                       <span
@@ -201,7 +201,7 @@ export default function AnnouncementFormModal({
                   value={taskId}
                   onChange={(e) => setTaskId(e.target.value)}
                   placeholder="Ej. 12"
-                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-white"
+                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
                 />
                 <p className="font-inter text-[11px] text-text-secondary">
                   Encuentra el ID en la sección de Tareas.
@@ -220,7 +220,7 @@ export default function AnnouncementFormModal({
                   value={articleId}
                   onChange={(e) => setArticleId(e.target.value)}
                   placeholder="Ej. 3"
-                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-white"
+                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
                 />
                 <p className="font-inter text-[11px] text-text-secondary">
                   Encuentra el ID en la Wiki institucional.
@@ -244,7 +244,7 @@ export default function AnnouncementFormModal({
                     : "Agrega un comentario o contexto (opcional)..."
                 }
                 rows={5}
-                className="w-full resize-none rounded-[10px] border border-border bg-bg px-3 py-2.5 font-inter text-[13px] leading-relaxed text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-white"
+                className="w-full resize-none rounded-[10px] border border-border bg-bg px-3 py-2.5 font-inter text-[13px] leading-relaxed text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
               />
             </div>
 
@@ -265,7 +265,7 @@ export default function AnnouncementFormModal({
                   type="datetime-local"
                   value={visibleUntil}
                   onChange={(e) => setVisibleUntil(e.target.value)}
-                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-white"
+                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
                 />
               ) : (
                 <p className="font-inter text-[11.5px] text-text-secondary">
@@ -290,7 +290,7 @@ export default function AnnouncementFormModal({
               type="button"
               onClick={onCancel}
               disabled={saving}
-              className="rounded-[10px] border border-border bg-white px-4 py-2 font-inter text-[12.5px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50"
+              className="rounded-[10px] border border-border bg-surface px-4 py-2 font-inter text-[12.5px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50"
             >
               Cancelar
             </button>

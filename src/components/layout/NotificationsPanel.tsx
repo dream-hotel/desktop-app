@@ -96,8 +96,8 @@ export default function NotificationsPanel({
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      <div className="absolute top-full right-0 z-50 mt-2 flex max-h-[calc(100vh-120px)] w-[400px] flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
-        <div className="absolute -top-2 right-[14px] h-4 w-4 rotate-45 border-t border-l border-border bg-white" />
+      <div className="absolute top-full right-0 z-50 mt-2 flex max-h-[calc(100vh-120px)] w-[400px] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
+        <div className="absolute -top-2 right-[14px] h-4 w-4 rotate-45 border-t border-l border-border bg-surface" />
 
         <div className="relative flex items-start justify-between px-5 pt-5 pb-3">
           <div className="flex items-center gap-2.5">
@@ -127,7 +127,7 @@ export default function NotificationsPanel({
               className={`rounded-full border px-3 py-[5px] font-inter text-[12px] font-medium shadow-none transition-all ${
                 tab === "nuevos"
                   ? "border-text-primary bg-text-primary text-white"
-                  : "border-black/10 bg-white text-text-secondary hover:text-text-primary"
+                  : "border-border-strong bg-surface text-text-secondary hover:text-text-primary"
               }`}
               onClick={() => setTab("nuevos")}
             >
@@ -137,7 +137,7 @@ export default function NotificationsPanel({
               className={`rounded-full border px-3 py-[5px] font-inter text-[12px] font-medium shadow-none transition-all ${
                 tab === "todos"
                   ? "border-text-primary bg-text-primary text-white"
-                  : "border-black/10 bg-white text-text-secondary hover:text-text-primary"
+                  : "border-border-strong bg-surface text-text-secondary hover:text-text-primary"
               }`}
               onClick={() => setTab("todos")}
             >
@@ -187,7 +187,7 @@ export default function NotificationsPanel({
                     className={`flex w-full flex-col gap-1.5 rounded-[12px] border px-3.5 py-3 text-left transition-colors ${
                       unread
                         ? "border-primary/30 bg-primary/[0.03] hover:bg-primary/[0.06]"
-                        : "border-border bg-white hover:bg-bg"
+                        : "border-border bg-surface hover:bg-bg"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">

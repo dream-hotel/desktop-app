@@ -18,7 +18,7 @@ export default function StatsCard({
   suffix = "",
 }: StatsCardProps) {
   return (
-    <div className="flex min-w-[180px] flex-1 flex-col gap-3 rounded-2xl border border-border bg-white p-5">
+    <div className="flex min-w-[180px] flex-1 flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between">
         <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-primary-light text-primary">
           {icon}

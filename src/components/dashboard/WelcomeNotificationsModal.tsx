@@ -38,8 +38,8 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
   if (t === "task") {
     return {
       label: "Tarea",
-      bg: "#eff6ff",
-      iconBg: "#3b82f6",
+      bg: "bg-info/10",
+      iconBg: "bg-info",
       icon: (
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <rect x="2" y="3" width="12" height="11" rx="2" stroke="white" strokeWidth="1.5" />
@@ -51,8 +51,8 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
   if (t === "article") {
     return {
       label: "Artículo",
-      bg: "#faf5ff",
-      iconBg: "#492173",
+      bg: "bg-primary/10",
+      iconBg: "bg-primary",
       icon: (
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M4 2h6l3 3v9H4z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
@@ -63,8 +63,8 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
   }
   return {
     label: "Comunicado",
-    bg: "#f9fafb",
-    iconBg: "#6b7280",
+    bg: "bg-surface-2",
+    iconBg: "bg-text-secondary",
     icon: (
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <path d="M3 4h10v7H7l-3 3v-3H3z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
@@ -134,8 +134,8 @@ export default function WelcomeNotificationsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="flex max-h-[85vh] w-[520px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-border0 backdrop-blur-sm">
+      <div className="flex max-h-[85vh] w-[520px] flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
         <div className="flex flex-col gap-1 border-b border-border px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light">
@@ -161,7 +161,7 @@ export default function WelcomeNotificationsModal({
             </button>
           </div>
           <div className="mt-2 flex items-center gap-3">
-            <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-gray-100">
+            <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-neutral-soft">
               <div
                 className="h-full rounded-full bg-primary transition-all duration-300"
                 style={{
@@ -185,15 +185,13 @@ export default function WelcomeNotificationsModal({
                   key={a.id}
                   ref={(el) => setRef(a.id, el)}
                   data-announcement-id={a.id}
-                  className={`rounded-xl border p-4 transition-all duration-300 ${
+                  className={`rounded-xl border p-4 transition-all duration-300 ${meta.bg} ${
                     isRead ? "border-border opacity-100" : "border-primary/30 ring-1 ring-primary/10"
                   }`}
-                  style={{ background: meta.bg }}
                 >
                   <div className="mb-2 flex items-start gap-3">
                     <div
-                      className="mt-[2px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-                      style={{ background: meta.iconBg }}
+                      className={`mt-[2px] flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${meta.iconBg}`}
                     >
                       {meta.icon}
                     </div>

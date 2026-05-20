@@ -127,7 +127,7 @@ export default function ActivityLogPage() {
           <button
             onClick={() => fetchLogs()}
             disabled={loading}
-            className="flex items-center gap-[9px] rounded-[10px] border border-border bg-white px-3 py-[6px] font-inter text-[13px] font-medium text-text-body disabled:opacity-50"
+            className="flex items-center gap-[9px] rounded-[10px] border border-border bg-surface px-3 py-[6px] font-inter text-[13px] font-medium text-text-body disabled:opacity-50"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
@@ -152,7 +152,7 @@ export default function ActivityLogPage() {
               onChange={(e) =>
                 setLogTypeFilter(e.target.value === "all" ? "all" : Number(e.target.value))
               }
-              className="rounded-[10px] bg-[#f3f4f6] px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
+              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
             >
               <option value="all">Todos</option>
               {logTypes.map((t) => (
@@ -173,7 +173,7 @@ export default function ActivityLogPage() {
               placeholder="—"
               value={userIdFilter}
               onChange={(e) => setUserIdFilter(e.target.value)}
-              className="w-[120px] rounded-[10px] bg-[#f3f4f6] px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
+              className="w-[120px] rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
             />
           </div>
 
@@ -185,7 +185,7 @@ export default function ActivityLogPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="rounded-[10px] bg-[#f3f4f6] px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
+              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
             />
           </div>
 
@@ -197,14 +197,14 @@ export default function ActivityLogPage() {
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="rounded-[10px] bg-[#f3f4f6] px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
+              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
             />
           </div>
 
           {hasFilters && (
             <button
               onClick={clearFilters}
-              className="self-end rounded-[10px] bg-[#f3f4f6] px-3 py-2 font-inter text-[13px] font-medium text-text-secondary hover:bg-[#e5e7eb]"
+              className="self-end rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] font-medium text-text-secondary hover:bg-neutral-mid"
             >
               Limpiar filtros
             </button>
@@ -214,15 +214,15 @@ export default function ActivityLogPage() {
 
       <div className="flex-1 overflow-y-auto px-8 py-5">
         {error && (
-          <div className="mb-4 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+          <div className="mb-4 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
             {error}
           </div>
         )}
 
-        <div className="overflow-hidden rounded-[12px] border border-border bg-white">
+        <div className="overflow-hidden rounded-[12px] border border-border bg-surface">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border bg-[#fafafa]">
+              <tr className="border-b border-border bg-surface-2">
                 <th className="w-[110px] px-5 py-3 text-left font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                   Tipo
                 </th>
@@ -262,7 +262,7 @@ export default function ActivityLogPage() {
                   return (
                     <tr
                       key={log.id}
-                      className="border-b border-border last:border-b-0 hover:bg-[#fcfbfd]"
+                      className="border-b border-border last:border-b-0 hover:bg-surface-2"
                     >
                       <td className="px-5 py-3 align-top">
                         <span
@@ -304,14 +304,14 @@ export default function ActivityLogPage() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || loading}
-                className="rounded-md border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
+                className="rounded-md border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
               >
                 Anterior
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(meta.pages, p + 1))}
                 disabled={page >= meta.pages || loading}
-                className="rounded-md border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
+                className="rounded-md border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body disabled:opacity-40"
               >
                 Siguiente
               </button>

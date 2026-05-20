@@ -96,7 +96,7 @@ export default function AnnouncementsList({
   onCreateClick,
 }: AnnouncementsListProps) {
   return (
-    <div className="flex h-full w-[360px] flex-col border-r border-border bg-white">
+    <div className="flex h-full w-[360px] flex-col border-r border-border bg-surface">
       <div className="flex flex-col gap-3 border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-2">
