@@ -6,7 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -34,7 +34,30 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="mr-[60px] flex items-center justify-center">
+        <div className="mr-[60px] flex flex-col items-center justify-center gap-3">
+          {sessionExpired && (
+            <div className="flex w-[360px] items-start justify-between gap-3 rounded-[10px] border border-warning/40 bg-warning/15 px-4 py-2.5 font-inter text-[12px] text-text-primary backdrop-blur-sm">
+              <div className="flex items-start gap-2">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0 text-warning">
+                  <path
+                    d="M8 1.5L1 14h14L8 1.5z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M8 6v4M8 12v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                <span>Tu sesión expiró. Vuelve a iniciar sesión para continuar.</span>
+              </div>
+              <button
+                onClick={clearSessionExpired}
+                className="text-text-secondary hover:text-text-primary"
+                aria-label="Cerrar aviso"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <LoginForm onSuccess={handleLoginSuccess} />
         </div>
       </div>

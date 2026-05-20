@@ -11,6 +11,8 @@ export class ApiError extends Error {
 }
 
 const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
+const UNAUTHORIZED_EVENT = "auth:unauthorized";
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -19,6 +21,11 @@ export function getAccessToken(): string | null {
 export function setAccessToken(token: string | null): void {
   if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
   else localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+export function onUnauthorized(handler: () => void): () => void {
+  window.addEventListener(UNAUTHORIZED_EVENT, handler);
+  return () => window.removeEventListener(UNAUTHORIZED_EVENT, handler);
 }
 
 export interface RequestOptions {
@@ -67,6 +74,11 @@ async function request<T>(path: string, opts: RequestOptions): Promise<T> {
   });
 
   if (!response.ok) {
+    if (response.status === 401 && auth) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
     throw new ApiError(await readErrorMessage(response), response.status);
   }
 
