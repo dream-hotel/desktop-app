@@ -50,3 +50,62 @@
     overflow: hidden;
   }
 }
+
+/* BlockNote — compact, in-line with the rest of the app typography */
+.bn-compact .bn-container {
+  --bn-font-size: 13.5px;
+  font-size: 13.5px;
+}
+
+.bn-compact .bn-editor {
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.bn-compact .bn-editor [data-content-type="paragraph"],
+.bn-compact .bn-editor [data-content-type="bulletListItem"],
+.bn-compact .bn-editor [data-content-type="numberedListItem"],
+.bn-compact .bn-editor [data-content-type="checkListItem"] {
+  font-size: 13.5px;
+}
+
+.bn-compact .bn-editor [data-content-type="heading"][data-level="1"] {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.bn-compact .bn-editor [data-content-type="heading"][data-level="2"] {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.bn-compact .bn-editor [data-content-type="heading"][data-level="3"] {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.bn-compact .bn-block {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.bn-compact .bn-block-content {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.bn-compact .bn-editor blockquote {
+  font-size: 13.5px;
+}
+
+.bn-compact .bn-editor code,
+.bn-compact .bn-editor pre {
+  font-size: 12.5px;
+}
+
+/* Read-only mode: hide the side menu and tighten left padding */
+.bn-compact.bn-read-only .bn-editor {
+  padding-left: 0;
+}

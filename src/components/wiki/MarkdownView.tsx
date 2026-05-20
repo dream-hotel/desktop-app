@@ -63,7 +63,7 @@ export default function MarkdownView({ markdown }: MarkdownViewProps) {
   }
 
   return (
-    <div className="bn-read-only -mx-2">
+    <div className="bn-compact bn-read-only -mx-2">
       <BlockNoteView editor={editor} editable={false} theme={theme as never} />
     </div>
   );

@@ -244,10 +244,10 @@ export default function ArticleEditor({
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 gap-6 p-6 pt-4">
+      <div className="flex min-h-0 flex-1 gap-5 p-5 pt-3">
         <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border bg-white">
-          <div className="flex flex-col gap-3 border-b border-border p-5">
-            <label className="font-inter text-[12px] font-medium text-text-primary">
+          <div className="flex flex-col gap-2 border-b border-border px-5 py-4">
+            <label className="font-inter text-[11.5px] font-medium text-text-secondary">
               Título del artículo
             </label>
             <input
@@ -255,7 +255,7 @@ export default function ArticleEditor({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej. Manual de Estándares de Housekeeping"
               maxLength={TITLE_MAX}
-              className="w-full border-b border-transparent bg-transparent font-alexandria text-[24px] font-medium text-text-primary outline-none transition-colors placeholder:text-text-secondary/50 focus:border-primary/40"
+              className="w-full border-b border-transparent bg-transparent font-alexandria text-[20px] font-medium text-text-primary outline-none transition-colors placeholder:text-text-secondary/50 focus:border-primary/40"
             />
             <div className="flex justify-between font-inter text-[10px] text-text-secondary">
               <span>El título es visible en la lista de artículos y en buscadores.</span>
@@ -271,7 +271,7 @@ export default function ArticleEditor({
               <span>Editor enriquecido — el contenido se guarda como Markdown.</span>
               <span>{charCount} caracteres en Markdown</span>
             </div>
-            <div className="flex-1 overflow-y-auto bg-white">
+            <div className="bn-compact flex-1 overflow-y-auto bg-white">
               {!editorReady ? (
                 <div className="px-6 py-6 font-inter text-[13px] text-text-secondary">
                   Cargando editor...
