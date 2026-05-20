@@ -1,44 +1,56 @@
-import { Announcement, CreateAnnouncementRequest } from "../types/models/Announcement";
+import { Announcement, CreateAnnouncementRequest, PaginatedAnnouncementsResponse } from "../types/models/Announcement";
 
-let mockAnnouncements: Announcement[] = [
-  {
-    id: "1",
-    title: "Mantenimiento del Elevador Principal",
-    message: "El elevador principal estará fuera de servicio hoy desde las 14:00 hasta las 16:00. Por favor, redirigir a los huéspedes a los elevadores de servicio B y C.",
-    priority: "importante",
-    audience: "todos",
-    author: "Juan Pérez",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-  },
-  {
-    id: "2",
-    title: "Llegada Grupo VIP",
-    message: "El grupo de la delegación diplomática llegará a las 18:00. Recepción, tener listas las llaves. Limpieza, asegurar amenidades extra en la suite presidencial.",
-    priority: "urgente",
-    audience: "recepcion",
-    author: "María González",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-  }
-];
+const API_URL = "http://localhost:3000/api/hotel";
 
-export async function getRecentAnnouncements(): Promise<Announcement[]> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  return [...mockAnnouncements].sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}
-
-export async function createAnnouncement(request: CreateAnnouncementRequest, authorName: string): Promise<Announcement> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  const newAnnouncement: Announcement = {
-    id: Math.random().toString(36).substr(2, 9),
-    ...request,
-    author: authorName,
-    createdAt: new Date().toISOString(),
+function getAuthHeaders() {
+  const token = localStorage.getItem("accessToken");
+  return {
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : "",
   };
-
-  mockAnnouncements = [newAnnouncement, ...mockAnnouncements];
-  return newAnnouncement;
 }
+
+export async function getRecentAnnouncements(type?: string, priorityId?: number): Promise<Announcement[]> {
+  const params = new URLSearchParams();
+  params.append("limit", "50"); // Get recent 50 announcements
+  if (type) params.append("type", type);
+  if (priorityId) params.append("priorityId", priorityId.toString());
+
+  const response = await fetch(`${API_URL}/announcements?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al obtener los anuncios");
+  }
+
+  const result: PaginatedAnnouncementsResponse = await response.json();
+  return result.data;
+}
+
+export async function createAnnouncement(request: CreateAnnouncementRequest): Promise<Announcement> {
+  const response = await fetch(`${API_URL}/announcements`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Error al crear el anuncio");
+  }
+
+  return response.json();
+}
+
+export async function deleteAnnouncement(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}/announcements/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error al eliminar el anuncio");
+  }
+}
+

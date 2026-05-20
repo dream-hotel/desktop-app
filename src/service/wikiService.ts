@@ -1,7 +1,6 @@
 import { 
   WikiDirectory, 
   WikiArticle, 
-  WikiCategory,
   BackendCategory, 
   BackendArticle, 
   PaginatedResponse 
