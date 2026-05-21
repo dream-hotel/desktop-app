@@ -179,7 +179,10 @@ export default function NotificationsPanel({
                         )}
                       </div>
                     </div>
-                    <p className="line-clamp-2 font-inter text-[12.5px] leading-snug text-text-primary">
+                    <h3 className="line-clamp-1 font-inter text-[12.5px] font-semibold leading-snug text-text-primary">
+                      {a.title}
+                    </h3>
+                    <p className="line-clamp-2 font-inter text-[12px] leading-snug text-text-secondary">
                       {previewText(a)}
                     </p>
                   </button>

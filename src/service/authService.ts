@@ -12,7 +12,6 @@ const REFRESH_TOKEN_KEY = "refreshToken";
 function mapRole(backendRoleName: string): UserRole {
   switch (backendRoleName.toUpperCase()) {
     case "ADMIN":
-    case "ROOT":
       return "administrador";
     case "RECEPTIONIST":
       return "recepcionista";

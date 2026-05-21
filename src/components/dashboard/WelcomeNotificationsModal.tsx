@@ -179,15 +179,18 @@ export default function WelcomeNotificationsModal({
                     >
                       {meta.icon}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex flex-1 flex-col">
                       <div className="flex items-center gap-2">
-                        <h3 className="m-0 font-inter text-sm font-semibold text-text-primary">
+                        <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-secondary">
                           {meta.label}
-                        </h3>
+                        </span>
                         <span className="font-inter text-[11px] text-text-secondary">
                           · {relativeTime(a.createdAt)}
                         </span>
                       </div>
+                      <h3 className="m-0 mt-0.5 font-inter text-sm font-semibold leading-tight text-text-primary">
+                        {a.title}
+                      </h3>
                     </div>
                     {isRead && (
                       <CheckCircle2 size={18} strokeWidth={2} fill="#22c55e" className="mt-[2px] shrink-0 text-white" />

@@ -1,5 +1,10 @@
 import { CheckSquare, FileText, Megaphone, Pencil, Trash2 } from "lucide-react";
-import { Announcement, AnnouncementType } from "../../types/models/Announcement";
+import {
+  Announcement,
+  AnnouncementType,
+  priorityLabel,
+  priorityTone,
+} from "../../types/models/Announcement";
 
 interface AnnouncementDetailProps {
   announcement: Announcement | null;
@@ -88,7 +93,7 @@ export default function AnnouncementDetail({
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden bg-surface">
       <div className="flex w-full items-center justify-between gap-3 border-b border-border px-6 py-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-inter text-[11.5px] font-medium ${
               announcement.type === "task"
@@ -101,6 +106,17 @@ export default function AnnouncementDetail({
             <TypeIcon type={announcement.type} size={13} />
             {typeLabel(announcement.type)}
           </span>
+          {(() => {
+            const pTone = priorityTone(announcement.priority.name);
+            return (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-inter text-[11.5px] font-medium ${pTone.bg} ${pTone.text}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${pTone.dot}`} />
+                {priorityLabel(announcement.priority.name)}
+              </span>
+            );
+          })()}
           <span className="font-inter text-[11px] text-text-secondary">
             ID #{announcement.id}
           </span>
@@ -131,6 +147,10 @@ export default function AnnouncementDetail({
           <p className="font-inter text-[11.5px] uppercase tracking-wide text-text-secondary">
             {typeDescription(announcement.type)}
           </p>
+
+          <h1 className="mt-2 font-alexandria text-[26px] font-medium leading-tight text-text-primary">
+            {announcement.title}
+          </h1>
 
           <div className="mt-4 rounded-[14px] border border-border bg-bg p-5">
             {announcement.description && announcement.description.trim().length > 0 ? (

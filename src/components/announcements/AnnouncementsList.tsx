@@ -1,5 +1,10 @@
 import { CheckSquare, Clock, FileText, Megaphone, Plus } from "lucide-react";
-import { Announcement, AnnouncementType } from "../../types/models/Announcement";
+import {
+  Announcement,
+  AnnouncementType,
+  priorityLabel,
+  priorityTone,
+} from "../../types/models/Announcement";
 
 interface AnnouncementsListProps {
   announcements: Announcement[];
@@ -136,6 +141,7 @@ export default function AnnouncementsList({
               const isSelected = selectedId === a.id;
               const expired = isExpired(a.visibleUntil);
               const ref = a.taskId ?? a.articleId;
+              const pTone = priorityTone(a.priority.name);
               return (
                 <li key={a.id}>
                   <button
@@ -147,24 +153,36 @@ export default function AnnouncementsList({
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-inter text-[10.5px] font-medium ${
-                          a.type === "task"
-                            ? "bg-info/10 text-info"
-                            : a.type === "article"
-                              ? "bg-primary/10 text-primary"
-                              : "bg-text-secondary/10 text-text-secondary"
-                        }`}
-                      >
-                        <TypeIcon type={a.type} />
-                        {a.type === "task" ? "Tarea" : a.type === "article" ? "Artículo" : "Texto"}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-inter text-[10.5px] font-medium ${
+                            a.type === "task"
+                              ? "bg-info/10 text-info"
+                              : a.type === "article"
+                                ? "bg-primary/10 text-primary"
+                                : "bg-text-secondary/10 text-text-secondary"
+                          }`}
+                        >
+                          <TypeIcon type={a.type} />
+                          {a.type === "task" ? "Tarea" : a.type === "article" ? "Artículo" : "Texto"}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-inter text-[10.5px] font-medium ${pTone.bg} ${pTone.text}`}
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full ${pTone.dot}`} />
+                          {priorityLabel(a.priority.name)}
+                        </span>
+                      </div>
                       <span className="shrink-0 font-inter text-[10.5px] text-text-secondary">
                         {relativeTime(a.createdAt)}
                       </span>
                     </div>
 
-                    <p className="line-clamp-2 font-inter text-[12.5px] leading-snug text-text-primary">
+                    <h3 className="line-clamp-1 font-inter text-[13px] font-semibold leading-snug text-text-primary">
+                      {a.title}
+                    </h3>
+
+                    <p className="line-clamp-2 font-inter text-[12px] leading-snug text-text-secondary">
                       {previewText(a.description, a.type, ref)}
                     </p>
 

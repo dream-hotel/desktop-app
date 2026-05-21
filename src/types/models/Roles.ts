@@ -141,8 +141,6 @@ export function roleDisplayName(name: string): string {
       return "Administrador";
     case "RECEPTIONIST":
       return "Recepcionista";
-    case "ROOT":
-      return "Root";
     default:
       return name;
   }

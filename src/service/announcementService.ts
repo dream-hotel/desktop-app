@@ -11,12 +11,14 @@ import {
 function mapAnnouncement(a: BackendAnnouncement): Announcement {
   return {
     id: a.id,
+    title: a.title,
     type: a.announcementType,
     description: a.description,
     visibleUntil: a.visibleUntil,
     taskId: a.taskId,
     articleId: a.articleId,
     createdAt: a.createdAt,
+    priority: a.priority,
   };
 }
 
@@ -48,6 +50,8 @@ export async function createAnnouncement(
   payload: CreateAnnouncementPayload,
 ): Promise<Announcement> {
   const body: Record<string, unknown> = {
+    title: payload.title,
+    priorityId: payload.priorityId,
     announcementType: payload.announcementType,
   };
   if (payload.description !== undefined) body.description = payload.description;
@@ -67,6 +71,8 @@ export async function updateAnnouncement(
   payload: UpdateAnnouncementPayload,
 ): Promise<Announcement> {
   const body: Record<string, unknown> = {};
+  if (payload.title !== undefined) body.title = payload.title;
+  if (payload.priorityId !== undefined) body.priorityId = payload.priorityId;
   if (payload.description !== undefined) body.description = payload.description;
   if (payload.visibleUntil !== undefined) {
     body.visibleUntil = payload.visibleUntil;

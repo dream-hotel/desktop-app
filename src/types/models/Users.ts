@@ -41,8 +41,8 @@ export interface FindUsersQuery {
 }
 
 export const ROLE_OPTIONS: { id: number; label: string; key: string }[] = [
-  { id: 2, label: "Administrador", key: "ADMIN" },
-  { id: 3, label: "Recepcionista", key: "RECEPTIONIST" },
+  { id: 1, label: "Administrador", key: "ADMIN" },
+  { id: 2, label: "Recepcionista", key: "RECEPTIONIST" },
 ];
 
 export function roleLabel(name: string): string {
@@ -51,8 +51,6 @@ export function roleLabel(name: string): string {
       return "Administrador";
     case "RECEPTIONIST":
       return "Recepcionista";
-    case "ROOT":
-      return "Root";
     default:
       return name;
   }

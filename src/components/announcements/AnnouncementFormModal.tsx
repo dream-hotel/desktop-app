@@ -3,9 +3,12 @@ import { AlertCircle } from "lucide-react";
 import {
   Announcement,
   AnnouncementType,
+  BackendPriority,
   CreateAnnouncementPayload,
   UpdateAnnouncementPayload,
+  priorityLabel,
 } from "../../types/models/Announcement";
+import { listPriorities } from "../../service/priorityService";
 
 interface AnnouncementFormModalProps {
   mode: "create" | "edit";
@@ -56,7 +59,10 @@ export default function AnnouncementFormModal({
 }: AnnouncementFormModalProps) {
   const isEdit = mode === "edit";
   const [type, setType] = useState<AnnouncementType>(initial?.type ?? "text");
+  const [title, setTitle] = useState<string>(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [priorities, setPriorities] = useState<BackendPriority[]>([]);
+  const [priorityId, setPriorityId] = useState<number | "">(initial?.priority?.id ?? "");
   const [hasExpiry, setHasExpiry] = useState<boolean>(!!initial?.visibleUntil);
   const [visibleUntil, setVisibleUntil] = useState<string>(toDateTimeLocal(initial?.visibleUntil));
   const [taskId, setTaskId] = useState<string>(
@@ -76,10 +82,37 @@ export default function AnnouncementFormModal({
     return () => document.removeEventListener("keydown", handleKey);
   }, [onCancel, saving]);
 
+  useEffect(() => {
+    listPriorities()
+      .then((list) => {
+        setPriorities(list);
+        if (priorityId === "" && list.length > 0) {
+          const defaultPriority =
+            list.find((p) => p.name.toLowerCase() === "medium") ?? list[0];
+          setPriorityId(defaultPriority.id);
+        }
+      })
+      .catch(() => setPriorities([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError("El título es obligatorio.");
+      return;
+    }
+    if (trimmedTitle.length > 150) {
+      setError("El título no puede superar los 150 caracteres.");
+      return;
+    }
+    if (priorityId === "") {
+      setError("Selecciona una prioridad.");
+      return;
+    }
     if (hasExpiry && !visibleUntil) {
       setError("Selecciona una fecha de vencimiento o desactiva la opción.");
       return;
@@ -91,11 +124,15 @@ export default function AnnouncementFormModal({
     try {
       if (isEdit && onUpdate) {
         await onUpdate({
+          title: trimmedTitle,
+          priorityId: priorityId as number,
           description: description.trim(),
           visibleUntil: expiryIso,
         });
       } else if (!isEdit && onCreate) {
         const payload: CreateAnnouncementPayload = {
+          title: trimmedTitle,
+          priorityId: priorityId as number,
           announcementType: type,
         };
         if (description.trim().length > 0) payload.description = description.trim();
@@ -142,7 +179,7 @@ export default function AnnouncementFormModal({
             </h2>
             <p className="mt-0.5 font-inter text-[12px] text-text-secondary">
               {isEdit
-                ? "Solo puedes modificar la descripción y la fecha de visibilidad."
+                ? "Actualiza el título, descripción, prioridad o fecha de visibilidad."
                 : "Elige el tipo, redacta el contenido y define la visibilidad."}
             </p>
           </div>
@@ -158,6 +195,45 @@ export default function AnnouncementFormModal({
 
         <form onSubmit={handleSubmit} className="flex max-h-[80vh] flex-col overflow-y-auto">
           <div className="flex flex-col gap-4 px-6 py-5">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-inter text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">
+                Título <span className="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={150}
+                placeholder="Ej. Reunión de equipo — viernes 9am"
+                className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
+              />
+              <div className="flex justify-between font-inter text-[10.5px] text-text-secondary">
+                <span>Encabezado visible del anuncio.</span>
+                <span>{title.length}/150</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="font-inter text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">
+                Prioridad <span className="text-danger">*</span>
+              </label>
+              <select
+                value={priorityId === "" ? "" : String(priorityId)}
+                onChange={(e) =>
+                  setPriorityId(e.target.value === "" ? "" : Number(e.target.value))
+                }
+                disabled={priorities.length === 0}
+                className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface disabled:opacity-60"
+              >
+                {priorities.length === 0 && <option value="">Cargando prioridades...</option>}
+                {priorities.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {priorityLabel(p.name)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {!isEdit && (
               <div className="flex flex-col gap-2">
                 <label className="font-inter text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">

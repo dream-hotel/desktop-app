@@ -5,22 +5,13 @@ import {
   UpdateRolePayload,
 } from "../types/models/Roles";
 
-const STORAGE_KEY = "stannum.roles.v1";
+const STORAGE_KEY = "stannum.roles.v2";
 
 function seed(): Role[] {
   const now = new Date().toISOString();
   return [
     {
       id: 1,
-      name: "Root",
-      description: "Acceso total. Rol del sistema, no puede ser modificado ni eliminado.",
-      permissions: [...ALL_PERMISSION_IDS],
-      isSystem: true,
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
-      id: 2,
       name: "Administrador",
       description: "Gestiona la operación diaria del hotel.",
       permissions: ALL_PERMISSION_IDS.filter(
@@ -31,7 +22,7 @@ function seed(): Role[] {
       updatedAt: now,
     },
     {
-      id: 3,
+      id: 2,
       name: "Recepcionista",
       description: "Atención al huésped y tareas operativas.",
       permissions: [
