@@ -2,6 +2,7 @@ import { ReactNode, useMemo } from "react";
 import { Code, IndentDecrease, IndentIncrease, Link as LinkIcon, List, ListChecks, ListOrdered } from "lucide-react";
 import type { BlockNoteEditor } from "@blocknote/core";
 import { useActiveStyles, useSelectedBlocks } from "@blocknote/react";
+import { shortcut } from "../../hooks/usePlatform";
 
 interface EditorToolbarProps {
   editor: BlockNoteEditor;
@@ -139,21 +140,21 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       <Divider />
 
       <ToolbarButton
-        title="Negrita (Ctrl+B)"
+        title={`Negrita (${shortcut("B")})`}
         active={!!activeStyles.bold}
         onClick={() => toggleStyle("bold")}
       >
         <span className="font-bold">N</span>
       </ToolbarButton>
       <ToolbarButton
-        title="Cursiva (Ctrl+I)"
+        title={`Cursiva (${shortcut("I")})`}
         active={!!activeStyles.italic}
         onClick={() => toggleStyle("italic")}
       >
         <span className="italic">C</span>
       </ToolbarButton>
       <ToolbarButton
-        title="Subrayado (Ctrl+U)"
+        title={`Subrayado (${shortcut("U")})`}
         active={!!activeStyles.underline}
         onClick={() => toggleStyle("underline")}
       >
