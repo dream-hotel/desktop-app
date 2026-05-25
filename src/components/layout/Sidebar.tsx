@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { User } from "../../types/response/AuthResponse";
+import dreamLogo from "../../assets/dream_logo.svg";
 
 interface SidebarItem {
   id: string;
@@ -77,12 +78,12 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
       {/* Header — logo + collapse button */}
       <div className="border-b border-border px-3 pt-4 pb-3">
         <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : "justify-between pl-2"}`}>
-          <div className="flex items-end gap-[10px]">
-            <svg width="22" height="36" viewBox="0 0 24 39" fill="none" className="shrink-0">
-              <rect x="0" y="0" width="8" height="39" rx="2" fill="#492173" />
-              <rect x="10" y="8" width="6" height="23" rx="2" fill="#492173" />
-              <rect x="18" y="14" width="6" height="12" rx="2" fill="#76c7c2" />
-            </svg>
+          <div className="flex items-center gap-[10px]">
+            <img
+              src={dreamLogo}
+              alt="Dream by Stannum"
+              className="h-9 w-9 shrink-0"
+            />
             {!collapsed && (
               <div className="flex flex-col pb-[2px]">
                 <span className="font-alexandria text-[18px] leading-[20px] font-normal text-text-primary">

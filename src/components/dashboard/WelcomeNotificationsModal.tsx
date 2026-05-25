@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bell, CheckCircle2, CheckSquare, FileText, Megaphone } from "lucide-react";
+import { CheckCircle2, CheckSquare, FileText, Megaphone } from "lucide-react";
 import { Announcement, AnnouncementType } from "../../types/models/Announcement";
+import dreamLogo from "../../assets/dream_logo.svg";
 
 interface WelcomeNotificationsModalProps {
   announcements: Announcement[];
@@ -126,7 +127,7 @@ export default function WelcomeNotificationsModal({
         <div className="flex flex-col gap-1 border-b border-border px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light">
-              <Bell size={22} strokeWidth={1.8} className="text-primary" />
+              <img src={dreamLogo} alt="" className="h-7 w-7" />
             </div>
             <div className="flex flex-1 flex-col">
               <h2 className="m-0 font-alexandria text-xl font-medium text-text-primary">

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
 import LoginForm from "../components/login/LoginForm";
 import loginBg from "../assets/login-bg.jpg";
+import dreamLogo from "../assets/dream_logo.svg";
 import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
@@ -26,6 +27,11 @@ export default function LoginPage() {
 
       <div className="relative z-[2] flex h-full w-full items-center justify-between px-10">
         <div className="my-auto ml-7 pl-[13px]">
+          <img
+            src={dreamLogo}
+            alt="Dream by Stannum"
+            className="mb-5 h-20 w-20 drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)] [filter:brightness(0)_invert(1)]"
+          />
           <h1 className="m-0 whitespace-pre-wrap font-alexandria text-[48px] leading-[50px] font-normal text-white">
             Dream by{"\n"}Stannum
           </h1>
