@@ -190,7 +190,7 @@ export default function UsersPage() {
                 placeholder="Buscar por nombre, apellido o email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+                className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
               />
             </div>
 

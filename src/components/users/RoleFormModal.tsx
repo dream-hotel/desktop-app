@@ -191,7 +191,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                   placeholder="Buscar permiso..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-[200px] min-w-0 rounded-[8px] bg-neutral-soft py-1.5 pl-7 pr-3 font-inter text-[12px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+                  className="w-[200px] min-w-0 rounded-[8px] bg-neutral-soft py-1.5 pl-7 pr-3 font-inter text-[12px] text-text-primary placeholder:text-text-secondary outline-none"
                 />
               </div>
               <button

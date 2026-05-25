@@ -460,7 +460,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex w-full flex-col items-start border-b pb-[1px] pt-4 text-left ${
+      className={`flex w-full flex-col items-start border-b py-4 text-left ${
         isSelected
           ? "border-b-border border-l-2 border-l-primary bg-primary-light pl-[22px] pr-5"
           : "border-b-[rgba(0,0,0,0.04)] px-5"
@@ -570,7 +570,7 @@ export default function TaskList({
               placeholder="Buscar tareas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </div>
           <FilterButton filter={advancedFilter} onFilterChange={setAdvancedFilter} />

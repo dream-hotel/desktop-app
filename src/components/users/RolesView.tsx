@@ -137,7 +137,7 @@ export default function RolesView() {
               placeholder="Buscar rol..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-[240px] rounded-[10px] bg-neutral-soft py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-[240px] rounded-[10px] bg-neutral-soft py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </div>
           <button

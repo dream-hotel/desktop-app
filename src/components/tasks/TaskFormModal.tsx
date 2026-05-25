@@ -422,7 +422,7 @@ export default function TaskFormModal({
               value={form.title}
               onChange={(e) => update("title", e.target.value)}
               placeholder="Ej. Suite 301 — Revisión de climatización"
-              className="w-full rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs text-text-primary placeholder:text-text-secondary outline-none"
             />
           </FieldGroup>
 
@@ -432,7 +432,7 @@ export default function TaskFormModal({
               onChange={(e) => update("description", e.target.value)}
               placeholder="Detalla el alcance de la tarea, instrucciones especiales..."
               rows={3}
-              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </FieldGroup>
 
@@ -561,7 +561,7 @@ export default function TaskFormModal({
               onChange={(e) => update("content", e.target.value)}
               placeholder="Ej. Piezas en camino, esperando confirmación del proveedor..."
               rows={2}
-              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3.5 py-2 font-inter text-xs leading-[18px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </FieldGroup>
 
