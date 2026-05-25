@@ -56,4 +56,6 @@ export interface WikiArticleSummary {
 export interface WikiArticleDetail extends WikiArticleSummary {
   contentMarkdown: string;
   isPublic: boolean;
+  fileUrl: string | null;
+  fileMimetype: string | null;
 }

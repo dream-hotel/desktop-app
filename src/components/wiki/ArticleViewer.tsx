@@ -1,6 +1,7 @@
-import { Check, ChevronRight, FileText, Maximize2, Pencil, Trash2 } from "lucide-react";
+import { Check, FileText, Maximize2, Pencil, Trash2, Paperclip } from "lucide-react";
 import { WikiArticleDetail } from "../../types/models/Wiki";
 import MarkdownView from "./MarkdownView";
+import DocumentViewer from "./DocumentViewer";
 
 interface ArticleViewerProps {
   article: WikiArticleDetail | null;
@@ -11,6 +12,7 @@ interface ArticleViewerProps {
   onEditClick: () => void;
   onDeleteClick: () => void;
   onPublishClick: () => void;
+  onUploadClick: () => void;
   publishing: boolean;
 }
 
@@ -28,11 +30,11 @@ export default function ArticleViewer({
   article,
   loading,
   isAdmin,
-  breadcrumb,
   onExpandClick,
   onEditClick,
   onDeleteClick,
   onPublishClick,
+  onUploadClick,
   publishing,
 }: ArticleViewerProps) {
   if (loading) {
@@ -63,30 +65,7 @@ export default function ArticleViewer({
 
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden bg-surface">
-      <div className="flex w-full items-center justify-between gap-3 border-b border-border px-6 py-3">
-        <div className="flex min-w-0 items-center gap-1.5 overflow-hidden font-inter text-[11.5px]">
-          {breadcrumb.length === 0 ? (
-            <span className="text-text-secondary">Sin categoría</span>
-          ) : (
-            breadcrumb.map((label, idx) => (
-              <span key={`${label}-${idx}`} className="flex items-center gap-1.5">
-                <span
-                  className={`truncate rounded-full px-2 py-0.5 ${
-                    idx === breadcrumb.length - 1
-                      ? "bg-primary/10 font-medium text-primary"
-                      : "text-text-secondary"
-                  }`}
-                >
-                  {label}
-                </span>
-                {idx < breadcrumb.length - 1 && (
-                  <ChevronRight size={10} strokeWidth={1.6} className="text-text-secondary" />
-                )}
-              </span>
-            ))
-          )}
-        </div>
-
+      <div className="flex w-full items-center justify-end gap-3 border-b border-border px-6 py-3">
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={onExpandClick}
@@ -98,6 +77,14 @@ export default function ArticleViewer({
 
           {isAdmin && (
             <>
+              <button
+                onClick={onUploadClick}
+                className="flex h-7 w-7 items-center justify-center rounded-[8px] border border-border text-text-secondary transition-colors hover:bg-border hover:text-text-primary"
+                title="Adjuntar o reemplazar archivo"
+              >
+                <Paperclip size={14} strokeWidth={1.8} />
+              </button>
+
               {article.status === "draft" && (
                 <button
                   onClick={onPublishClick}
@@ -129,21 +116,7 @@ export default function ArticleViewer({
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-[760px] px-8 py-7">
-          <div className="flex items-center gap-2">
-            <span
-              className={`rounded-full px-2 py-0.5 font-inter text-[10.5px] font-medium ${
-                article.status === "published"
-                  ? "bg-success/10 text-success"
-                  : "bg-warning/15 text-warning"
-              }`}
-            >
-              {article.status === "published" ? "Publicado" : "Borrador"}
-            </span>
-            <span className="font-inter text-[10.5px] uppercase tracking-wide text-text-secondary">
-              Previsualización
-            </span>
-          </div>
-          <h1 className="mt-2.5 font-alexandria text-[26px] font-medium leading-tight text-text-primary">
+          <h1 className="font-alexandria text-[26px] font-medium leading-tight text-text-primary">
             {article.title}
           </h1>
 
@@ -158,12 +131,19 @@ export default function ArticleViewer({
           </div>
 
           <div className="mt-4">
-            {article.contentMarkdown ? (
+            {article.fileUrl ? (
+              <div className="h-[600px]">
+                <DocumentViewer fileUrl={article.fileUrl} fileName={article.title} />
+              </div>
+            ) : article.contentMarkdown && article.contentMarkdown.trim().length > 0 && article.contentMarkdown !== '{"root":[{"type":"paragraph","content":[]}]}' ? (
               <MarkdownView markdown={article.contentMarkdown} />
             ) : (
-              <p className="font-inter text-[13px] italic text-text-secondary">
-                Este artículo aún no tiene contenido.
-              </p>
+              <div className="flex flex-col items-center justify-center py-20 text-center text-text-secondary">
+                <FileText size={40} strokeWidth={1} className="mb-3 opacity-20" />
+                <p className="font-inter text-[14px] italic">
+                  Este artículo todavía no tiene contenido escrito ni documentos adjuntos.
+                </p>
+              </div>
             )}
           </div>
         </div>

@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, memo } from "react";
 import {
   BookOpen,
   ChevronRight,
   FileText,
   Folder,
-  Layers,
   MoreHorizontal,
   Plus,
 } from "lucide-react";
@@ -17,10 +16,11 @@ interface WikiSidebarProps {
   tree: WikiCategoryNode[];
   articles: WikiArticleSummary[];
   selectedCategoryId: number | null;
-  selectedArticleId: number | null;
   isAdmin: boolean;
   onSelectCategory: (id: number | null) => void;
   onSelectArticle: (id: number) => void;
+  onEditArticle: (article: WikiArticleSummary) => void;
+  onDeleteArticle: (article: WikiArticleSummary) => void;
   onCreateRoot: () => void;
   onCreateChild: (parent: WikiCategoryNode) => void;
   onEditCategory: (category: WikiCategoryNode) => void;
@@ -33,67 +33,120 @@ interface NodeRowProps {
   expanded: Set<number>;
   articlesByCategory: Map<number, WikiArticleSummary[]>;
   selectedCategoryId: number | null;
-  selectedArticleId: number | null;
   isAdmin: boolean;
   onToggle: (id: number) => void;
   onSelect: (id: number) => void;
   onSelectArticle: (id: number) => void;
+  onEditArticle: (article: WikiArticleSummary) => void;
+  onDeleteArticle: (article: WikiArticleSummary) => void;
   onCreateChild: (parent: WikiCategoryNode) => void;
   onEdit: (category: WikiCategoryNode) => void;
   onDelete: (category: WikiCategoryNode) => void;
 }
 
-function ArticleLeaf({
+const ArticleLeaf = memo(function ArticleLeaf({
   article,
   depth,
-  selected,
+  isAdmin,
   onSelect,
+  onEdit,
+  onDelete,
 }: {
   article: WikiArticleSummary;
   depth: number;
-  selected: boolean;
+  isAdmin: boolean;
   onSelect: (id: number) => void;
+  onEdit: (article: WikiArticleSummary) => void;
+  onDelete: (article: WikiArticleSummary) => void;
 }) {
-  return (
-    <button
-      onClick={() => onSelect(article.id)}
-      className={`group/article flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors ${
-        selected
-          ? "bg-primary/10 text-primary"
-          : "text-text-secondary hover:bg-primary/5 hover:text-text-primary"
-      }`}
-      style={{ paddingLeft: `${depth * 16 + 26}px` }}
-      title={article.title}
-    >
-      <FileText size={12} strokeWidth={1.6} className="shrink-0" />
-      <span
-        className={`truncate font-inter text-[12px] ${
-          selected ? "font-medium" : "font-normal"
-        }`}
-      >
-        {article.title}
-      </span>
-      {article.status === "draft" && (
-        <span
-          aria-label="Borrador"
-          className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
-        />
-      )}
-    </button>
-  );
-}
+  const isDraft = article.status === "draft";
+  const [menuOpen, setMenuOpen] = useState(false);
 
-function NodeRow({
+  return (
+    <div className="flex flex-col">
+      <div
+        className={`group/article flex items-center justify-between rounded-md px-1.5 py-1 text-left transition-colors ${
+          isDraft
+            ? "bg-warning/10 text-warning hover:bg-warning/20"
+            : "text-text-secondary hover:bg-primary/5 hover:text-text-primary"
+        }`}
+        style={{ paddingLeft: `${depth * 16 + 26}px` }}
+      >
+        <button
+          onClick={() => onSelect(article.id)}
+          className="flex flex-1 items-center gap-2 overflow-hidden text-left"
+          title={article.title}
+        >
+          <FileText size={12} strokeWidth={1.6} className="shrink-0" />
+          <span
+            className={`truncate font-inter text-[12px] ${
+              isDraft ? "font-medium" : "font-normal"
+            }`}
+          >
+            {article.title}
+          </span>
+        </button>
+
+        {isAdmin && (
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((v) => !v);
+              }}
+              className="flex h-6 w-6 items-center justify-center rounded text-text-secondary opacity-0 transition-opacity hover:bg-border hover:text-text-primary group-hover/article:opacity-100"
+              aria-label="Acciones de artículo"
+            >
+              <MoreHorizontal size={14} strokeWidth={2} />
+            </button>
+
+            {menuOpen && (
+              <>
+                <button
+                  className="fixed inset-0 z-10 cursor-default"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-7 z-20 flex w-44 flex-col rounded-[10px] border border-border bg-surface py-1 shadow-[0px_12_30px_rgba(0,0,0,0.12)]">
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onEdit(article);
+                    }}
+                    className="px-3 py-1.5 text-left font-inter text-[12px] text-text-primary hover:bg-primary/5"
+                  >
+                    Renombrar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onDelete(article);
+                    }}
+                    className="px-3 py-1.5 text-left font-inter text-[12px] text-danger hover:bg-danger/5"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+const NodeRow = memo(function NodeRow({
   node,
   depth,
   expanded,
   articlesByCategory,
   selectedCategoryId,
-  selectedArticleId,
   isAdmin,
   onToggle,
   onSelect,
   onSelectArticle,
+  onEditArticle,
+  onDeleteArticle,
   onCreateChild,
   onEdit,
   onDelete,
@@ -103,7 +156,7 @@ function NodeRow({
   const hasArticles = articles.length > 0;
   const isExpandable = hasChildren || hasArticles;
   const isOpen = expanded.has(node.id);
-  const isSelected = selectedCategoryId === node.id;
+  const isSelected = selectedCategoryId !== null && Number(selectedCategoryId) === Number(node.id);
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -115,7 +168,8 @@ function NodeRow({
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
         <button
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             if (isExpandable) onToggle(node.id);
             onSelect(node.id);
           }}
@@ -173,7 +227,7 @@ function NodeRow({
                   className="fixed inset-0 z-10 cursor-default"
                   onClick={() => setMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-7 z-20 flex w-44 flex-col rounded-[10px] border border-border bg-surface py-1 shadow-[0px_12px_30px_rgba(0,0,0,0.12)]">
+                <div className="absolute right-0 top-7 z-20 flex w-44 flex-col rounded-[10px] border border-border bg-surface py-1 shadow-[0px_12_30px_rgba(0,0,0,0.12)]">
                   <button
                     onClick={() => {
                       setMenuOpen(false);
@@ -218,11 +272,12 @@ function NodeRow({
               expanded={expanded}
               articlesByCategory={articlesByCategory}
               selectedCategoryId={selectedCategoryId}
-              selectedArticleId={selectedArticleId}
               isAdmin={isAdmin}
               onToggle={onToggle}
               onSelect={onSelect}
               onSelectArticle={onSelectArticle}
+              onEditArticle={onEditArticle}
+              onDeleteArticle={onDeleteArticle}
               onCreateChild={onCreateChild}
               onEdit={onEdit}
               onDelete={onDelete}
@@ -233,24 +288,27 @@ function NodeRow({
               key={article.id}
               article={article}
               depth={depth + 1}
-              selected={selectedArticleId === article.id}
+              isAdmin={isAdmin}
               onSelect={onSelectArticle}
+              onEdit={onEditArticle}
+              onDelete={onDeleteArticle}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
+});
 
 export default function WikiSidebar({
   tree,
   articles,
   selectedCategoryId,
-  selectedArticleId,
   isAdmin,
   onSelectCategory,
   onSelectArticle,
+  onEditArticle,
+  onDeleteArticle,
   onCreateRoot,
   onCreateChild,
   onEditCategory,
@@ -269,6 +327,28 @@ export default function WikiSidebar({
     map.forEach((list) => list.sort((x, y) => x.title.localeCompare(y.title)));
     return map;
   }, [articles]);
+
+  const uncategorizedArticles = useMemo(() => {
+    const categoryIdsInTree = new Set<number>();
+    const collectIds = (nodes: WikiCategoryNode[]) => {
+      nodes.forEach((n) => {
+        categoryIdsInTree.add(n.id);
+        collectIds(n.children);
+      });
+    };
+    collectIds(tree);
+
+    return articles
+      .filter((a) => {
+        return (
+          a.categoryId === null ||
+          a.categoryId === undefined ||
+          a.categoryId === 0 ||
+          !categoryIdsInTree.has(a.categoryId)
+        );
+      })
+      .sort((x, y) => x.title.localeCompare(y.title));
+  }, [articles, tree]);
 
   useEffect(() => {
     setExpanded((prev) => {
@@ -298,41 +378,42 @@ export default function WikiSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 py-2">
-        <button
-          onClick={() => onSelectCategory(null)}
-          className={`mb-1 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors ${
-            selectedCategoryId === null
-              ? "bg-primary/10 text-primary"
-              : "text-text-primary hover:bg-primary/5"
-          }`}
-        >
-          <Layers size={15} strokeWidth={1.6} />
-          <span className="font-inter text-[12.5px] font-medium">Todos los artículos</span>
-        </button>
+        {uncategorizedArticles.map((article) => (
+          <ArticleLeaf
+            key={article.id}
+            article={article}
+            depth={0}
+            isAdmin={isAdmin}
+            onSelect={onSelectArticle}
+            onEdit={onEditArticle}
+            onDelete={onDeleteArticle}
+          />
+        ))}
 
-        {tree.length === 0 ? (
+        {tree.map((root) => (
+          <NodeRow
+            key={root.id}
+            node={root}
+            depth={0}
+            expanded={expanded}
+            articlesByCategory={articlesByCategory}
+            selectedCategoryId={selectedCategoryId}
+            isAdmin={isAdmin}
+            onToggle={toggle}
+            onSelect={onSelectCategory}
+            onSelectArticle={onSelectArticle}
+            onEditArticle={onEditArticle}
+            onDeleteArticle={onDeleteArticle}
+            onCreateChild={onCreateChild}
+            onEdit={onEditCategory}
+            onDelete={onDeleteCategory}
+          />
+        ))}
+
+        {tree.length === 0 && uncategorizedArticles.length === 0 && (
           <p className="px-2 py-4 font-inter text-[12px] text-text-secondary">
-            No hay carpetas todavía.
+            No hay contenido todavía.
           </p>
-        ) : (
-          tree.map((root) => (
-            <NodeRow
-              key={root.id}
-              node={root}
-              depth={0}
-              expanded={expanded}
-              articlesByCategory={articlesByCategory}
-              selectedCategoryId={selectedCategoryId}
-              selectedArticleId={selectedArticleId}
-              isAdmin={isAdmin}
-              onToggle={toggle}
-              onSelect={onSelectCategory}
-              onSelectArticle={onSelectArticle}
-              onCreateChild={onCreateChild}
-              onEdit={onEditCategory}
-              onDelete={onDeleteCategory}
-            />
-          ))
         )}
       </div>
 

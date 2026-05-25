@@ -3,6 +3,7 @@ import { WikiCategoryNode } from "../../types/models/Wiki";
 
 interface CategoryFormModalProps {
   mode: "create" | "edit";
+  currentId?: number; // the ID of the category being edited
   initialName?: string;
   parentId?: number | null;
   parentName?: string | null;
@@ -11,17 +12,25 @@ interface CategoryFormModalProps {
   onSubmit: (payload: { name: string; parentId: number | null }) => Promise<void>;
 }
 
-function flatten(nodes: WikiCategoryNode[], depth = 0): Array<{ node: WikiCategoryNode; depth: number }> {
+function flatten(
+  nodes: WikiCategoryNode[],
+  depth = 0,
+  excludeId?: number,
+): Array<{ node: WikiCategoryNode; depth: number }> {
   const out: Array<{ node: WikiCategoryNode; depth: number }> = [];
   nodes.forEach((n) => {
+    // If this node is the one we want to exclude, we skip it and ALL its children
+    if (n.id === excludeId) return;
+
     out.push({ node: n, depth });
-    out.push(...flatten(n.children, depth + 1));
+    out.push(...flatten(n.children, depth + 1, excludeId));
   });
   return out;
 }
 
 export default function CategoryFormModal({
   mode,
+  currentId,
   initialName = "",
   parentId = null,
   parentName = null,
@@ -39,7 +48,7 @@ export default function CategoryFormModal({
     setSelectedParent(parentId);
   }, [initialName, parentId]);
 
-  const list = flatten(flatCategories);
+  const list = flatten(flatCategories, 0, currentId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

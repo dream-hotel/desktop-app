@@ -5,6 +5,9 @@ import ArticleViewer from "../components/wiki/ArticleViewer";
 import ArticleFullView from "../components/wiki/ArticleFullView";
 import ArticleEditor from "../components/wiki/ArticleEditor";
 import CategoryFormModal from "../components/wiki/CategoryFormModal";
+import ArticleRenameModal from "../components/wiki/ArticleRenameModal";
+import ArticleTypeModal from "../components/wiki/ArticleTypeModal";
+import ArticleFileUploadModal from "../components/wiki/ArticleFileUploadModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import { useAuth } from "../hooks/useAuth";
@@ -27,9 +30,18 @@ type CategoryDialog =
   | { kind: "createChild"; parent: WikiCategoryNode }
   | { kind: "edit"; category: WikiCategoryNode };
 
+type CreationFlow = 
+  | { kind: "selection" }
+  | { kind: "upload" };
+
+type ArticleDialog =
+  | { kind: "rename"; article: WikiArticleSummary }
+  | { kind: "attachFile"; article: WikiArticleSummary };
+
 type ConfirmState =
   | { kind: "deleteCategory"; category: WikiCategoryNode }
-  | { kind: "deleteArticle"; article: WikiArticleSummary };
+  | { kind: "deleteArticle"; article: WikiArticleSummary }
+  | { kind: "replaceWithFile"; article: WikiArticleSummary; file: File; newTitle: string };
 
 function buildBreadcrumb(
   tree: WikiCategoryNode[],
@@ -63,9 +75,6 @@ export default function WikiPage({
   const { has } = usePermissions();
   const bell = useAnnouncementBell();
   const [showNotifications, setShowNotifications] = useState(false);
-  // Wiki write covers both create and edit on the backend; delete is a separate permission.
-  // We expose the union here so existing components keep their action affordances; the backend
-  // is the source of truth and will reject any action the user is not actually allowed to do.
   const isAdmin = has("wiki:write") || has("wiki:delete");
 
   const [tree, setTree] = useState<WikiCategoryNode[]>([]);
@@ -87,7 +96,9 @@ export default function WikiPage({
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [editorState, setEditorState] = useState<EditorState>({ mode: "list" });
+  const [creationFlow, setCreationFlow] = useState<CreationFlow | null>(null);
   const [categoryDialog, setCategoryDialog] = useState<CategoryDialog | null>(null);
+  const [articleDialog, setArticleDialog] = useState<ArticleDialog | null>(null);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
@@ -107,10 +118,35 @@ export default function WikiPage({
   }, []);
 
   const loadArticles = useCallback(async () => {
+    if (selectedCategoryId === null) {
+      let data = [...allArticles];
+      if (debouncedSearch.trim().length > 0) {
+        const s = debouncedSearch.trim().toLowerCase();
+        data = data.filter(a => 
+          a.title.toLowerCase().includes(s) || 
+          (a.categoryName && a.categoryName.toLowerCase().includes(s))
+        );
+      }
+      const categoryIdsInTree = new Set<number>();
+      const collectIds = (nodes: WikiCategoryNode[]) => {
+        nodes.forEach((n) => {
+          categoryIdsInTree.add(n.id);
+          collectIds(n.children);
+        });
+      };
+      collectIds(tree);
+      data = data.filter(a => !a.categoryId || !categoryIdsInTree.has(a.categoryId));
+      setArticles(data);
+      setTotalArticles(data.length);
+      return;
+    }
+
     setArticlesLoading(true);
     try {
-      const params: Parameters<typeof wikiService.findArticles>[0] = { limit: 50 };
-      if (selectedCategoryId != null) params.categoryId = selectedCategoryId;
+      const params: Parameters<typeof wikiService.findArticles>[0] = { 
+        limit: 50,
+        categoryId: selectedCategoryId 
+      };
       if (debouncedSearch.trim().length > 0) params.search = debouncedSearch.trim();
       const res = await wikiService.findArticles(params);
       setArticles(res.data);
@@ -120,7 +156,7 @@ export default function WikiPage({
     } finally {
       setArticlesLoading(false);
     }
-  }, [selectedCategoryId, debouncedSearch]);
+  }, [selectedCategoryId, debouncedSearch, tree, allArticles]);
 
   const loadAllArticles = useCallback(async () => {
     try {
@@ -154,7 +190,6 @@ export default function WikiPage({
     loadArticles();
   }, [loadArticles]);
 
-  // Load full article when selection changes
   useEffect(() => {
     if (selectedArticleId == null) {
       setSelectedArticle(null);
@@ -181,7 +216,6 @@ export default function WikiPage({
     };
   }, [selectedArticleId]);
 
-  // If the selected article disappears from the list (after deletion), clear it
   useEffect(() => {
     if (
       selectedArticleId != null &&
@@ -192,7 +226,6 @@ export default function WikiPage({
     }
   }, [articles, selectedArticleId]);
 
-  // Exit full-view when the selected article is cleared
   useEffect(() => {
     if (selectedArticleId == null && fullView) setFullView(false);
   }, [selectedArticleId, fullView]);
@@ -201,6 +234,23 @@ export default function WikiPage({
     () => buildBreadcrumb(tree, selectedArticle?.categoryId ?? selectedCategoryId),
     [tree, selectedArticle, selectedCategoryId],
   );
+
+  // === Article Sidebar Handlers ===
+
+  const handleRenameArticle = async (newTitle: string) => {
+    if (articleDialog?.kind !== "rename") return;
+    try {
+      await wikiService.updateArticle(articleDialog.article.id, { title: newTitle });
+      setArticleDialog(null);
+      await Promise.all([loadArticles(), loadAllArticles()]);
+      if (selectedArticleId === articleDialog.article.id) {
+        const detail = await wikiService.getArticle(articleDialog.article.id);
+        setSelectedArticle(detail);
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
 
   // === Category handlers ===
 
@@ -255,7 +305,55 @@ export default function WikiPage({
   };
 
   const handleCreate = () => {
-    setEditorState({ mode: "create" });
+    setCreationFlow({ kind: "selection" });
+  };
+
+  const handleFileUpload = async (file: File, title: string) => {
+    try {
+      const article = await wikiService.createArticle({
+        title,
+        categoryId: selectedCategoryId,
+        isPublic: true
+      });
+      await wikiService.setArticleFile(article.id, file);
+      setCreationFlow(null);
+      await Promise.all([loadArticles(), loadAllArticles()]);
+      setSelectedArticleId(article.id);
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleAttachFileToExisting = async (file: File, title: string) => {
+    if (articleDialog?.kind !== "attachFile") return;
+    const article = articleDialog.article;
+    setArticleDialog(null);
+    setConfirmState({ kind: "replaceWithFile", article, file, newTitle: title });
+  };
+
+  const handleConfirmReplaceWithFile = async () => {
+    if (confirmState?.kind !== "replaceWithFile") return;
+    setConfirmLoading(true);
+    setConfirmError(null);
+    try {
+      const { article, file, newTitle } = confirmState;
+      // Actualizamos el título por si se cambió en el modal de subida
+      await wikiService.updateArticle(article.id, { title: newTitle });
+      // Subimos el archivo
+      await wikiService.setArticleFile(article.id, file);
+      
+      setConfirmState(null);
+      await Promise.all([loadArticles(), loadAllArticles()]);
+      // Forzamos recarga del detalle
+      if (selectedArticleId === article.id) {
+        const detail = await wikiService.getArticle(article.id);
+        setSelectedArticle(detail);
+      }
+    } catch (err) {
+      setConfirmError(err instanceof Error ? err.message : "No se pudo adjuntar el archivo.");
+    } finally {
+      setConfirmLoading(false);
+    }
   };
 
   const handleEditorSaved = async (article: WikiArticleDetail) => {
@@ -298,20 +396,19 @@ export default function WikiPage({
     }
   };
 
-  // Editor full-screen takeover (within the WikiPage container, so StatusBar stays visible)
   if (editorState.mode !== "list") {
     return (
       <ArticleEditor
         user={user!}
         tree={tree}
         article={editorState.mode === "edit" ? editorState.article : null}
+        defaultCategoryId={selectedCategoryId}
         onCancel={() => setEditorState({ mode: "list" })}
         onSaved={handleEditorSaved}
       />
     );
   }
 
-  // Full-view takeover (distraction-free reader)
   if (fullView && selectedArticle && !articleLoading) {
     return (
       <ArticleFullView
@@ -378,7 +475,6 @@ export default function WikiPage({
             tree={tree}
             articles={allArticles}
             selectedCategoryId={selectedCategoryId}
-            selectedArticleId={selectedArticleId}
             isAdmin={isAdmin}
             onSelectCategory={(id) => {
               setSelectedCategoryId(id);
@@ -387,8 +483,24 @@ export default function WikiPage({
             onSelectArticle={(id) => {
               setSelectedArticleId(id);
               const a = allArticles.find((x) => x.id === id);
-              if (a) setSelectedCategoryId(a.categoryId ?? null);
+              if (!a) return;
+              const categoryIdsInTree = new Set<number>();
+              const collectIds = (nodes: WikiCategoryNode[]) => {
+                nodes.forEach((n) => {
+                  categoryIdsInTree.add(n.id);
+                  collectIds(n.children);
+                });
+              };
+              collectIds(tree);
+              const isOrphan = a.categoryId && !categoryIdsInTree.has(a.categoryId);
+              if (!a.categoryId || isOrphan) {
+                setSelectedCategoryId(null);
+              } else {
+                setSelectedCategoryId(a.categoryId);
+              }
             }}
+            onEditArticle={(article) => setArticleDialog({ kind: "rename", article })}
+            onDeleteArticle={(article) => setConfirmState({ kind: "deleteArticle", article })}
             onCreateRoot={() => setCategoryDialog({ kind: "createRoot" })}
             onCreateChild={(parent) =>
               setCategoryDialog({ kind: "createChild", parent })
@@ -411,7 +523,6 @@ export default function WikiPage({
           onSearchChange={setSearchQuery}
           onSelectArticle={setSelectedArticleId}
           onCreateClick={handleCreate}
-          totalCount={totalArticles}
         />
 
         <ArticleViewer
@@ -428,6 +539,12 @@ export default function WikiPage({
             if (summary) setConfirmState({ kind: "deleteArticle", article: summary });
           }}
           onPublishClick={handlePublish}
+          onUploadClick={() => {
+            const summary =
+              articles.find((a) => a.id === selectedArticle?.id) ??
+              allArticles.find((a) => a.id === selectedArticle?.id);
+            if (summary) setArticleDialog({ kind: "attachFile", article: summary });
+          }}
           publishing={publishing}
         />
       </div>
@@ -455,6 +572,7 @@ export default function WikiPage({
       {categoryDialog?.kind === "edit" && (
         <CategoryFormModal
           mode="edit"
+          currentId={categoryDialog.category.id}
           initialName={categoryDialog.category.name}
           parentId={categoryDialog.category.parentId}
           flatCategories={tree}
@@ -463,10 +581,44 @@ export default function WikiPage({
         />
       )}
 
+      {articleDialog?.kind === "rename" && (
+        <ArticleRenameModal
+          initialTitle={articleDialog.article.title}
+          onCancel={() => setArticleDialog(null)}
+          onSubmit={handleRenameArticle}
+        />
+      )}
+
+      {articleDialog?.kind === "attachFile" && (
+        <ArticleFileUploadModal
+          initialTitle={articleDialog.article.title}
+          onCancel={() => setArticleDialog(null)}
+          onSubmit={handleAttachFileToExisting}
+        />
+      )}
+
+      {creationFlow?.kind === "selection" && (
+        <ArticleTypeModal
+          onCancel={() => setCreationFlow(null)}
+          onSelectWrite={() => {
+            setCreationFlow(null);
+            setEditorState({ mode: "create" });
+          }}
+          onSelectUpload={() => setCreationFlow({ kind: "upload" })}
+        />
+      )}
+
+      {creationFlow?.kind === "upload" && (
+        <ArticleFileUploadModal
+          onCancel={() => setCreationFlow(null)}
+          onSubmit={handleFileUpload}
+        />
+      )}
+
       {confirmState?.kind === "deleteCategory" && (
         <ConfirmDialog
           title="Eliminar carpeta"
-          message={`¿Estás seguro de eliminar “${confirmState.category.name}”? Las subcarpetas también se eliminarán (soft delete).`}
+          message={`¿Estás seguro de eliminar “${confirmState.category.name}”? Todos los artículos y subcarpetas que contiene también se eliminarán.`}
           confirmLabel="Eliminar"
           tone="danger"
           loading={confirmLoading}
@@ -482,7 +634,7 @@ export default function WikiPage({
       {confirmState?.kind === "deleteArticle" && (
         <ConfirmDialog
           title="Eliminar artículo"
-          message={`¿Estás seguro de eliminar “${confirmState.article.title}”? Esta acción es un soft delete.`}
+          message={`¿Estás seguro de eliminar “${confirmState.article.title}”? Esta acción no se puede deshacer.`}
           confirmLabel="Eliminar"
           tone="danger"
           loading={confirmLoading}
@@ -492,6 +644,22 @@ export default function WikiPage({
             setConfirmError(null);
           }}
           onConfirm={handleDeleteArticleConfirm}
+        />
+      )}
+
+      {confirmState?.kind === "replaceWithFile" && (
+        <ConfirmDialog
+          title="Reemplazar contenido"
+          message={`¿Estás seguro de adjuntar este archivo? Todo el contenido actual del artículo será reemplazado por el documento subido.`}
+          confirmLabel="Confirmar y Subir"
+          tone="warning"
+          loading={confirmLoading}
+          error={confirmError}
+          onCancel={() => {
+            setConfirmState(null);
+            setConfirmError(null);
+          }}
+          onConfirm={handleConfirmReplaceWithFile}
         />
       )}
     </div>

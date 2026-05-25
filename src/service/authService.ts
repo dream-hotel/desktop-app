@@ -5,7 +5,14 @@ import {
   User,
   UserRole,
 } from "../types/response/AuthResponse";
-import { apiClient, ApiError, getAccessToken, setAccessToken } from "./apiClient";
+import {
+  apiClient,
+  ApiError,
+  getAccessToken,
+  clearSession,
+  setAccessToken,
+  setRefreshToken,
+} from "./apiClient";
 
 const REFRESH_TOKEN_KEY = "refreshToken";
 const PERMISSIONS_KEY = "permissions";
@@ -61,7 +68,7 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
 
     setAccessToken(data.accessToken);
     if (data.refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+      setRefreshToken(data.refreshToken);
     }
     const permissions = Array.isArray(data.permissions) ? data.permissions : [];
     setStoredPermissions(permissions);
@@ -92,8 +99,6 @@ export async function logout(): Promise<void> {
   } catch {
     // Logout failures shouldn't block clearing local credentials.
   } finally {
-    setAccessToken(null);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    setStoredPermissions(null);
+    clearSession();
   }
 }

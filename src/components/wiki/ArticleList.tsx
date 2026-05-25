@@ -10,7 +10,6 @@ interface ArticleListProps {
   onSearchChange: (q: string) => void;
   onSelectArticle: (id: number) => void;
   onCreateClick: () => void;
-  totalCount: number;
 }
 
 const MONTHS_ES = [
@@ -32,7 +31,6 @@ export default function ArticleList({
   onSearchChange,
   onSelectArticle,
   onCreateClick,
-  totalCount,
 }: ArticleListProps) {
   return (
     <div className="flex h-full w-[320px] flex-col border-r border-border bg-surface">
@@ -42,9 +40,6 @@ export default function ArticleList({
             <h2 className="font-alexandria text-[14px] font-medium text-text-primary">
               Artículos
             </h2>
-            <span className="font-inter text-[11px] text-text-secondary">
-              {totalCount} {totalCount === 1 ? "resultado" : "resultados"}
-            </span>
           </div>
           {isAdmin && (
             <button

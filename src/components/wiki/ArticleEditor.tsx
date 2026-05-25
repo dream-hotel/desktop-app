@@ -19,6 +19,7 @@ interface ArticleEditorProps {
   user: User;
   tree: WikiCategoryNode[];
   article: WikiArticleDetail | null;
+  defaultCategoryId?: number | null;
   onCancel: () => void;
   onSaved: (article: WikiArticleDetail) => void;
 }
@@ -43,6 +44,7 @@ export default function ArticleEditor({
   user,
   tree,
   article,
+  defaultCategoryId,
   onCancel,
   onSaved,
 }: ArticleEditorProps) {
@@ -51,7 +53,7 @@ export default function ArticleEditor({
 
   const [title, setTitle] = useState(article?.title ?? "");
   const [categoryId, setCategoryId] = useState<number | "">(
-    article?.categoryId ?? "",
+    article ? article.categoryId ?? "" : defaultCategoryId ?? "",
   );
   const [isPublic, setIsPublic] = useState<boolean>(article?.isPublic ?? true);
 

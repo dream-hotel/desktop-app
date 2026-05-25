@@ -1,6 +1,7 @@
 import { ArrowLeft, Check, ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { WikiArticleDetail } from "../../types/models/Wiki";
 import MarkdownView from "./MarkdownView";
+import DocumentViewer from "./DocumentViewer";
 
 interface ArticleFullViewProps {
   article: WikiArticleDetail;
@@ -133,12 +134,19 @@ export default function ArticleFullView({
           </div>
 
           <div className="mt-5">
-            {article.contentMarkdown ? (
+            {article.fileUrl ? (
+              <div className="min-h-[600px]">
+                <DocumentViewer fileUrl={article.fileUrl} fileName={article.title} />
+              </div>
+            ) : article.contentMarkdown && article.contentMarkdown.trim().length > 0 && article.contentMarkdown !== '{"root":[{"type":"paragraph","content":[]}]}' ? (
               <MarkdownView markdown={article.contentMarkdown} />
             ) : (
-              <p className="font-inter text-[13px] italic text-text-secondary">
-                Este artículo aún no tiene contenido.
-              </p>
+              <div className="flex flex-col items-center justify-center py-20 text-center text-text-secondary">
+                <FileText size={48} strokeWidth={1} className="mb-4 opacity-20" />
+                <p className="font-inter text-[15px] italic">
+                  Este artículo todavía no tiene contenido escrito ni documentos adjuntos.
+                </p>
+              </div>
             )}
           </div>
         </article>

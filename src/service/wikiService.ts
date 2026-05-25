@@ -35,6 +35,8 @@ function mapArticleDetail(a: BackendArticle): WikiArticleDetail {
     // Backend output DTO does not expose isPublic; default to true (public)
     // and let the editor override on save.
     isPublic: true,
+    fileUrl: a.content?.fileUrl ?? null,
+    fileMimetype: a.content?.mimetype ?? null,
   };
 }
 
@@ -133,7 +135,7 @@ export async function getArticle(id: number): Promise<WikiArticleDetail> {
 
 export interface ArticleInputPayload {
   title: string;
-  content: string;
+  content?: string;
   categoryId?: number | null;
   isPublic?: boolean;
 }
@@ -141,12 +143,18 @@ export interface ArticleInputPayload {
 export async function createArticle(payload: ArticleInputPayload): Promise<WikiArticleDetail> {
   const body: Record<string, unknown> = {
     title: payload.title,
-    content: payload.content,
   };
-  if (payload.categoryId != null) body.categoryId = payload.categoryId;
+  if (payload.content !== undefined) body.content = payload.content;
+  if (payload.categoryId !== undefined) body.categoryId = payload.categoryId;
   if (payload.isPublic !== undefined) body.isPublic = payload.isPublic;
   const created = await apiClient.post<BackendArticle>("/wiki/articles", body);
   return mapArticleDetail(created);
+}
+
+export async function setArticleFile(id: number, file: File): Promise<void> {
+  const form = new FormData();
+  form.append("file", file);
+  return apiClient.postForm<void>(`/wiki/articles/${id}/content/file`, form);
 }
 
 export async function updateArticle(
@@ -156,7 +164,7 @@ export async function updateArticle(
   const body: Record<string, unknown> = {};
   if (payload.title !== undefined) body.title = payload.title;
   if (payload.content !== undefined) body.content = payload.content;
-  if (payload.categoryId !== undefined && payload.categoryId !== null) {
+  if (payload.categoryId !== undefined) {
     body.categoryId = payload.categoryId;
   }
   if (payload.isPublic !== undefined) body.isPublic = payload.isPublic;
