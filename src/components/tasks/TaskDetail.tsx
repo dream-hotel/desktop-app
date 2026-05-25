@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Ban,
   CheckCircle2,
@@ -6,7 +6,10 @@ import {
   Loader,
   Maximize2,
   MessageSquare,
+  MoreVertical,
+  Pencil,
   Send,
+  Trash2,
   Users,
 } from "lucide-react";
 import {
@@ -74,20 +77,30 @@ interface TaskDetailProps {
   task: BackendTask;
   comments: BackendTaskActivityLog[];
   isLoadingComments: boolean;
+  canManage: boolean;
+  canDelete: boolean;
   onCommentAdded: () => void;
   onExpand: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 export default function TaskDetail({
   task,
   comments,
   isLoadingComments,
+  canManage,
+  canDelete,
   onCommentAdded,
   onExpand,
+  onEdit,
+  onDelete,
 }: TaskDetailProps) {
   const [draft, setDraft] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
 
@@ -119,7 +132,7 @@ export default function TaskDetail({
     <div className="flex h-full flex-col bg-surface">
       {/* Header */}
       <div className="border-b border-border p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <StatusIcon name={task.status.name} />
             <span
@@ -128,14 +141,56 @@ export default function TaskDetail({
               {statusLabel(task.status.name)}
             </span>
           </div>
-          <button
-            onClick={onExpand}
-            className="flex h-[26px] items-center gap-1 rounded-md border border-border-strong px-2 font-inter text-[11px] font-medium text-text-secondary hover:bg-neutral-soft"
-            title="Ver pantalla completa"
-          >
-            <Maximize2 size={12} strokeWidth={1.8} />
-            Ver completo
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onExpand}
+              className="flex h-[26px] items-center gap-1 rounded-md border border-border-strong px-2 font-inter text-[11px] font-medium text-text-secondary hover:bg-neutral-soft"
+              title="Ver pantalla completa"
+            >
+              <Maximize2 size={12} strokeWidth={1.8} />
+              Ver completo
+            </button>
+            {(canManage || canDelete) && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex h-[26px] w-[26px] items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
+                  title="Más acciones"
+                >
+                  <MoreVertical size={16} strokeWidth={1.8} />
+                </button>
+                {menuOpen && (
+                  <div
+                    className="absolute right-0 top-full z-10 mt-1 w-40 overflow-hidden rounded-md border border-border bg-surface shadow-md"
+                    onMouseLeave={() => setMenuOpen(false)}
+                  >
+                    {canManage && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onEdit();
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-inter text-[12px] text-text-primary hover:bg-neutral-soft"
+                      >
+                        <Pencil size={12} strokeWidth={1.8} /> Editar tarea
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onDelete();
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-inter text-[12px] text-danger hover:bg-danger/10"
+                      >
+                        <Trash2 size={12} strokeWidth={1.8} /> Eliminar tarea
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mt-[10px]">
@@ -151,7 +206,6 @@ export default function TaskDetail({
         )}
       </div>
 
-      {/* Metadata grid */}
       <div className="flex flex-wrap gap-4 border-b border-border p-5">
         <div className="flex w-[175px] flex-col gap-[2px]">
           <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
@@ -223,7 +277,6 @@ export default function TaskDetail({
           )}
         </div>
 
-        {/* Composer */}
         <div className="mt-3 shrink-0 border-t border-border pt-3 pb-4">
           <div className="flex items-end gap-2">
             <textarea
@@ -248,9 +301,7 @@ export default function TaskDetail({
               {posting ? "Enviando..." : "Enviar"}
             </button>
           </div>
-          {error && (
-            <p className="mt-1 font-inter text-[11px] text-danger">{error}</p>
-          )}
+          {error && <p className="mt-1 font-inter text-[11px] text-danger">{error}</p>}
         </div>
       </div>
     </div>

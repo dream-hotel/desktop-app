@@ -48,6 +48,32 @@ export function removeTaskFile(id: number, fileId: number): Promise<void> {
   return apiClient.delete(`/tasks/${id}/files/${fileId}`);
 }
 
+export async function uploadTaskFile(id: number, file: File): Promise<BackendTask> {
+  // Custom request because apiClient.post sets JSON content-type; multipart needs the
+  // browser to set the boundary automatically and skip JSON.stringify.
+  const { API_URL } = await import("./apiConfig");
+  const { getAccessToken } = await import("./apiClient");
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_URL}/tasks/${id}/files/upload`, {
+    method: "POST",
+    headers: {
+      ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}),
+    },
+    body: form,
+  });
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      if (Array.isArray(body?.message)) message = body.message.join(", ");
+      else if (typeof body?.message === "string") message = body.message;
+    } catch { /* not JSON */ }
+    throw new Error(message);
+  }
+  return res.json();
+}
+
 export function getTaskActivity(
   id: number,
   pagination: PaginationParams = {},

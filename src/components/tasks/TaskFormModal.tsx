@@ -9,22 +9,25 @@ import {
 } from "lucide-react";
 import { BackendPriority, priorityLabel } from "../../types/models/Announcement";
 import {
+  BackendTask,
   BackendTaskStatus,
   CreateTaskPayload,
   fullName,
   TaskStatusName,
+  UpdateTaskPayload,
 } from "../../types/models/Task";
 import { BackendUserListItem } from "../../types/models/Users";
 import { listUsers } from "../../service/userService";
-import { createTask } from "../../service/taskService";
+import { createTask, updateTask } from "../../service/taskService";
 import { useAuth } from "../../hooks/useAuth";
 
-interface CreateTaskForm {
+interface TaskForm {
   title: string;
   description: string;
   content: string;
   assigneeIds: number[];
   priorityId: number | null;
+  statusId: number | null;
   startDate: string;
   startTime: string;
   startAllDay: boolean;
@@ -33,12 +36,13 @@ interface CreateTaskForm {
   endAllDay: boolean;
 }
 
-const EMPTY_FORM: CreateTaskForm = {
+const EMPTY_FORM: TaskForm = {
   title: "",
   description: "",
   content: "",
   assigneeIds: [],
   priorityId: null,
+  statusId: null,
   startDate: "",
   startTime: "",
   startAllDay: false,
@@ -54,11 +58,20 @@ const PRIORITY_SUBLABEL: Record<string, string> = {
   critical: "Inmediato",
 };
 
-interface CreateTaskModalProps {
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Pendiente",
+  in_progress: "En progreso",
+  completed: "Finalizada",
+  archived: "Archivada",
+};
+
+interface TaskFormModalProps {
+  mode: "create" | "edit";
+  initialTask?: BackendTask | null;
   statuses: BackendTaskStatus[];
   priorities: BackendPriority[];
   onClose: () => void;
-  onCreated: () => void;
+  onSaved: () => void;
 }
 
 function combineDateTime(date: string, time: string, allDay: boolean): string | undefined {
@@ -68,14 +81,47 @@ function combineDateTime(date: string, time: string, allDay: boolean): string | 
   return iso;
 }
 
-export default function CreateTaskModal({
+function isoToParts(iso: string | null): { date: string; time: string } {
+  if (!iso) return { date: "", time: "" };
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { date: "", time: "" };
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+  };
+}
+
+export default function TaskFormModal({
+  mode,
+  initialTask,
   statuses,
   priorities,
   onClose,
-  onCreated,
-}: CreateTaskModalProps) {
+  onSaved,
+}: TaskFormModalProps) {
   const { user } = useAuth();
-  const [form, setForm] = useState<CreateTaskForm>(EMPTY_FORM);
+  const isEdit = mode === "edit";
+
+  const [form, setForm] = useState<TaskForm>(() => {
+    if (!initialTask) return EMPTY_FORM;
+    const start = isoToParts(initialTask.startDate);
+    const end = isoToParts(initialTask.limitDate);
+    return {
+      title: initialTask.title,
+      description: initialTask.description ?? "",
+      content: initialTask.content ?? "",
+      assigneeIds: initialTask.assignments.map((a) => Number(a.userId)),
+      priorityId: initialTask.priority?.id ?? null,
+      statusId: initialTask.status?.id ?? null,
+      startDate: start.date,
+      startTime: start.time,
+      startAllDay: false,
+      endDate: end.date,
+      endTime: end.time,
+      endAllDay: false,
+    };
+  });
   const [users, setUsers] = useState<BackendUserListItem[]>([]);
   const [usersError, setUsersError] = useState<string | null>(null);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
@@ -84,17 +130,17 @@ export default function CreateTaskModal({
   const [submitting, setSubmitting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Pre-select self when known
+  // Pre-select self when creating
   useEffect(() => {
-    if (user && form.assigneeIds.length === 0) {
+    if (!isEdit && user && form.assigneeIds.length === 0) {
       setForm((prev) => ({ ...prev, assigneeIds: [user.id] }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Default to "medium" priority once the catalog loads
+  // Default priority once catalog loads (create only)
   useEffect(() => {
-    if (form.priorityId == null && priorities.length > 0) {
+    if (!isEdit && form.priorityId == null && priorities.length > 0) {
       const def =
         priorities.find((p) => p.name === "medium") ??
         priorities[Math.floor(priorities.length / 2)] ??
@@ -103,6 +149,16 @@ export default function CreateTaskModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [priorities]);
+
+  // Default status once catalog loads (create only)
+  useEffect(() => {
+    if (!isEdit && form.statusId == null && statuses.length > 0) {
+      const def =
+        statuses.find((s) => (s.name as TaskStatusName) === "pending") ?? statuses[0];
+      setForm((prev) => ({ ...prev, statusId: def.id }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statuses]);
 
   useEffect(() => {
     listUsers({ limit: 200, isActive: true })
@@ -124,11 +180,12 @@ export default function CreateTaskModal({
     }
   }, [showAssigneeDropdown]);
 
-  function update<K extends keyof CreateTaskForm>(key: K, value: CreateTaskForm[K]) {
+  function update<K extends keyof TaskForm>(key: K, value: TaskForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   function handleClear() {
+    if (isEdit) return; // not exposed in edit mode
     setForm({ ...EMPTY_FORM, assigneeIds: user ? [user.id] : [] });
     setSubmitError(null);
   }
@@ -162,6 +219,11 @@ export default function CreateTaskModal({
     if (user && user.id === id) {
       return { id, label: `${user.fullName}${user.lastName ? ` ${user.lastName}` : ""}` };
     }
+    // Fall back to whatever assignee data we have on the task
+    if (initialTask) {
+      const a = initialTask.assignments.find((x) => x.userId === id);
+      if (a) return { id, label: fullName(a.user) };
+    }
     return { id, label: `#${id}` };
   });
 
@@ -181,30 +243,51 @@ export default function CreateTaskModal({
       setSubmitError("Prioridad no disponible. Intenta recargar.");
       return;
     }
-    const initialStatus =
-      statuses.find((s) => (s.name as TaskStatusName) === "pending") ?? statuses[0];
-    if (!initialStatus) {
+    const status =
+      form.statusId != null
+        ? statuses.find((s) => s.id === form.statusId)
+        : statuses.find((s) => (s.name as TaskStatusName) === "pending") ?? statuses[0];
+    if (!status) {
       setSubmitError("No hay estados disponibles. Intenta recargar.");
       return;
     }
 
-    const payload: CreateTaskPayload = {
-      title: form.title.trim(),
-      description: form.description.trim() || undefined,
-      content: form.content.trim() || undefined,
-      statusId: Number(initialStatus.id),
-      priorityId: Number(priority.id),
-      assigneeIds: form.assigneeIds.map((id) => Number(id)),
-      startDate: combineDateTime(form.startDate, form.startTime, form.startAllDay),
-      limitDate: combineDateTime(form.endDate, form.endTime, form.endAllDay),
-    };
-
     setSubmitting(true);
     try {
-      await createTask(payload);
-      onCreated();
+      if (isEdit && initialTask) {
+        const patch: UpdateTaskPayload = {
+          title: form.title.trim(),
+          description: form.description.trim() || undefined,
+          content: form.content.trim() || undefined,
+          statusId: Number(status.id),
+          priorityId: Number(priority.id),
+          assigneeIds: form.assigneeIds.map((id) => Number(id)),
+          startDate: combineDateTime(form.startDate, form.startTime, form.startAllDay),
+          limitDate: combineDateTime(form.endDate, form.endTime, form.endAllDay),
+        };
+        await updateTask(initialTask.id, patch);
+      } else {
+        const payload: CreateTaskPayload = {
+          title: form.title.trim(),
+          description: form.description.trim() || undefined,
+          content: form.content.trim() || undefined,
+          statusId: Number(status.id),
+          priorityId: Number(priority.id),
+          assigneeIds: form.assigneeIds.map((id) => Number(id)),
+          startDate: combineDateTime(form.startDate, form.startTime, form.startAllDay),
+          limitDate: combineDateTime(form.endDate, form.endTime, form.endAllDay),
+        };
+        await createTask(payload);
+      }
+      onSaved();
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : "No se pudo crear la tarea");
+      setSubmitError(
+        e instanceof Error
+          ? e.message
+          : isEdit
+            ? "No se pudo actualizar la tarea"
+            : "No se pudo crear la tarea",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -212,23 +295,21 @@ export default function CreateTaskModal({
 
   return (
     <div className="flex h-full flex-col border-l border-[rgba(0,0,0,0.08)] bg-bg shadow-[0px_22px_43px_0px_rgba(0,0,0,0.25)]">
-      {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-5 py-4">
         <h2 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
-          Nueva Tarea
+          {isEdit ? "Editar tarea" : "Nueva tarea"}
         </h2>
         <button
           onClick={onClose}
           className="flex h-[26px] w-[26px] items-center justify-center rounded-lg text-text-secondary hover:bg-neutral-soft"
+          title="Cerrar"
         >
           <X size={14} strokeWidth={1.8} className="text-text-secondary" />
         </button>
       </div>
 
-      {/* Form body */}
       <div className="flex-1 overflow-y-auto px-5 pt-4 pb-4">
         <div className="flex flex-col gap-4">
-          {/* Título */}
           <FieldGroup label="Título" required>
             <input
               type="text"
@@ -239,7 +320,6 @@ export default function CreateTaskModal({
             />
           </FieldGroup>
 
-          {/* Descripción */}
           <FieldGroup label="Descripción" optional>
             <textarea
               value={form.description}
@@ -250,7 +330,6 @@ export default function CreateTaskModal({
             />
           </FieldGroup>
 
-          {/* Responsables */}
           <div className="relative flex flex-col gap-1.5" ref={dropdownRef}>
             <span className="font-inter text-[10px] font-medium leading-4 text-text-body">
               Responsable(s) <span className="text-danger">*</span>
@@ -334,22 +413,42 @@ export default function CreateTaskModal({
               </p>
             ) : (
               <div className="flex gap-2">
-                {priorities.map((p) => {
-                  const selected = form.priorityId === p.id;
-                  return (
-                    <PriorityCard
-                      key={p.id}
-                      priority={p}
-                      selected={selected}
-                      onClick={() => update("priorityId", p.id)}
-                    />
-                  );
-                })}
+                {priorities.map((p) => (
+                  <PriorityCard
+                    key={p.id}
+                    priority={p}
+                    selected={form.priorityId === p.id}
+                    onClick={() => update("priorityId", p.id)}
+                  />
+                ))}
               </div>
             )}
           </div>
 
-          {/* Contexto inicial */}
+          {/* Estado (solo en edición) */}
+          {isEdit && (
+            <FieldGroup label="Estado">
+              <div className="flex flex-wrap gap-2">
+                {statuses.map((s) => {
+                  const selected = form.statusId === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => update("statusId", s.id)}
+                      className={`rounded-full px-3 py-1 font-inter text-[11px] font-medium ${
+                        selected
+                          ? "bg-primary text-white"
+                          : "bg-neutral-soft text-text-secondary"
+                      }`}
+                    >
+                      {STATUS_LABEL[s.name] ?? s.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </FieldGroup>
+          )}
+
           <FieldGroup label="Notas adicionales / Contexto" optional>
             <textarea
               value={form.content}
@@ -360,7 +459,6 @@ export default function CreateTaskModal({
             />
           </FieldGroup>
 
-          {/* Fechas */}
           <div className="flex gap-3">
             <DateBlock
               label="Fecha de inicio"
@@ -384,32 +482,34 @@ export default function CreateTaskModal({
         </div>
       </div>
 
-      {/* Footer */}
       <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-surface px-5 py-3.5">
-        {submitError && (
-          <p className="font-inter text-[11px] text-danger">{submitError}</p>
-        )}
+        {submitError && <p className="font-inter text-[11px] text-danger">{submitError}</p>}
         <div className="flex items-center justify-between">
-          <button
-            onClick={onClose}
-            className="font-inter text-[11px] font-medium text-text-secondary"
-          >
+          <button onClick={onClose} className="font-inter text-[11px] font-medium text-text-secondary">
             Cancelar
           </button>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleClear}
-              className="rounded-[10px] border border-border-strong px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-text-secondary"
-            >
-              Limpiar
-            </button>
+            {!isEdit && (
+              <button
+                onClick={handleClear}
+                className="rounded-[10px] border border-border-strong px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-text-secondary"
+              >
+                Limpiar
+              </button>
+            )}
             <button
               onClick={handleSubmit}
               disabled={submitting}
               className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Check size={16} strokeWidth={2} />
-              {submitting ? "Creando..." : "Crear tarea"}
+              {submitting
+                ? isEdit
+                  ? "Guardando..."
+                  : "Creando..."
+                : isEdit
+                  ? "Guardar cambios"
+                  : "Crear tarea"}
             </button>
           </div>
         </div>
@@ -418,7 +518,7 @@ export default function CreateTaskModal({
   );
 }
 
-// --- Helper components ---
+// --- Helpers ---
 
 function FieldGroup({
   label,
@@ -525,9 +625,7 @@ function DateBlock({
 }) {
   return (
     <div className="flex flex-1 flex-col gap-1.5">
-      <span className="font-inter text-[10px] font-medium leading-4 text-text-body">
-        {label}
-      </span>
+      <span className="font-inter text-[10px] font-medium leading-4 text-text-body">{label}</span>
       <div className="flex items-center rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-2.5 py-2">
         <Calendar size={12} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
         <input

@@ -52,10 +52,10 @@ function StatusIcon({ name }: { name: string }) {
 
 function PriorityBadge({ name }: { name: string }) {
   const config: Record<string, { bg: string; border: string; text: string; label: string }> = {
-    critical: { bg: "bg-[#c5a059]", border: "", text: "text-white", label: "Critical" },
-    high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-warning", label: "High" },
-    medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-success", label: "Medium" },
-    low: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Low" },
+    critical: { bg: "bg-[#c5a059]", border: "", text: "text-white", label: "Crítica" },
+    high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-warning", label: "Alta" },
+    medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-success", label: "Media" },
+    low: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Baja" },
   };
   const c = config[name] ?? config.low;
   return (
@@ -67,10 +67,10 @@ function PriorityBadge({ name }: { name: string }) {
 
 function StatusBadge({ name }: { name: string }) {
   const config: Record<string, { bg: string; border: string; text: string; label: string }> = {
-    in_progress: { bg: "bg-warning/15", border: "border border-[rgba(197,160,89,0.2)]", text: "text-warning", label: "In Progress" },
-    pending: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Pending" },
-    completed: { bg: "bg-success/10", border: "border border-[rgba(118,199,194,0.2)]", text: "text-success", label: "Done" },
-    archived: { bg: "bg-danger/10", border: "border border-[rgba(239,68,68,0.2)]", text: "text-danger", label: "Archived" },
+    in_progress: { bg: "bg-warning/15", border: "border border-[rgba(197,160,89,0.2)]", text: "text-warning", label: "En progreso" },
+    pending: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Pendiente" },
+    completed: { bg: "bg-success/10", border: "border border-[rgba(118,199,194,0.2)]", text: "text-success", label: "Finalizada" },
+    archived: { bg: "bg-danger/10", border: "border border-[rgba(239,68,68,0.2)]", text: "text-danger", label: "Archivada" },
   };
   const c = config[name] ?? config.pending;
   return (

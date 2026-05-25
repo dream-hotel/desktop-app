@@ -6,12 +6,13 @@ import {
   CheckCircle2,
   CircleDashed,
   Clock,
-  ExternalLink,
   FileText,
   Loader,
   MessageSquare,
   Paperclip,
+  Pencil,
   Send,
+  Trash2,
   Users,
 } from "lucide-react";
 import {
@@ -22,6 +23,7 @@ import {
   statusLabel,
 } from "../../types/models/Task";
 import { addTaskComment } from "../../service/taskService";
+import TaskAttachments from "./TaskAttachments";
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }> = {
   in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
@@ -79,30 +81,30 @@ function formatRelativeTime(iso: string): string {
   return d.toLocaleDateString([], { day: "2-digit", month: "short" });
 }
 
-function fileNameFromUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    const last = parsed.pathname.split("/").filter(Boolean).pop();
-    return last ? decodeURIComponent(last) : url;
-  } catch {
-    return url;
-  }
-}
-
 interface TaskFullViewProps {
   task: BackendTask;
   comments: BackendTaskActivityLog[];
   isLoadingComments: boolean;
+  canManage: boolean;
+  canDelete: boolean;
   onClose: () => void;
   onCommentAdded: () => void;
+  onAttachmentsChanged: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 export default function TaskFullView({
   task,
   comments,
   isLoadingComments,
+  canManage,
+  canDelete,
   onClose,
   onCommentAdded,
+  onAttachmentsChanged,
+  onEdit,
+  onDelete,
 }: TaskFullViewProps) {
   const [draft, setDraft] = useState("");
   const [posting, setPosting] = useState(false);
@@ -137,7 +139,6 @@ export default function TaskFullView({
 
   return (
     <div className="flex h-full flex-col bg-bg">
-      {/* Header */}
       <div className="flex shrink-0 items-center gap-3 border-b border-border bg-surface px-6 py-3">
         <button
           onClick={onClose}
@@ -159,14 +160,30 @@ export default function TaskFullView({
             Prioridad {priorityNameLabel(task.priority.name)}
           </span>
         </div>
-        <div className="ml-auto font-inter text-[11px] text-text-secondary">
-          Tarea #{task.id}
+        <div className="ml-auto flex items-center gap-2 font-inter text-[11px] text-text-secondary">
+          <span>Tarea #{task.id}</span>
+          {canManage && (
+            <button
+              onClick={onEdit}
+              className="ml-2 flex h-8 items-center gap-1.5 rounded-md border border-border-strong px-2.5 font-inter text-[11px] font-medium text-text-primary hover:bg-neutral-soft"
+              title="Editar tarea"
+            >
+              <Pencil size={12} strokeWidth={1.8} /> Editar
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={onDelete}
+              className="flex h-8 items-center gap-1.5 rounded-md border border-danger/40 px-2.5 font-inter text-[11px] font-medium text-danger hover:bg-danger/10"
+              title="Eliminar tarea"
+            >
+              <Trash2 size={12} strokeWidth={1.8} /> Eliminar
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Body — two columns */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* Main column */}
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto px-8 py-6">
           <h1 className="font-alexandria text-[32px] font-normal leading-[36px] text-text-primary">
             {task.title}
@@ -194,35 +211,20 @@ export default function TaskFullView({
             </section>
           )}
 
-          {task.files.length > 0 && (
-            <section className="mt-6">
-              <SectionHeader icon={<Paperclip size={14} strokeWidth={1.8} />}>
-                Archivos adjuntos ({task.files.length})
-              </SectionHeader>
-              <ul className="mt-2 flex flex-col gap-1.5">
-                {task.files.map((file) => (
-                  <li key={file.id}>
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="flex items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 py-2 hover:bg-neutral-soft"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <Paperclip size={12} strokeWidth={1.6} className="shrink-0 text-text-secondary" />
-                        <span className="truncate font-inter text-[12px] text-text-primary">
-                          {fileNameFromUrl(file.url)}
-                        </span>
-                      </div>
-                      <ExternalLink size={12} strokeWidth={1.6} className="shrink-0 text-text-secondary" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+          {/* Attachments with drag-and-drop + lightbox */}
+          <section className="mt-6">
+            <SectionHeader icon={<Paperclip size={14} strokeWidth={1.8} />}>
+              Archivos adjuntos ({task.files.length})
+            </SectionHeader>
+            <div className="mt-2">
+              <TaskAttachments
+                taskId={task.id}
+                files={task.files}
+                onChanged={onAttachmentsChanged}
+              />
+            </div>
+          </section>
 
-          {/* Comments */}
           <section className="mt-8 flex flex-col">
             <SectionHeader icon={<MessageSquare size={14} strokeWidth={1.8} />}>
               Comentarios de relevo ({sortedComments.length})
@@ -275,16 +277,12 @@ export default function TaskFullView({
           </section>
         </div>
 
-        {/* Side column */}
         <aside className="w-[320px] shrink-0 overflow-y-auto border-l border-border bg-surface px-5 py-6">
           <h3 className="font-alexandria text-[14px] font-medium uppercase tracking-wide text-text-secondary">
             Detalles
           </h3>
 
-          <DetailRow
-            icon={<Users size={13} strokeWidth={1.6} />}
-            label="Responsables"
-          >
+          <DetailRow icon={<Users size={13} strokeWidth={1.6} />} label="Responsables">
             {task.assignments.length === 0 ? (
               <span className="font-inter text-sm text-text-secondary">Sin asignar</span>
             ) : (
@@ -303,28 +301,19 @@ export default function TaskFullView({
             )}
           </DetailRow>
 
-          <DetailRow
-            icon={<Calendar size={13} strokeWidth={1.6} />}
-            label="Inicio"
-          >
+          <DetailRow icon={<Calendar size={13} strokeWidth={1.6} />} label="Inicio">
             <span className="font-inter text-sm text-text-primary">
               {formatDateTime(task.startDate)}
             </span>
           </DetailRow>
 
-          <DetailRow
-            icon={<Clock size={13} strokeWidth={1.6} />}
-            label="Fecha límite"
-          >
+          <DetailRow icon={<Clock size={13} strokeWidth={1.6} />} label="Fecha límite">
             <span className="font-inter text-sm text-text-primary">
               {formatDateTime(task.limitDate)}
             </span>
           </DetailRow>
 
-          <DetailRow
-            icon={<FileText size={13} strokeWidth={1.6} />}
-            label="Creada por"
-          >
+          <DetailRow icon={<FileText size={13} strokeWidth={1.6} />} label="Creada por">
             <span className="font-inter text-sm text-text-primary">
               {fullName(task.creator)}
             </span>
@@ -334,10 +323,7 @@ export default function TaskFullView({
           </DetailRow>
 
           {task.updatedAt && (
-            <DetailRow
-              icon={<Clock size={13} strokeWidth={1.6} />}
-              label="Última actualización"
-            >
+            <DetailRow icon={<Clock size={13} strokeWidth={1.6} />} label="Última actualización">
               <span className="font-inter text-sm text-text-primary">
                 {formatDateTime(task.updatedAt)}
               </span>
