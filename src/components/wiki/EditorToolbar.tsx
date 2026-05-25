@@ -1,6 +1,8 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
+import { Code, Image as ImageIcon, IndentDecrease, IndentIncrease, Link as LinkIcon, List, ListChecks, ListOrdered } from "lucide-react";
 import type { BlockNoteEditor } from "@blocknote/core";
-import { useActiveStyles, useSelectedBlocks } from "@blocknote/react";
+import { useEditorState, useSelectedBlocks } from "@blocknote/react";
+import { shortcut } from "../../hooks/usePlatform";
 
 interface EditorToolbarProps {
   editor: BlockNoteEditor;
@@ -69,8 +71,37 @@ function Divider() {
   return <span className="mx-1 h-5 w-px bg-border" aria-hidden />;
 }
 
+type StyleFlags = {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  code: boolean;
+};
+
+const EMPTY_STYLES: StyleFlags = {
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  code: false,
+};
+
 export default function EditorToolbar({ editor }: EditorToolbarProps) {
-  const activeStyles = useActiveStyles(editor);
+  const activeStyles = useEditorState({
+    editor,
+    selector: ({ editor: ed }) => {
+      const tt = (ed as unknown as { _tiptapEditor?: { isActive?: (n: string) => boolean } })._tiptapEditor;
+      if (!tt?.isActive) return EMPTY_STYLES;
+      return {
+        bold: tt.isActive("bold"),
+        italic: tt.isActive("italic"),
+        underline: tt.isActive("underline"),
+        strike: tt.isActive("strike"),
+        code: tt.isActive("code"),
+      };
+    },
+  }) as StyleFlags;
   const selectedBlocks = useSelectedBlocks(editor);
 
   const { blockType, headingLevel, isList } = useMemo(() => {
@@ -88,11 +119,12 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
   const blockSelectValue = currentBlockOption(blockType, headingLevel);
 
   const toggleStyle = (style: "bold" | "italic" | "underline" | "strike" | "code") => {
-    editor.toggleStyles({ [style]: true } as never);
     editor.focus();
+    editor.toggleStyles({ [style]: true } as never);
   };
 
   const setList = (type: "bulletListItem" | "numberedListItem" | "checkListItem") => {
+    editor.focus();
     const block = editor.getTextCursorPosition().block;
     if (!block) return;
     if (block.type === type) {
@@ -100,31 +132,69 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
     } else {
       editor.updateBlock(block, { type });
     }
-    editor.focus();
   };
 
   const handleLink = () => {
     const url = window.prompt("URL del enlace");
     if (!url) return;
+    editor.focus();
     const text = window.getSelection()?.toString();
     if (text && text.length > 0) {
       editor.createLink(url);
     } else {
       editor.createLink(url, url);
     }
-    editor.focus();
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageClick = () => {
+    if (uploading) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!editor.uploadFile) {
+      window.alert("La carga de imágenes no está disponible.");
+      return;
+    }
+    setUploading(true);
+    try {
+      editor.focus();
+      const cursor = editor.getTextCursorPosition();
+      const result = await editor.uploadFile(file);
+      const url = typeof result === "string" ? result : result.url;
+      const block = {
+        type: "image" as const,
+        props: { url, caption: "", name: file.name },
+      };
+      if (cursor?.block) {
+        editor.insertBlocks([block], cursor.block, "after");
+      } else {
+        editor.insertBlocks([block], editor.document[editor.document.length - 1], "after");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error al subir la imagen";
+      window.alert(msg);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-border bg-white px-3 py-2">
+    <div className="flex flex-wrap items-center gap-1 border-b border-border bg-surface px-3 py-2">
       <select
         value={blockSelectValue}
         onMouseDown={(e) => e.stopPropagation()}
         onChange={(e) => {
-          applyBlockOption(editor, e.target.value);
           editor.focus();
+          applyBlockOption(editor, e.target.value);
         }}
-        className="h-8 rounded-[6px] border border-border bg-white px-2 font-inter text-[12px] text-text-primary outline-none focus:border-primary/50"
+        className="h-8 rounded-[6px] border border-border bg-surface px-2 font-inter text-[12px] text-text-primary outline-none focus:border-primary/50"
         title="Tipo de bloque"
         aria-label="Tipo de bloque"
       >
@@ -138,21 +208,21 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       <Divider />
 
       <ToolbarButton
-        title="Negrita (Ctrl+B)"
+        title={`Negrita (${shortcut("B")})`}
         active={!!activeStyles.bold}
         onClick={() => toggleStyle("bold")}
       >
         <span className="font-bold">N</span>
       </ToolbarButton>
       <ToolbarButton
-        title="Cursiva (Ctrl+I)"
+        title={`Cursiva (${shortcut("I")})`}
         active={!!activeStyles.italic}
         onClick={() => toggleStyle("italic")}
       >
         <span className="italic">C</span>
       </ToolbarButton>
       <ToolbarButton
-        title="Subrayado (Ctrl+U)"
+        title={`Subrayado (${shortcut("U")})`}
         active={!!activeStyles.underline}
         onClick={() => toggleStyle("underline")}
       >
@@ -170,15 +240,7 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
         active={!!activeStyles.code}
         onClick={() => toggleStyle("code")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M5 4L1 8l4 4M11 4l4 4-4 4"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Code size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
       <Divider />
@@ -188,64 +250,52 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
         active={blockType === "bulletListItem"}
         onClick={() => setList("bulletListItem")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <circle cx="3" cy="4" r="1" fill="currentColor" />
-          <circle cx="3" cy="8" r="1" fill="currentColor" />
-          <circle cx="3" cy="12" r="1" fill="currentColor" />
-          <path d="M6 4h8M6 8h8M6 12h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <List size={14} strokeWidth={1.8} />
       </ToolbarButton>
       <ToolbarButton
         title="Lista numerada"
         active={blockType === "numberedListItem"}
         onClick={() => setList("numberedListItem")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <text x="1" y="6" fontSize="5" fill="currentColor" fontFamily="Inter, sans-serif">1.</text>
-          <text x="1" y="11" fontSize="5" fill="currentColor" fontFamily="Inter, sans-serif">2.</text>
-          <text x="1" y="16" fontSize="5" fill="currentColor" fontFamily="Inter, sans-serif">3.</text>
-          <path d="M6 4h8M6 9h8M6 14h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <ListOrdered size={14} strokeWidth={1.8} />
       </ToolbarButton>
       <ToolbarButton
         title="Lista de verificación"
         active={blockType === "checkListItem"}
         onClick={() => setList("checkListItem")}
       >
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <rect x="1" y="2" width="4" height="4" stroke="currentColor" strokeWidth="1.4" rx="0.6" />
-          <rect x="1" y="7" width="4" height="4" stroke="currentColor" strokeWidth="1.4" rx="0.6" />
-          <path d="M1.6 9l1 1 1.6-1.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M7 4h8M7 9h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
+        <ListChecks size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
       <Divider />
 
-      <ToolbarButton title="Disminuir sangría" onClick={() => { editor.unnestBlock(); editor.focus(); }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M14 3H2M14 13H2M14 8H6M5 6L2 8l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+      <ToolbarButton title="Disminuir sangría" onClick={() => { editor.focus(); editor.unnestBlock(); }}>
+        <IndentDecrease size={14} strokeWidth={1.8} />
       </ToolbarButton>
-      <ToolbarButton title="Aumentar sangría" onClick={() => { editor.nestBlock(); editor.focus(); }}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M14 3H2M14 13H2M14 8H6M3 6l3 2-3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+      <ToolbarButton title="Aumentar sangría" onClick={() => { editor.focus(); editor.nestBlock(); }}>
+        <IndentIncrease size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
       <Divider />
 
       <ToolbarButton title="Insertar enlace" onClick={handleLink} disabled={isList && false}>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M7 9a3 3 0 004 0l2-2a3 3 0 10-4-4l-1 1M9 7a3 3 0 00-4 0L3 9a3 3 0 104 4l1-1"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <LinkIcon size={14} strokeWidth={1.8} />
       </ToolbarButton>
+
+      <ToolbarButton
+        title={uploading ? "Subiendo imagen..." : "Insertar imagen"}
+        onClick={handleImageClick}
+        disabled={uploading}
+      >
+        <ImageIcon size={14} strokeWidth={1.8} />
+      </ToolbarButton>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+        className="hidden"
+        onChange={handleImageSelected}
+      />
     </div>
   );
 }

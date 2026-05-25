@@ -1,160 +1,351 @@
-import { Task, TaskPriority, TaskStatus } from "../../types/response/TaskResponse";
+import { useMemo, useRef, useState } from "react";
+import {
+  Ban,
+  CheckCircle2,
+  CircleDashed,
+  Image as ImageIcon,
+  Loader,
+  Maximize2,
+  MessageSquare,
+  MoreVertical,
+  Paperclip,
+  Pencil,
+  Trash2,
+  Users,
+} from "lucide-react";
+import {
+  BackendTask,
+  BackendTaskActivityLog,
+  fullName,
+  priorityNameLabel,
+  statusLabel,
+} from "../../types/models/Task";
+import CommentComposer from "./CommentComposer";
+import CommentDetailModal from "./CommentDetailModal";
+import TaskFilesGallery from "./TaskFilesGallery";
 
-const STATUS_LABEL: Record<TaskStatus, string> = {
-  in_progress: "In Progress",
-  pending: "Pending",
-  done: "Done",
-  blocked: "Blocked",
+const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }> = {
+  in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
+  pending: { bg: "bg-neutral-soft", border: "border-[rgba(209,213,219,0.3)]", text: "text-text-secondary" },
+  completed: { bg: "bg-success/10", border: "border-[rgba(118,199,194,0.2)]", text: "text-success" },
+  archived: { bg: "bg-danger/10", border: "border-[rgba(239,68,68,0.2)]", text: "text-danger" },
 };
 
-const STATUS_STYLE: Record<TaskStatus, { bg: string; border: string; text: string }> = {
-  in_progress: { bg: "bg-[#fef3c7]", border: "border-[rgba(197,160,89,0.2)]", text: "text-[#92400e]" },
-  pending: { bg: "bg-[#f3f4f6]", border: "border-[rgba(209,213,219,0.3)]", text: "text-text-secondary" },
-  done: { bg: "bg-[#ecfdf5]", border: "border-[rgba(118,199,194,0.2)]", text: "text-[#065f46]" },
-  blocked: { bg: "bg-[#fee2e2]", border: "border-[rgba(239,68,68,0.2)]", text: "text-[#991b1b]" },
-};
+function StatusIcon({ name }: { name: string }) {
+  switch (name) {
+    case "in_progress":
+      return <Loader size={16} strokeWidth={1.6} className="shrink-0 text-warning" />;
+    case "completed":
+      return <CheckCircle2 size={16} strokeWidth={1.6} className="shrink-0 text-success" />;
+    case "archived":
+      return <Ban size={16} strokeWidth={1.6} className="shrink-0 text-danger" />;
+    case "pending":
+    default:
+      return <CircleDashed size={16} strokeWidth={1.6} className="shrink-0 text-text-secondary" />;
+  }
+}
 
-const PRIORITY_LABEL: Record<TaskPriority, string> = {
-  critical: "Critica",
-  high: "Alta",
-  medium: "Media",
-  low: "Baja",
-};
+function formatDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString([], {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-function TaskDetailTitle({ task }: { task: Task }) {
-  // Convert english title to the spanish display version from the design
-  const displayTitles: Record<number, string> = {
-    1: "Suite 301 — A/C reemplazo del compresor",
-  };
-  return (
-    <h2 className="font-alexandria text-[25px] font-normal leading-[25px] text-text-primary">
-      {displayTitles[task.id] ?? task.title}
-    </h2>
-  );
+function formatRelativeTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const diffMs = Date.now() - d.getTime();
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return "ahora";
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `hace ${days} d`;
+  return d.toLocaleDateString([], { day: "2-digit", month: "short" });
+}
+
+function authorName(entry: BackendTaskActivityLog): string {
+  if (entry.user) return fullName(entry.user);
+  return "Sistema";
 }
 
 interface TaskDetailProps {
-  task: Task;
+  task: BackendTask;
+  comments: BackendTaskActivityLog[];
+  isLoadingComments: boolean;
+  canManage: boolean;
+  canDelete: boolean;
+  onCommentAdded: () => void;
+  onExpand: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-export default function TaskDetail({ task }: TaskDetailProps) {
-  const statusStyle = STATUS_STYLE[task.status];
+export default function TaskDetail({
+  task,
+  comments,
+  isLoadingComments,
+  canManage,
+  canDelete,
+  onCommentAdded,
+  onExpand,
+  onEdit,
+  onDelete,
+}: TaskDetailProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openComment, setOpenComment] = useState<BackendTaskActivityLog | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
+
+  const sortedComments = useMemo(
+    () =>
+      [...comments].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      ),
+    [comments],
+  );
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      {/* Header: status + menu */}
+    <div className="flex h-full flex-col bg-surface">
+      {/* Header */}
       <div className="border-b border-border p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-              {task.status === "in_progress" && (
-                <>
-                  <circle cx="8" cy="8" r="6.5" stroke="#c5a059" strokeWidth="1.2" />
-                  <path d="M8 4.5v3.5l2 1.5" stroke="#c5a059" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              )}
-              {task.status === "pending" && <circle cx="8" cy="8" r="6.5" stroke="#d1d5db" strokeWidth="1.2" />}
-              {task.status === "done" && (
-                <>
-                  <circle cx="8" cy="8" r="6.5" stroke="#76c7c2" strokeWidth="1.2" />
-                  <path d="M5.5 8l2 2 3.5-3.5" stroke="#76c7c2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              )}
-              {task.status === "blocked" && (
-                <>
-                  <circle cx="8" cy="8" r="6.5" stroke="#ef4444" strokeWidth="1.2" />
-                  <path d="M8 5v3" stroke="#ef4444" strokeWidth="1.2" strokeLinecap="round" />
-                  <circle cx="8" cy="10.5" r="0.6" fill="#ef4444" />
-                </>
-              )}
-            </svg>
+            <StatusIcon name={task.status.name} />
             <span
               className={`inline-flex items-center rounded-full border px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text}`}
             >
-              {STATUS_LABEL[task.status]}
+              {statusLabel(task.status.name)}
             </span>
           </div>
-          <button className="flex h-[26px] w-[26px] items-center justify-center rounded text-text-secondary hover:bg-[#f3f4f6]">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="4" r="1" fill="#6b7280" />
-              <circle cx="9" cy="9" r="1" fill="#6b7280" />
-              <circle cx="9" cy="14" r="1" fill="#6b7280" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Title */}
-        <div className="mt-[10px]">
-          <TaskDetailTitle task={task} />
-        </div>
-
-        {/* Description */}
-        <p className="mt-[10px] font-inter text-sm leading-[21px] text-text-secondary">
-          {task.description}
-        </p>
-      </div>
-
-      {/* Metadata grid */}
-      <div className="flex flex-wrap gap-4 border-b border-border p-5">
-        <div className="flex w-[175px] flex-col gap-[2px]">
-          <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">Asignado a</span>
-          <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
-            {task.assignee}
-          </span>
-        </div>
-        <div className="flex w-[175px] flex-col gap-[2px]">
-          <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">Hora límite</span>
-          <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
-            {task.deadline}
-          </span>
-        </div>
-        <div className="flex w-[175px] flex-col gap-[2px]">
-          <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">Prioridad</span>
-          <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
-            {PRIORITY_LABEL[task.priority]}
-          </span>
-        </div>
-      </div>
-
-      {/* Activity log */}
-      <div className="flex flex-1 flex-col overflow-hidden px-5 pt-5">
-        <h3 className="font-alexandria text-xl font-normal leading-[21px] text-text-primary">
-          Registro de Actividad
-        </h3>
-
-        <div className="relative mt-4 flex-1 overflow-y-auto">
-          {/* Vertical line */}
-          {task.activityLog.length > 1 && (
-            <div
-              className="absolute left-[7px] top-2 w-px bg-[rgba(0,0,0,0.08)]"
-              style={{ height: `${(task.activityLog.length - 1) * 52 - 4}px` }}
-            />
-          )}
-
-          <div className="flex flex-col gap-4">
-            {task.activityLog.map((entry, index) => (
-              <div key={entry.id} className="flex gap-3">
-                <div className="flex shrink-0 items-start justify-center pt-1" style={{ width: 15 }}>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onExpand}
+              className="flex h-[26px] items-center gap-1 rounded-md border border-border-strong px-2 font-inter text-[11px] font-medium text-text-secondary hover:bg-neutral-soft"
+              title="Ver pantalla completa"
+            >
+              <Maximize2 size={12} strokeWidth={1.8} />
+              Ver completo
+            </button>
+            {(canManage || canDelete) && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex h-[26px] w-[26px] items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
+                  title="Más acciones"
+                >
+                  <MoreVertical size={16} strokeWidth={1.8} />
+                </button>
+                {menuOpen && (
                   <div
-                    className={`h-[10px] w-[10px] rounded-full ${
-                      index === 0 ? "bg-[#c5a059]" : "bg-[#d1d5db]"
-                    }`}
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <p className="font-inter text-[13px] leading-[19.5px]">
-                    <span className="font-medium text-text-primary">{entry.authorName}</span>{" "}
-                    <span className="text-text-secondary">{entry.action}</span>
-                  </p>
-                  <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
-                    {entry.time}
-                  </span>
-                </div>
+                    className="absolute right-0 top-full z-10 mt-1 w-40 overflow-hidden rounded-md border border-border bg-surface shadow-md"
+                    onMouseLeave={() => setMenuOpen(false)}
+                  >
+                    {canManage && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onEdit();
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-inter text-[12px] text-text-primary hover:bg-neutral-soft"
+                      >
+                        <Pencil size={12} strokeWidth={1.8} /> Editar tarea
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onDelete();
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left font-inter text-[12px] text-danger hover:bg-danger/10"
+                      >
+                        <Trash2 size={12} strokeWidth={1.8} /> Eliminar tarea
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-            ))}
+            )}
           </div>
         </div>
+
+        <div className="mt-[10px]">
+          <h2 className="font-alexandria text-[25px] font-normal leading-[28px] text-text-primary">
+            {task.title}
+          </h2>
+        </div>
+
+        {task.description && (
+          <p className="mt-[10px] font-inter text-sm leading-[21px] text-text-secondary">
+            {task.description}
+          </p>
+        )}
       </div>
+
+      <div className="flex flex-wrap gap-4 border-b border-border p-5">
+        <div className="flex w-[175px] flex-col gap-[2px]">
+          <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
+            Asignado a
+          </span>
+          <span className="flex items-center gap-1 font-inter text-sm font-medium leading-[21px] text-text-primary">
+            {task.assignments.length === 0 ? (
+              "Sin asignar"
+            ) : task.assignments.length === 1 ? (
+              fullName(task.assignments[0].user)
+            ) : (
+              <>
+                <Users size={13} strokeWidth={1.6} className="text-text-secondary" />
+                {task.assignments.length} colaboradores
+              </>
+            )}
+          </span>
+        </div>
+        <div className="flex w-[175px] flex-col gap-[2px]">
+          <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
+            Hora límite
+          </span>
+          <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
+            {formatDateTime(task.limitDate)}
+          </span>
+        </div>
+        <div className="flex w-[175px] flex-col gap-[2px]">
+          <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
+            Prioridad
+          </span>
+          <span className="font-inter text-sm font-medium leading-[21px] text-text-primary">
+            {priorityNameLabel(task.priority.name)}
+          </span>
+        </div>
+      </div>
+
+      {/* Files (read-only) */}
+      {task.files.length > 0 && (
+        <div className="border-b border-border px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Paperclip size={13} strokeWidth={1.6} className="text-text-secondary" />
+            <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+              Archivos ({task.files.length})
+            </span>
+          </div>
+          <div className="mt-2">
+            <TaskFilesGallery files={task.files} variant="compact" />
+          </div>
+        </div>
+      )}
+
+      {/* Comments thread */}
+      <div className="flex flex-1 flex-col overflow-hidden px-5 pt-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-alexandria text-xl font-normal leading-[21px] text-text-primary">
+            Comentarios de relevo
+          </h3>
+          {sortedComments.length > 0 && (
+            <span className="flex items-center gap-1 font-inter text-[11px] text-text-secondary">
+              <MessageSquare size={11} strokeWidth={1.6} />
+              {sortedComments.length}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 font-inter text-[11px] leading-[16px] text-text-secondary">
+          Haz clic sobre un comentario para verlo completo. Puedes adjuntar fotos al escribir uno nuevo.
+        </p>
+
+        <div className="relative mt-4 flex-1 overflow-y-auto pr-1">
+          {isLoadingComments ? (
+            <div className="flex h-full items-center justify-center font-inter text-sm text-text-secondary">
+              Cargando comentarios...
+            </div>
+          ) : sortedComments.length === 0 ? (
+            <div className="flex h-full items-center justify-center px-4 text-center font-inter text-[12px] text-text-secondary">
+              Aún no hay comentarios. Sé el primero en dejar una nota de relevo.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {sortedComments.map((entry) => (
+                <CommentBubble
+                  key={entry.id}
+                  entry={entry}
+                  onClick={() => setOpenComment(entry)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-3 shrink-0 border-t border-border pt-3 pb-4">
+          <CommentComposer taskId={task.id} onAdded={onCommentAdded} />
+        </div>
+      </div>
+
+      {openComment && (
+        <CommentDetailModal
+          comment={openComment}
+          onClose={() => setOpenComment(null)}
+        />
+      )}
     </div>
+  );
+}
+
+function CommentBubble({
+  entry,
+  onClick,
+}: {
+  entry: BackendTaskActivityLog;
+  onClick: () => void;
+}) {
+  const images = entry.imageUrls ?? [];
+  const hasImages = images.length > 0;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full gap-3 text-left transition-colors hover:opacity-90"
+    >
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-light font-inter text-[11px] font-semibold text-primary">
+        {(entry.user?.fullName ?? "?").charAt(0).toUpperCase()}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-[rgba(0,0,0,0.06)] bg-bg p-2.5 hover:border-primary/40">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="truncate font-inter text-[12px] font-medium text-text-primary">
+            {authorName(entry)}
+          </span>
+          <span className="shrink-0 font-inter text-[10px] text-text-secondary">
+            {formatRelativeTime(entry.createdAt)}
+          </span>
+        </div>
+        <p className="line-clamp-3 whitespace-pre-wrap break-words font-inter text-[12px] leading-[18px] text-text-primary">
+          {entry.action}
+        </p>
+
+        {hasImages && (
+          <div className="mt-1 flex items-center gap-1.5">
+            <div className="flex -space-x-2">
+              {images.slice(0, 3).map((url) => (
+                <img
+                  key={url}
+                  src={url}
+                  alt=""
+                  className="h-7 w-7 rounded-md border-2 border-bg object-cover"
+                />
+              ))}
+            </div>
+            <span className="flex items-center gap-1 font-inter text-[10px] text-text-secondary">
+              <ImageIcon size={10} strokeWidth={1.6} />
+              {images.length} imagen{images.length === 1 ? "" : "es"}
+            </span>
+          </div>
+        )}
+      </div>
+    </button>
   );
 }

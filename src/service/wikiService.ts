@@ -172,3 +172,16 @@ export async function publishArticle(id: number): Promise<WikiArticleDetail> {
 export function deleteArticle(id: number): Promise<void> {
   return apiClient.delete<void>(`/wiki/articles/${id}`);
 }
+
+// === Uploads ===
+
+export interface WikiImageUploadResult {
+  url: string;
+  name: string;
+}
+
+export function uploadArticleImage(file: File): Promise<WikiImageUploadResult> {
+  const form = new FormData();
+  form.append("file", file);
+  return apiClient.postForm<WikiImageUploadResult>("/wiki/uploads/image", form);
+}

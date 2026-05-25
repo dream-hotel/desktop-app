@@ -11,7 +11,13 @@
   --color-primary-hover: #3d2854;
 
   --color-bg: #fbfbfb;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f3f7;
+  --color-surface-hover: #f5f3f7;
+  --color-overlay: rgba(0, 0, 0, 0.30);
+
   --color-border: rgba(0, 0, 0, 0.06);
+  --color-border-strong: rgba(0, 0, 0, 0.12);
 
   --color-text-primary: #1a1a1a;
   --color-text-secondary: #6b7280;
@@ -23,6 +29,9 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-info: #3b82f6;
+
+  --color-neutral-soft: #f3f4f6;
+  --color-neutral-mid: #e5e7eb;
 }
 
 @layer base {
@@ -42,6 +51,8 @@
     margin: 0;
     overflow: hidden;
     font-family: var(--font-inter);
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
   }
 
   #root {
@@ -49,4 +60,152 @@
     height: 100vh;
     overflow: hidden;
   }
+
+  /* Smooth color transitions when the theme toggles.
+     Targeted at properties that change between themes so we don't pay
+     transition cost on layout-affecting properties. */
+  :root.theme-transition,
+  :root.theme-transition * {
+    transition: background-color 220ms ease, border-color 220ms ease,
+      color 220ms ease, fill 220ms ease, stroke 220ms ease,
+      box-shadow 220ms ease;
+  }
+
+  /* === Dark theme === */
+  [data-theme="dark"] {
+    --color-bg: #0e0e10;
+    --color-surface: #17171a;
+    --color-surface-2: #1f1f23;
+    --color-surface-hover: #232328;
+    --color-overlay: rgba(0, 0, 0, 0.62);
+
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-strong: rgba(255, 255, 255, 0.16);
+
+    --color-text-primary: #f1f1f3;
+    --color-text-secondary: #9ca3af;
+    --color-text-body: #d1d5db;
+
+    --color-primary: #b39ddb;
+    --color-primary-light: #2a1c3a;
+    --color-primary-dark: #d4c4ee;
+    --color-primary-hover: #c4b1e2;
+
+    --color-success: #34d399;
+    --color-success-light: #4ade80;
+    --color-warning: #fbbf24;
+    --color-danger: #f87171;
+    --color-info: #60a5fa;
+
+    --color-neutral-soft: #27272a;
+    --color-neutral-mid: #3f3f46;
+
+    color-scheme: dark;
+  }
+
+  /* Native form controls also pick up the right color scheme */
+  [data-theme="light"] {
+    color-scheme: light;
+  }
+
+  /* Remap inline SVG colors that were hardcoded to light-mode hex.
+     Cheaper than editing every <svg stroke="#XXX">. */
+  [data-theme="dark"] [stroke="#6b7280"],
+  [data-theme="dark"] [stroke="#9ca3af"] {
+    stroke: var(--color-text-secondary);
+  }
+  [data-theme="dark"] [fill="#6b7280"],
+  [data-theme="dark"] [fill="#9ca3af"] {
+    fill: var(--color-text-secondary);
+  }
+  [data-theme="dark"] [stroke="#1a1a1a"] {
+    stroke: var(--color-text-primary);
+  }
+  [data-theme="dark"] [stroke="#492173"] {
+    stroke: var(--color-primary);
+  }
+  [data-theme="dark"] [fill="#492173"] {
+    fill: var(--color-primary);
+  }
+  [data-theme="dark"] [stroke="#d1d5db"] {
+    stroke: var(--color-border-strong);
+  }
+
+  /* Custom scrollbars that don't look out of place in either theme */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--color-text-secondary) 40%, transparent);
+    background-clip: content-box;
+  }
+}
+
+/* BlockNote — compact, in-line with the rest of the app typography */
+.bn-compact .bn-container {
+  --bn-font-size: 13.5px;
+  font-size: 13.5px;
+}
+
+.bn-compact .bn-editor {
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.bn-compact .bn-editor [data-content-type="paragraph"],
+.bn-compact .bn-editor [data-content-type="bulletListItem"],
+.bn-compact .bn-editor [data-content-type="numberedListItem"],
+.bn-compact .bn-editor [data-content-type="checkListItem"] {
+  font-size: 13.5px;
+}
+
+.bn-compact .bn-editor [data-content-type="heading"][data-level="1"] {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.bn-compact .bn-editor [data-content-type="heading"][data-level="2"] {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.bn-compact .bn-editor [data-content-type="heading"][data-level="3"] {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.bn-compact .bn-block {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.bn-compact .bn-block-content {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.bn-compact .bn-editor blockquote {
+  font-size: 13.5px;
+}
+
+.bn-compact .bn-editor code,
+.bn-compact .bn-editor pre {
+  font-size: 12.5px;
+}
+
+/* Read-only mode: hide the side menu and tighten left padding */
+.bn-compact.bn-read-only .bn-editor {
+  padding-left: 0;
 }

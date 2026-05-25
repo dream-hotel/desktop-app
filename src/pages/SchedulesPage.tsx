@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { BackendUserListItem } from "../types/models/Users";
 import {
   DailyBlock,
@@ -181,7 +182,7 @@ export default function SchedulesPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
-      <div className="flex items-center justify-between border-b border-border bg-white px-8 py-5">
+      <div className="flex items-center justify-between border-b border-border bg-surface px-8 py-5">
         <div>
           <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
             Gestión de Horario
@@ -195,13 +196,13 @@ export default function SchedulesPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-6 border-b border-border bg-white px-8 py-3">
+      <div className="flex items-center gap-6 border-b border-border bg-surface px-8 py-3">
         <div className="flex items-center gap-2">
           <span className="font-inter text-[13px] text-text-body">Días a mostrar:</span>
           <select
             value={daysToShow}
             onChange={(e) => setDaysToShow(Number(e.target.value))}
-            className="rounded-[8px] border border-border bg-white px-3 py-1.5 font-inter text-[13px] text-text-primary outline-none"
+            className="rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[13px] text-text-primary outline-none"
           >
             {DAYS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -215,35 +216,27 @@ export default function SchedulesPage() {
           <span className="font-inter text-[13px] text-text-body">Semana:</span>
           <button
             onClick={() => setWeekStart((d) => addDays(d, -7))}
-            className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-white text-text-secondary hover:bg-[#f3f4f6]"
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-surface text-text-secondary hover:bg-neutral-soft"
             title="Semana anterior"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M9 3L5 7l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ChevronLeft size={14} strokeWidth={1.8} />
           </button>
-          <div className="flex items-center gap-2 rounded-[8px] border border-border bg-white px-3 py-1.5">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1.5" y="2.5" width="11" height="10" rx="1" stroke="#6b7280" strokeWidth="1" />
-              <path d="M1.5 5.5h11" stroke="#6b7280" strokeWidth="1" />
-              <path d="M4.5 1v2M9.5 1v2" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" />
-            </svg>
+          <div className="flex items-center gap-2 rounded-[8px] border border-border bg-surface px-3 py-1.5">
+            <Calendar size={13} strokeWidth={1.6} className="text-text-secondary" />
             <span className="font-inter text-[13px] text-text-primary">
               {formatRange(weekStart, daysToShow)}
             </span>
           </div>
           <button
             onClick={() => setWeekStart((d) => addDays(d, 7))}
-            className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-white text-text-secondary hover:bg-[#f3f4f6]"
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-border bg-surface text-text-secondary hover:bg-neutral-soft"
             title="Semana siguiente"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ChevronRight size={14} strokeWidth={1.8} />
           </button>
           <button
             onClick={() => setWeekStart(startOfWeek(new Date()))}
-            className="rounded-[8px] border border-border bg-white px-3 py-1.5 font-inter text-[12px] font-medium text-text-body hover:bg-[#f3f4f6]"
+            className="rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body hover:bg-neutral-soft"
           >
             Hoy
           </button>
@@ -256,12 +249,10 @@ export default function SchedulesPage() {
             </span>
             <button
               onClick={() => setSelectedUserId(null)}
-              className="rounded-full p-0.5 hover:bg-white"
+              className="rounded-full p-0.5 hover:bg-surface"
               title="Limpiar selección"
             >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+              <X size={12} strokeWidth={1.8} />
             </button>
           </div>
         )}
@@ -270,7 +261,7 @@ export default function SchedulesPage() {
       <div className="flex min-h-0 flex-1 gap-4 overflow-hidden p-4">
         <div className="flex min-h-0 flex-1 flex-col">
           {error && (
-            <div className="mb-3 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+            <div className="mb-3 rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
               {error}
             </div>
           )}

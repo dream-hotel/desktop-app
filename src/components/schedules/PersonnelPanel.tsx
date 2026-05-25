@@ -25,7 +25,7 @@ export default function PersonnelPanel({
   const usersWithoutSchedule = users.filter((u) => !u.schedules || u.schedules.length === 0);
 
   return (
-    <aside className="flex w-[260px] shrink-0 flex-col gap-4 rounded-[12px] border border-border bg-white p-4">
+    <aside className="flex w-[260px] shrink-0 flex-col gap-4 rounded-[12px] border border-border bg-surface p-4">
       <div>
         <h3 className="font-alexandria text-[16px] font-medium text-text-primary">Personal</h3>
       </div>
@@ -47,7 +47,7 @@ export default function PersonnelPanel({
               key={user.id}
               onClick={() => onSelectUser(isSelected ? null : user.id)}
               className={`flex items-center gap-3 rounded-[10px] px-2 py-[7px] text-left transition-colors ${
-                isSelected ? "bg-[#eef2ff]" : "hover:bg-[#fafafa]"
+                isSelected ? "bg-info/10" : "hover:bg-surface-2"
               }`}
             >
               <span
@@ -79,7 +79,7 @@ export default function PersonnelPanel({
               key={user.id}
               className="flex items-center gap-3 rounded-[10px] px-2 py-[5px]"
             >
-              <span className="h-[10px] w-[10px] shrink-0 rounded-full border border-[#d1d5db]" />
+              <span className="h-[10px] w-[10px] shrink-0 rounded-full border border-border-strong" />
               <span className="font-inter text-[12px] text-text-secondary">
                 {user.lastName}, {user.fullName}
               </span>
@@ -89,9 +89,9 @@ export default function PersonnelPanel({
       )}
 
       {drawingMode && (
-        <div className="rounded-[10px] border border-[#bfdbfe] bg-[#eff6ff] p-3">
-          <p className="font-inter text-[12px] font-medium text-[#1e40af]">Modo de dibujo activo</p>
-          <p className="mt-1 font-inter text-[11px] text-[#1e3a8a]">
+        <div className="rounded-[10px] border border-info/30 bg-info/10 p-3">
+          <p className="font-inter text-[12px] font-medium text-info">Modo de dibujo activo</p>
+          <p className="mt-1 font-inter text-[11px] text-info">
             Haz clic en una celda para crear un bloque en el horario del usuario seleccionado.
           </p>
         </div>

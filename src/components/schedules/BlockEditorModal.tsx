@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { DailyBlock, formatTime } from "../../types/models/Schedule";
 
 const DAY_OPTIONS = [
@@ -97,7 +98,7 @@ export default function BlockEditorModal({
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="flex w-[420px] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+        className="flex w-[420px] flex-col gap-4 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
       >
         <div className="flex items-start justify-between">
           <div>
@@ -111,11 +112,9 @@ export default function BlockEditorModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-text-secondary hover:bg-[#f3f4f6]"
+            className="rounded-md p-1 text-text-secondary hover:bg-neutral-soft"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={16} strokeWidth={1.8} />
           </button>
         </div>
 
@@ -124,7 +123,7 @@ export default function BlockEditorModal({
           <select
             value={day}
             onChange={(e) => setDay(Number(e.target.value))}
-            className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+            className="rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
           >
             {DAY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -142,7 +141,7 @@ export default function BlockEditorModal({
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               required
-              className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              className="rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
             />
           </div>
           <div className="flex flex-1 flex-col gap-1">
@@ -152,13 +151,13 @@ export default function BlockEditorModal({
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               required
-              className="rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              className="rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
             />
           </div>
         </div>
 
         {error && (
-          <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+          <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
             {error}
           </div>
         )}
@@ -169,7 +168,7 @@ export default function BlockEditorModal({
               type="button"
               onClick={handleDelete}
               disabled={saving || deleting}
-              className="rounded-[10px] bg-[#fee2e2] px-4 py-2 font-inter text-[13px] font-medium text-[#991b1b] disabled:opacity-50"
+              className="rounded-[10px] bg-danger/10 px-4 py-2 font-inter text-[13px] font-medium text-danger disabled:opacity-50"
             >
               {deleting ? "Eliminando..." : "Eliminar bloque"}
             </button>
@@ -181,7 +180,7 @@ export default function BlockEditorModal({
               type="button"
               onClick={onClose}
               disabled={saving || deleting}
-              className="rounded-[10px] bg-[#f3f4f6] px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+              className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
             >
               Cancelar
             </button>

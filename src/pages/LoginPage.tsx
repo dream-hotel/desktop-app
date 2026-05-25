@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
 import LoginForm from "../components/login/LoginForm";
 import loginBg from "../assets/login-bg.jpg";
+import dreamLogo from "../assets/dream_logo.svg";
 import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -25,6 +27,11 @@ export default function LoginPage() {
 
       <div className="relative z-[2] flex h-full w-full items-center justify-between px-10">
         <div className="my-auto ml-7 pl-[13px]">
+          <img
+            src={dreamLogo}
+            alt="Dream by Stannum"
+            className="mb-5 h-20 w-20 drop-shadow-[0_4px_16px_rgba(0,0,0,0.35)] [filter:brightness(0)_invert(1)]"
+          />
           <h1 className="m-0 whitespace-pre-wrap font-alexandria text-[48px] leading-[50px] font-normal text-white">
             Dream by{"\n"}Stannum
           </h1>
@@ -34,7 +41,22 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="mr-[60px] flex items-center justify-center">
+        <div className="mr-[60px] flex flex-col items-center justify-center gap-3">
+          {sessionExpired && (
+            <div className="flex w-[360px] items-start justify-between gap-3 rounded-[10px] border border-warning/40 bg-warning/15 px-4 py-2.5 font-inter text-[12px] text-text-primary backdrop-blur-sm">
+              <div className="flex items-start gap-2">
+                <AlertTriangle size={14} strokeWidth={1.8} className="mt-0.5 shrink-0 text-warning" />
+                <span>Tu sesión expiró. Vuelve a iniciar sesión para continuar.</span>
+              </div>
+              <button
+                onClick={clearSessionExpired}
+                className="text-text-secondary hover:text-text-primary"
+                aria-label="Cerrar aviso"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <LoginForm onSuccess={handleLoginSuccess} />
         </div>
       </div>

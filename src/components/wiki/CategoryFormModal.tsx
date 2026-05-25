@@ -71,7 +71,7 @@ export default function CategoryFormModal({
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
-        className="flex w-[440px] flex-col gap-5 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+        className="flex w-[440px] flex-col gap-5 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
       >
         <header className="flex flex-col gap-1">
           <h3 className="font-alexandria text-[20px] font-medium text-text-primary">
@@ -94,7 +94,7 @@ export default function CategoryFormModal({
             maxLength={100}
             autoFocus
             placeholder="Ej. Housekeeping"
-            className="rounded-[10px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
+            className="rounded-[10px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
           />
         </div>
 
@@ -106,7 +106,7 @@ export default function CategoryFormModal({
             <select
               value={selectedParent ?? ""}
               onChange={(e) => setSelectedParent(e.target.value ? Number(e.target.value) : null)}
-              className="rounded-[10px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
+              className="rounded-[10px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
             >
               <option value="">— Raíz —</option>
               {list.map(({ node, depth }) => (
@@ -130,7 +130,7 @@ export default function CategoryFormModal({
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="rounded-[10px] bg-[#f3f4f6] px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+            className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
           >
             Cancelar
           </button>

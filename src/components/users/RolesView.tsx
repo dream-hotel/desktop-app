@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertTriangle, Pencil, Plus, Search, ShieldCheck, Trash2 } from "lucide-react";
 import {
   createRole,
   deleteRole,
@@ -126,43 +127,36 @@ export default function RolesView() {
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="absolute left-3 top-1/2 -translate-y-1/2"
-            >
-              <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.2" />
-              <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
+            <Search
+              size={15}
+              strokeWidth={1.6}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
+            />
             <input
               type="text"
               placeholder="Buscar rol..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-[240px] rounded-[10px] bg-[#f3f4f6] py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-[240px] rounded-[10px] bg-neutral-soft py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </div>
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 4.5v9M4.5 9h9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Plus size={16} strokeWidth={2} />
             Nuevo Rol
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+        <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
           {error}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-[12px] border border-border bg-white">
+      <div className="overflow-hidden rounded-[12px] border border-border bg-surface">
         <table className="w-full table-fixed">
           <colgroup>
             <col className="w-[28%]" />
@@ -172,7 +166,7 @@ export default function RolesView() {
             <col className="w-[10%]" />
           </colgroup>
           <thead>
-            <tr className="border-b border-border bg-[#fafafa]">
+            <tr className="border-b border-border bg-surface-2">
               <th className="px-5 py-3 text-left font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                 Rol
               </th>
@@ -210,13 +204,11 @@ export default function RolesView() {
                 const summary = permissionSummary(role);
                 const mods = modulesCovered(role);
                 return (
-                  <tr key={role.id} className="border-b border-border last:border-b-0 hover:bg-[#fcfbfd]">
+                  <tr key={role.id} className="border-b border-border last:border-b-0 hover:bg-surface-2">
                     <td className="px-5 py-3 align-top">
                       <div className="flex items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary-light text-primary">
-                          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                            <path d="M9 1l7 3v5c0 4-3 6.5-7 8-4-1.5-7-4-7-8V4l7-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                          </svg>
+                          <ShieldCheck size={18} strokeWidth={1.8} />
                         </div>
                         <div className="flex min-w-0 flex-col">
                           <div className="flex items-center gap-2">
@@ -224,7 +216,7 @@ export default function RolesView() {
                               {roleDisplayName(role.name)}
                             </span>
                             {role.isSystem && (
-                              <span className="shrink-0 rounded-full bg-[#fef3c7] px-2 py-[1.5px] font-inter text-[10px] font-medium text-[#92400e]">
+                              <span className="shrink-0 rounded-full bg-warning/15 px-2 py-[1.5px] font-inter text-[10px] font-medium text-warning">
                                 Sistema
                               </span>
                             )}
@@ -241,18 +233,18 @@ export default function RolesView() {
                       <span
                         className={`inline-flex max-w-full items-center gap-[5px] whitespace-nowrap rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${
                           summary.tone === "all"
-                            ? "bg-[#ecfdf5] text-[#065f46]"
+                            ? "bg-success/10 text-success"
                             : summary.tone === "none"
-                            ? "bg-[#fee2e2] text-[#991b1b]"
+                            ? "bg-danger/10 text-danger"
                             : "bg-primary-light text-primary"
                         }`}
                       >
                         <span
                           className={`h-[6px] w-[6px] shrink-0 rounded-full ${
                             summary.tone === "all"
-                              ? "bg-[#16a34a]"
+                              ? "bg-success"
                               : summary.tone === "none"
-                              ? "bg-[#dc2626]"
+                              ? "bg-danger"
                               : "bg-primary"
                           }`}
                         />
@@ -267,14 +259,14 @@ export default function RolesView() {
                         {mods.slice(0, 4).map((m) => (
                           <span
                             key={m}
-                            className="whitespace-nowrap rounded-full bg-[#f3f4f6] px-2 py-[2px] font-inter text-[11px] text-text-body"
+                            className="whitespace-nowrap rounded-full bg-neutral-soft px-2 py-[2px] font-inter text-[11px] text-text-body"
                           >
                             {m}
                           </span>
                         ))}
                         {mods.length > 4 && (
                           <span
-                            className="whitespace-nowrap rounded-full bg-[#f3f4f6] px-2 py-[2px] font-inter text-[11px] text-text-body"
+                            className="whitespace-nowrap rounded-full bg-neutral-soft px-2 py-[2px] font-inter text-[11px] text-text-body"
                             title={mods.slice(4).join(", ")}
                           >
                             +{mods.length - 4}
@@ -292,9 +284,7 @@ export default function RolesView() {
                           title="Editar"
                           className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <path d="M2 12h10M9 2l3 3-7 7H2v-3l7-7z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <Pencil size={14} strokeWidth={1.8} />
                         </button>
                         <button
                           onClick={() => {
@@ -303,11 +293,9 @@ export default function RolesView() {
                           }}
                           title={role.isSystem ? "Roles del sistema no se pueden eliminar" : "Eliminar"}
                           disabled={role.isSystem}
-                          className="rounded-md p-1.5 text-text-secondary hover:bg-[#fee2e2] hover:text-[#dc2626] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
+                          className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
                         >
-                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <path d="M2 3.5h10M5 3.5V2h4v1.5M3 3.5l1 8.5h6l1-8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
+                          <Trash2 size={14} strokeWidth={1.8} />
                         </button>
                       </div>
                     </td>
@@ -343,14 +331,11 @@ export default function RolesView() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex w-[420px] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+            className="flex w-[420px] flex-col gap-4 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fee2e2]">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 6v5M10 14h.01" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round" />
-                  <circle cx="10" cy="10" r="8" stroke="#dc2626" strokeWidth="1.5" />
-                </svg>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-danger/10">
+                <AlertTriangle size={20} strokeWidth={1.8} className="text-danger" />
               </div>
               <div className="flex flex-col gap-1">
                 <h3 className="font-alexandria text-[18px] font-normal leading-[22px] text-text-primary">
@@ -364,7 +349,7 @@ export default function RolesView() {
             </div>
 
             {deleteError && (
-              <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+              <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
                 {deleteError}
               </div>
             )}
@@ -376,14 +361,14 @@ export default function RolesView() {
                   setDeleteError(null);
                 }}
                 disabled={deleteBusy}
-                className="rounded-[10px] bg-[#f3f4f6] px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+                className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleteBusy}
-                className="rounded-[10px] bg-[#dc2626] px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+                className="rounded-[10px] bg-danger px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
               >
                 {deleteBusy ? "Eliminando..." : "Eliminar rol"}
               </button>

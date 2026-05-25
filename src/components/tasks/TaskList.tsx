@@ -1,58 +1,63 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Task, TaskPriority, TaskStatus } from "../../types/response/TaskResponse";
+import {
+  Ban,
+  Calendar,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  CircleDashed,
+  CheckCircle2,
+  Clock,
+  Loader,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  User as UserIcon,
+  X,
+} from "lucide-react";
+import {
+  BackendTaskListItem,
+  fullName,
+  priorityNameLabel,
+  shortName,
+} from "../../types/models/Task";
+import { PriorityName } from "../../types/models/Announcement";
 
-type FilterTab = "todos" | "pending" | "in_progress" | "done" | "archived";
+type FilterTab = "all" | "pending" | "in_progress" | "completed" | "archived";
 
 const FILTER_TABS: { id: FilterTab; label: string }[] = [
-  { id: "todos", label: "Todos" },
+  { id: "all", label: "Todos" },
   { id: "pending", label: "Pendiente" },
   { id: "in_progress", label: "En Progreso" },
-  { id: "done", label: "Finalizado" },
+  { id: "completed", label: "Finalizado" },
   { id: "archived", label: "Archivado" },
 ];
 
-function StatusIcon({ status }: { status: TaskStatus }) {
-  switch (status) {
+function StatusIcon({ name }: { name: string }) {
+  switch (name) {
     case "in_progress":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#c5a059" strokeWidth="1.2" />
-          <path d="M8 4.5v3.5l2 1.5" stroke="#c5a059" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
+      return <Loader size={16} strokeWidth={1.6} className="text-warning" />;
+    case "completed":
+      return <CheckCircle2 size={16} strokeWidth={1.6} className="text-success" />;
+    case "archived":
+      return <Ban size={16} strokeWidth={1.6} className="text-danger" />;
     case "pending":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#d1d5db" strokeWidth="1.2" />
-        </svg>
-      );
-    case "done":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#76c7c2" strokeWidth="1.2" />
-          <path d="M5.5 8l2 2 3.5-3.5" stroke="#76c7c2" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case "blocked":
-      return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="6.5" stroke="#ef4444" strokeWidth="1.2" />
-          <path d="M8 5v3" stroke="#ef4444" strokeWidth="1.2" strokeLinecap="round" />
-          <circle cx="8" cy="10.5" r="0.6" fill="#ef4444" />
-        </svg>
-      );
+    default:
+      return <CircleDashed size={16} strokeWidth={1.6} className="text-text-secondary" />;
   }
 }
 
-function PriorityBadge({ priority }: { priority: TaskPriority }) {
-  const config: Record<TaskPriority, { bg: string; border: string; text: string; label: string }> = {
-    critical: { bg: "bg-[#c5a059]", border: "", text: "text-white", label: "Critical" },
-    high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-[#92400e]", label: "High" },
-    medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-[#065f46]", label: "Medium" },
-    low: { bg: "bg-[#f3f4f6]", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Low" },
+function PriorityBadge({ name }: { name: string }) {
+  const config: Record<string, { bg: string; border: string; text: string; label: string }> = {
+    critical: { bg: "bg-[#c5a059]", border: "", text: "text-white", label: "Crítica" },
+    high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-warning", label: "Alta" },
+    medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-success", label: "Media" },
+    low: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Baja" },
   };
-  const c = config[priority];
+  const c = config[name] ?? config.low;
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${c.bg} ${c.border} ${c.text}`}>
       {c.label}
@@ -60,14 +65,14 @@ function PriorityBadge({ priority }: { priority: TaskPriority }) {
   );
 }
 
-function StatusBadge({ status }: { status: TaskStatus }) {
-  const config: Record<TaskStatus, { bg: string; border: string; text: string; label: string }> = {
-    in_progress: { bg: "bg-[#fef3c7]", border: "border border-[rgba(197,160,89,0.2)]", text: "text-[#92400e]", label: "In Progress" },
-    pending: { bg: "bg-[#f3f4f6]", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Pending" },
-    done: { bg: "bg-[#ecfdf5]", border: "border border-[rgba(118,199,194,0.2)]", text: "text-[#065f46]", label: "Done" },
-    blocked: { bg: "bg-[#fee2e2]", border: "border border-[rgba(239,68,68,0.2)]", text: "text-[#991b1b]", label: "Blocked" },
+function StatusBadge({ name }: { name: string }) {
+  const config: Record<string, { bg: string; border: string; text: string; label: string }> = {
+    in_progress: { bg: "bg-warning/15", border: "border border-[rgba(197,160,89,0.2)]", text: "text-warning", label: "En progreso" },
+    pending: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Pendiente" },
+    completed: { bg: "bg-success/10", border: "border border-[rgba(118,199,194,0.2)]", text: "text-success", label: "Finalizada" },
+    archived: { bg: "bg-danger/10", border: "border border-[rgba(239,68,68,0.2)]", text: "text-danger", label: "Archivada" },
   };
-  const c = config[status];
+  const c = config[name] ?? config.pending;
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${c.bg} ${c.border} ${c.text}`}>
       {c.label}
@@ -95,14 +100,11 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
   return (
     <button onClick={onChange} className="flex shrink-0 items-center justify-center p-[3px]">
       {checked ? (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <rect x="0.5" y="0.5" width="9" height="9" rx="1.5" fill="#492173" stroke="#492173" />
-          <path d="M2.5 5l2 2 3.5-3.5" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <span className="flex h-[10px] w-[10px] items-center justify-center rounded-[2px] bg-primary text-white">
+          <Check size={8} strokeWidth={2.5} />
+        </span>
       ) : (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <rect x="0.5" y="0.5" width="9" height="9" rx="1.5" stroke="#9ca3af" />
-        </svg>
+        <span className="block h-[10px] w-[10px] rounded-[2px] border border-text-secondary/60" />
       )}
     </button>
   );
@@ -130,7 +132,7 @@ function getDaysInMonth(year: number, month: number): number {
 
 function getFirstDayOfWeek(year: number, month: number): number {
   const day = new Date(year, month, 1).getDay();
-  return day === 0 ? 6 : day - 1; // Monday = 0
+  return day === 0 ? 6 : day - 1;
 }
 
 interface MiniCalendarProps {
@@ -198,7 +200,6 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
-  // Position to the left of the anchor, so it doesn't overlap the detail panel
   const calWidth = 180;
   const style: React.CSSProperties = {
     position: "fixed",
@@ -211,42 +212,35 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
     <div
       ref={calRef}
       data-mini-calendar
-      className="w-[180px] rounded-md bg-white p-2 shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
+      className="w-[180px] rounded-md bg-surface p-2 shadow-[0px_4px_12px_rgba(0,0,0,0.15)]"
       style={style}
     >
-      {/* Month/year header */}
       <div className="mb-1 flex items-center justify-between">
         <button
           onClick={prevMonth}
-          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-[#f3f4f6]"
+          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
         >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M6.5 2L3.5 5l3 3" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ChevronLeft size={10} strokeWidth={1.6} className="text-text-secondary" />
         </button>
         <span className="font-alexandria text-[10px] font-normal text-text-primary">
           {MONTH_NAMES_FULL[viewMonth]} {viewYear}
         </span>
         <button
           onClick={nextMonth}
-          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-[#f3f4f6]"
+          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-neutral-soft"
         >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M3.5 2l3 3-3 3" stroke="#6b7280" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ChevronRight size={10} strokeWidth={1.6} className="text-text-secondary" />
         </button>
       </div>
 
-      {/* Day headers */}
       <div className="grid grid-cols-7 gap-px">
         {DAY_HEADERS.map((d) => (
-          <div key={d} className="flex h-5 items-center justify-center font-inter text-[8px] font-medium text-[#9ca3af]">
+          <div key={d} className="flex h-5 items-center justify-center font-inter text-[8px] font-medium text-text-secondary">
             {d}
           </div>
         ))}
       </div>
 
-      {/* Day cells */}
       <div className="grid grid-cols-7 gap-px">
         {cells.map((day, i) => (
           <div key={i} className="flex h-5 items-center justify-center">
@@ -261,7 +255,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
                     ? "bg-primary text-white"
                     : isToday(day)
                       ? "bg-primary-light text-primary"
-                      : "text-text-primary hover:bg-[#f3f4f6]"
+                      : "text-text-primary hover:bg-neutral-soft"
                 }`}
               >
                 {day}
@@ -301,13 +295,9 @@ function DatePickerField({ label, value, onChange }: DatePickerFieldProps) {
       <button
         ref={btnRef}
         onClick={() => (showCalendar ? setShowCalendar(false) : openCalendar())}
-        className="flex w-[60px] items-center gap-1 overflow-hidden rounded-sm bg-[#e5e5ea] py-px pl-[7px] pr-[9px]"
+        className="flex w-[60px] items-center gap-1 overflow-hidden rounded-sm bg-neutral-mid py-px pl-[7px] pr-[9px]"
       >
-        <svg width="12" height="13" viewBox="0 0 12 13" fill="none" className="shrink-0">
-          <rect x="1" y="2.5" width="10" height="9" rx="1" stroke="#6b7280" strokeWidth="0.8" />
-          <path d="M1 5.5h10" stroke="#6b7280" strokeWidth="0.8" />
-          <path d="M4 1v2M8 1v2" stroke="#6b7280" strokeWidth="0.8" strokeLinecap="round" />
-        </svg>
+        <Calendar size={11} strokeWidth={1.4} className="shrink-0 text-text-secondary" />
         <span className="font-alexandria text-[8px] font-light leading-[21px] text-text-secondary">
           {value ? formatDateShort(value) : "dd mmm"}
         </span>
@@ -338,7 +328,6 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
     function handleClickOutside(e: MouseEvent) {
       const target = e.target as Node;
       if (containerRef.current && !containerRef.current.contains(target)) {
-        // Don't close if the click is inside a MiniCalendar portal
         if ((target as HTMLElement).closest?.("[data-mini-calendar]")) return;
         setExpanded(false);
       }
@@ -360,31 +349,23 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
     onFilterChange(EMPTY_FILTER);
   }
 
-  // Filter icon SVG
   const filterIcon = (color: string) => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M1 3h12M3 7h8M5 11h4" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
+    <SlidersHorizontal size={13} strokeWidth={1.6} style={{ color }} />
   );
 
-  // Chevron SVG (up or down)
-  const chevron = (direction: "up" | "down", color: string) => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      {direction === "down" ? (
-        <path d="M4 6l3 3 3-3" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      ) : (
-        <path d="M4 9l3-3 3 3" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      )}
-    </svg>
-  );
+  const chevron = (direction: "up" | "down", color: string) =>
+    direction === "down" ? (
+      <ChevronDown size={13} strokeWidth={1.6} style={{ color }} />
+    ) : (
+      <ChevronUp size={13} strokeWidth={1.6} style={{ color }} />
+    );
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Trigger button */}
       {active && !expanded ? (
         <button
           onClick={() => setExpanded(true)}
-          className="flex items-center gap-[6px] rounded-[10px] border border-[#1aba1a] bg-[rgba(26,186,26,0.15)] px-3 py-[7px] font-inter text-[13px] font-medium text-text-primary"
+          className="flex items-center gap-[6px] rounded-[10px] border border-success bg-[rgba(26,186,26,0.15)] px-3 py-[7px] font-inter text-[13px] font-medium text-text-primary"
         >
           <button
             onClick={(e) => {
@@ -393,9 +374,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
             }}
             className="flex items-center justify-center"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M5 5l6 6M11 5l-6 6" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={14} strokeWidth={1.8} className="text-text-primary" />
           </button>
           {filterIcon("#1a1a1a")}
           Filtro
@@ -404,7 +383,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
       ) : (
         <button
           onClick={() => setExpanded(!expanded)}
-          className={`flex items-center gap-[6px] rounded-[10px] bg-[#f3f4f6] px-3 py-[7px] font-inter text-[13px] font-medium text-text-secondary`}
+          className="flex items-center gap-[6px] rounded-[10px] bg-neutral-soft px-3 py-[7px] font-inter text-[13px] font-medium text-text-secondary"
         >
           {filterIcon("#6b7280")}
           Filtro
@@ -412,10 +391,8 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
         </button>
       )}
 
-      {/* Dropdown */}
       {expanded && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-10 flex w-[112px] flex-col gap-[2px] rounded-sm bg-white px-[9px] py-[6px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
-          {/* Fecha section */}
+        <div className="absolute right-0 top-[calc(100%+8px)] z-10 flex w-[112px] flex-col gap-[2px] rounded-sm bg-surface px-[9px] py-[6px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]">
           <p className="font-alexandria text-[11px] font-light leading-[21px] text-primary underline">
             Fecha
           </p>
@@ -432,7 +409,6 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
             />
           </div>
 
-          {/* Prioridad section */}
           <p className="mt-[2px] font-alexandria text-[11px] font-light leading-[21px] text-primary underline">
             Prioridad
           </p>
@@ -444,7 +420,7 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
                   onChange={() => togglePriority(p)}
                 />
                 <span className="font-alexandria text-[9px] font-light leading-[19.5px] text-black">
-                  {p === "high" ? "Alta" : p === "medium" ? "Media" : "Baja"}
+                  {priorityNameLabel(p)}
                 </span>
               </div>
             ))}
@@ -455,72 +431,70 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
   );
 }
 
+function formatDeadline(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  const today = new Date();
+  const sameDay = d.toDateString() === today.toDateString();
+  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) return time;
+  return `${d.getDate()} ${MONTH_NAMES_SHORT[d.getMonth()]} ${time}`;
+}
+
+function assigneeSummary(task: BackendTaskListItem): string {
+  if (task.assignments.length === 0) return "Sin asignar";
+  const first = shortName(task.assignments[0].user);
+  if (task.assignments.length === 1) return first;
+  return `${first} +${task.assignments.length - 1}`;
+}
+
 interface TaskItemProps {
-  task: Task;
+  task: BackendTaskListItem;
   isSelected: boolean;
   onClick: () => void;
 }
 
 function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
-  const isDone = task.status === "done";
-
+  const isDone = task.status.name === "completed";
   return (
     <button
       onClick={onClick}
-      className={`flex w-full flex-col items-start border-b pb-[1px] pt-4 text-left ${
+      className={`flex w-full flex-col items-start border-b py-4 text-left ${
         isSelected
-          ? "border-b-border border-l-2 border-l-primary bg-[#fcf9ff] pl-[22px] pr-5"
+          ? "border-b-border border-l-2 border-l-primary bg-primary-light pl-[22px] pr-5"
           : "border-b-[rgba(0,0,0,0.04)] px-5"
       }`}
     >
       <div className="flex w-full items-start">
         <div className="mr-3 mt-[2px] shrink-0">
-          <StatusIcon status={task.status} />
+          <StatusIcon name={task.status.name} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
-          <div className="flex items-start justify-between">
-            <p
-              className={`truncate font-inter text-sm font-medium leading-[21px] text-text-primary ${
-                isDone ? "line-through opacity-60" : ""
-              }`}
-            >
-              {task.title}
-            </p>
-            {task.comments > 0 && (
-              <div className="ml-2 flex shrink-0 items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M1.5 2.5h9a.5.5 0 01.5.5v5a.5.5 0 01-.5.5H4L2 10.5V8.5h-.5a.5.5 0 01-.5-.5V3a.5.5 0 01.5-.5z"
-                    stroke="#9ca3af"
-                    strokeWidth="1"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
-                  {task.comments}
-                </span>
-              </div>
-            )}
-          </div>
+          <p
+            className={`truncate font-inter text-sm font-medium leading-[21px] text-text-primary ${
+              isDone ? "line-through opacity-60" : ""
+            }`}
+            title={task.title}
+          >
+            {task.title}
+          </p>
           <div className="flex flex-wrap items-center gap-x-2">
-            <PriorityBadge priority={task.priority} />
-            <StatusBadge status={task.status} />
+            <PriorityBadge name={task.priority.name} />
+            <StatusBadge name={task.status.name} />
             <div className="flex items-center gap-1">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <circle cx="5" cy="4" r="2" stroke="#9ca3af" strokeWidth="0.8" />
-                <path d="M1 9c0-2 1.5-3 4-3s4 1 4 3" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
-              </svg>
-              <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
-                {task.assignee}
+              <UserIcon size={10} strokeWidth={1.4} className="text-text-secondary" />
+              <span
+                className="font-inter text-[11px] leading-[16.5px] text-text-secondary"
+                title={task.assignments.map((a) => fullName(a.user)).join(", ")}
+              >
+                {assigneeSummary(task)}
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <circle cx="5" cy="5" r="4" stroke="#9ca3af" strokeWidth="0.8" />
-                <path d="M5 2.5v2.5l2 1" stroke="#9ca3af" strokeWidth="0.8" strokeLinecap="round" />
-              </svg>
-              <span className="font-inter text-[11px] leading-[16.5px] text-[#9ca3af]">
-                {task.deadline}
+              <Clock size={10} strokeWidth={1.4} className="text-text-secondary" />
+              <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
+                {formatDeadline(task.limitDate)}
               </span>
             </div>
           </div>
@@ -531,41 +505,50 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
 }
 
 interface TaskListProps {
-  tasks: Task[];
+  tasks: BackendTaskListItem[];
+  isLoading: boolean;
   selectedTaskId: number | null;
   onSelectTask: (id: number) => void;
   onNewTask: () => void;
 }
 
-export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTask }: TaskListProps) {
+export default function TaskList({
+  tasks,
+  isLoading,
+  selectedTaskId,
+  onSelectTask,
+  onNewTask,
+}: TaskListProps) {
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState<FilterTab>("todos");
+  const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [advancedFilter, setAdvancedFilter] = useState<FilterState>(EMPTY_FILTER);
 
-  const filteredTasks = tasks.filter((task) => {
-    // Tab filter
-    if (activeFilter !== "todos" && activeFilter !== "archived") {
-      if (task.status !== activeFilter) return false;
-    }
-    // Search filter
-    if (search && !task.title.toLowerCase().includes(search.toLowerCase())) {
-      return false;
-    }
-    // Priority filter
-    if (advancedFilter.priorities.length > 0) {
-      // Map critical -> high for filter purposes
-      const mappedPriority: PriorityFilter | null =
-        task.priority === "critical" ? "high" : (task.priority as PriorityFilter);
-      if (!advancedFilter.priorities.includes(mappedPriority)) return false;
-    }
-    return true;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      if (activeFilter !== "all" && task.status.name !== activeFilter) return false;
+      if (search && !task.title.toLowerCase().includes(search.toLowerCase())) return false;
+      if (advancedFilter.priorities.length > 0) {
+        const name = task.priority.name as PriorityName;
+        const mapped: PriorityFilter = name === "critical" ? "high" : (name as PriorityFilter);
+        if (!advancedFilter.priorities.includes(mapped)) return false;
+      }
+      if (advancedFilter.dateFrom || advancedFilter.dateTo) {
+        if (!task.limitDate) return false;
+        const d = new Date(task.limitDate);
+        if (advancedFilter.dateFrom && d < advancedFilter.dateFrom) return false;
+        if (advancedFilter.dateTo) {
+          const end = new Date(advancedFilter.dateTo);
+          end.setHours(23, 59, 59, 999);
+          if (d > end) return false;
+        }
+      }
+      return true;
+    });
+  }, [tasks, activeFilter, search, advancedFilter]);
 
   return (
     <div className="flex h-full flex-col border-r border-border">
-      {/* Header */}
       <div className="flex flex-col gap-4 border-b border-border px-4 py-[17px]">
-        {/* Title row */}
         <div className="flex items-center justify-between">
           <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
             Lista de Tareas
@@ -574,38 +557,25 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
             onClick={onNewTask}
             className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 4.5v9M4.5 9h9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <Plus size={16} strokeWidth={2} />
             Nueva Tarea
           </button>
         </div>
 
-        {/* Search + Filter row */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="absolute left-3 top-1/2 -translate-y-1/2"
-            >
-              <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.2" />
-              <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
+            <Search size={15} strokeWidth={1.6} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
               type="text"
               placeholder="Buscar tareas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-[10px] bg-[#f3f4f6] py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none"
+              className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </div>
           <FilterButton filter={advancedFilter} onFilterChange={setAdvancedFilter} />
         </div>
 
-        {/* Filter tabs */}
         <div className="flex items-center gap-2">
           {FILTER_TABS.map((tab) => (
             <button
@@ -614,7 +584,7 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
               className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] ${
                 activeFilter === tab.id
                   ? "bg-primary text-white"
-                  : "bg-[#f3f4f6] text-text-secondary"
+                  : "bg-neutral-soft text-text-secondary"
               }`}
             >
               {tab.label}
@@ -623,16 +593,25 @@ export default function TaskList({ tasks, selectedTaskId, onSelectTask, onNewTas
         </div>
       </div>
 
-      {/* Task items */}
       <div className="flex-1 overflow-y-auto">
-        {filteredTasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            isSelected={selectedTaskId === task.id}
-            onClick={() => onSelectTask(task.id)}
-          />
-        ))}
+        {isLoading ? (
+          <div className="flex h-full items-center justify-center font-inter text-sm text-text-secondary">
+            Cargando tareas...
+          </div>
+        ) : filteredTasks.length === 0 ? (
+          <div className="flex h-full items-center justify-center px-6 text-center font-inter text-sm text-text-secondary">
+            No hay tareas que coincidan con los filtros actuales.
+          </div>
+        ) : (
+          filteredTasks.map((task) => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              isSelected={selectedTaskId === task.id}
+              onClick={() => onSelectTask(task.id)}
+            />
+          ))
+        )}
       </div>
     </div>
   );

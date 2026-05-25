@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { es as blocknoteEs } from "@blocknote/core/locales";
@@ -11,6 +12,7 @@ import {
 } from "../../types/models/Wiki";
 import { User } from "../../types/response/AuthResponse";
 import * as wikiService from "../../service/wikiService";
+import { useTheme } from "../../hooks/useTheme";
 import EditorToolbar from "./EditorToolbar";
 
 interface ArticleEditorProps {
@@ -45,6 +47,7 @@ export default function ArticleEditor({
   onSaved,
 }: ArticleEditorProps) {
   const isEditMode = !!article;
+  const { resolved } = useTheme();
 
   const [title, setTitle] = useState(article?.title ?? "");
   const [categoryId, setCategoryId] = useState<number | "">(
@@ -62,7 +65,13 @@ export default function ArticleEditor({
     article?.updatedAt ? new Date(article.updatedAt) : null,
   );
 
-  const editor = useCreateBlockNote({ dictionary: blocknoteEs });
+  const editor = useCreateBlockNote({
+    dictionary: blocknoteEs,
+    uploadFile: async (file: File) => {
+      const result = await wikiService.uploadArticleImage(file);
+      return result.url;
+    },
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -140,31 +149,57 @@ export default function ArticleEditor({
   };
 
   const theme = useMemo(
-    () => ({
-      colors: {
-        editor: { text: "#1a1a1a", background: "#ffffff" },
-        menu: { text: "#1a1a1a", background: "#ffffff" },
-        tooltip: { text: "#ffffff", background: "#1a1a1a" },
-        hovered: { text: "#1a1a1a", background: "#f5f0fb" },
-        selected: { text: "#492173", background: "#f5f0fb" },
-        disabled: { text: "#9ca3af", background: "#fbfbfb" },
-        shadow: "#0000001f",
-        border: "rgba(0,0,0,0.06)",
-        sideMenu: "#9ca3af",
-        highlights: {
-          gray: { text: "#374151", background: "#f3f4f6" },
-          brown: { text: "#92400e", background: "#fef3c7" },
-          red: { text: "#991b1b", background: "#fee2e2" },
-          orange: { text: "#9a3412", background: "#ffedd5" },
-          yellow: { text: "#92400e", background: "#fef9c3" },
-          green: { text: "#065f46", background: "#dcfce7" },
-          blue: { text: "#1e3a8a", background: "#dbeafe" },
-          purple: { text: "#492173", background: "#f5f0fb" },
-          pink: { text: "#9d174d", background: "#fce7f3" },
-        },
-      },
-    }),
-    [],
+    () =>
+      resolved === "dark"
+        ? {
+            colors: {
+              editor: { text: "#f1f1f3", background: "#17171a" },
+              menu: { text: "#f1f1f3", background: "#1f1f23" },
+              tooltip: { text: "#17171a", background: "#f1f1f3" },
+              hovered: { text: "#f1f1f3", background: "#2a1c3a" },
+              selected: { text: "#d4c4ee", background: "#2a1c3a" },
+              disabled: { text: "#6b7280", background: "#0e0e10" },
+              shadow: "#00000088",
+              border: "rgba(255,255,255,0.08)",
+              sideMenu: "#9ca3af",
+              highlights: {
+                gray: { text: "#d1d5db", background: "#27272a" },
+                brown: { text: "#fbbf24", background: "#3f2a18" },
+                red: { text: "#fca5a5", background: "#3a1717" },
+                orange: { text: "#fdba74", background: "#3a2317" },
+                yellow: { text: "#fde68a", background: "#3a3017" },
+                green: { text: "#86efac", background: "#13361f" },
+                blue: { text: "#93c5fd", background: "#172a3a" },
+                purple: { text: "#d4c4ee", background: "#2a1c3a" },
+                pink: { text: "#f9a8d4", background: "#3a1730" },
+              },
+            },
+          }
+        : {
+            colors: {
+              editor: { text: "#1a1a1a", background: "#ffffff" },
+              menu: { text: "#1a1a1a", background: "#ffffff" },
+              tooltip: { text: "#ffffff", background: "#1a1a1a" },
+              hovered: { text: "#1a1a1a", background: "#f5f0fb" },
+              selected: { text: "#492173", background: "#f5f0fb" },
+              disabled: { text: "#9ca3af", background: "#fbfbfb" },
+              shadow: "#0000001f",
+              border: "rgba(0,0,0,0.06)",
+              sideMenu: "#9ca3af",
+              highlights: {
+                gray: { text: "#374151", background: "#f3f4f6" },
+                brown: { text: "#92400e", background: "#fef3c7" },
+                red: { text: "#991b1b", background: "#fee2e2" },
+                orange: { text: "#9a3412", background: "#ffedd5" },
+                yellow: { text: "#92400e", background: "#fef9c3" },
+                green: { text: "#065f46", background: "#dcfce7" },
+                blue: { text: "#1e3a8a", background: "#dbeafe" },
+                purple: { text: "#492173", background: "#f5f0fb" },
+                pink: { text: "#9d174d", background: "#fce7f3" },
+              },
+            },
+          },
+    [resolved],
   );
 
   const initials = user.fullName
@@ -176,16 +211,14 @@ export default function ArticleEditor({
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
-      <header className="flex shrink-0 items-center justify-between border-b border-border bg-white px-8 py-4">
+      <header className="flex shrink-0 items-center justify-between border-b border-border bg-surface px-8 py-4">
         <div className="flex items-center gap-4">
           <button
             onClick={onCancel}
-            className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-border bg-white text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-border bg-surface text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
             aria-label="Cerrar editor"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 3L4 8l6 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <ArrowLeft size={16} strokeWidth={1.8} />
           </button>
           <div className="flex flex-col">
             <h1 className="font-alexandria text-[20px] font-medium leading-tight text-text-primary">
@@ -211,7 +244,7 @@ export default function ArticleEditor({
           <button
             onClick={onCancel}
             disabled={saving}
-            className="rounded-[10px] border border-border bg-white px-3 py-2 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50"
+            className="rounded-[10px] border border-border bg-surface px-3 py-2 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-50"
           >
             Cancelar
           </button>
@@ -244,10 +277,10 @@ export default function ArticleEditor({
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 gap-6 p-6 pt-4">
-        <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border bg-white">
-          <div className="flex flex-col gap-3 border-b border-border p-5">
-            <label className="font-inter text-[12px] font-medium text-text-primary">
+      <div className="flex min-h-0 flex-1 gap-5 p-5 pt-3">
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-border bg-surface">
+          <div className="flex flex-col gap-2 border-b border-border px-5 py-4">
+            <label className="font-inter text-[11.5px] font-medium text-text-secondary">
               Título del artículo
             </label>
             <input
@@ -255,7 +288,7 @@ export default function ArticleEditor({
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej. Manual de Estándares de Housekeeping"
               maxLength={TITLE_MAX}
-              className="w-full border-b border-transparent bg-transparent font-alexandria text-[24px] font-medium text-text-primary outline-none transition-colors placeholder:text-text-secondary/50 focus:border-primary/40"
+              className="w-full border-b border-transparent bg-transparent font-alexandria text-[20px] font-medium text-text-primary outline-none transition-colors placeholder:text-text-secondary/50 focus:border-primary/40"
             />
             <div className="flex justify-between font-inter text-[10px] text-text-secondary">
               <span>El título es visible en la lista de artículos y en buscadores.</span>
@@ -271,7 +304,7 @@ export default function ArticleEditor({
               <span>Editor enriquecido — el contenido se guarda como Markdown.</span>
               <span>{charCount} caracteres en Markdown</span>
             </div>
-            <div className="flex-1 overflow-y-auto bg-white">
+            <div className="bn-compact flex-1 overflow-y-auto bg-surface">
               {!editorReady ? (
                 <div className="px-6 py-6 font-inter text-[13px] text-text-secondary">
                   Cargando editor...
@@ -288,7 +321,7 @@ export default function ArticleEditor({
         </section>
 
         <aside className="flex w-[320px] shrink-0 flex-col gap-4 overflow-y-auto">
-          <div className="rounded-[14px] border border-border bg-white p-5">
+          <div className="rounded-[14px] border border-border bg-surface p-5">
             <h2 className="font-alexandria text-[15px] font-medium text-text-primary">
               Organización
             </h2>
@@ -305,7 +338,7 @@ export default function ArticleEditor({
                 onChange={(e) =>
                   setCategoryId(e.target.value === "" ? "" : Number(e.target.value))
                 }
-                className="w-full rounded-[10px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
+                className="w-full rounded-[10px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
               >
                 <option value="">Sin categoría</option>
                 {flatCategories.map((c) => (
@@ -317,7 +350,7 @@ export default function ArticleEditor({
             </div>
           </div>
 
-          <div className="rounded-[14px] border border-border bg-white p-5">
+          <div className="rounded-[14px] border border-border bg-surface p-5">
             <h2 className="font-alexandria text-[15px] font-medium text-text-primary">
               Visibilidad
             </h2>
@@ -345,7 +378,7 @@ export default function ArticleEditor({
                 aria-label="Alternar visibilidad"
               >
                 <span
-                  className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${
+                  className={`absolute top-1 h-4 w-4 rounded-full bg-surface shadow transition-all ${
                     isPublic ? "left-6" : "left-1"
                   }`}
                 />
@@ -353,7 +386,7 @@ export default function ArticleEditor({
             </div>
           </div>
 
-          <div className="rounded-[14px] border border-border bg-white p-5">
+          <div className="rounded-[14px] border border-border bg-surface p-5">
             <h2 className="font-alexandria text-[15px] font-medium text-text-primary">
               Metadatos
             </h2>

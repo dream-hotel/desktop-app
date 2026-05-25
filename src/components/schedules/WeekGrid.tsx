@@ -134,7 +134,7 @@ export default function WeekGrid({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[12px] border border-border bg-white">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[12px] border border-border bg-surface">
       {/* Day header */}
       <div className="flex border-b border-border">
         <div style={{ width: HOUR_LABEL_COLUMN }} className="shrink-0 border-r border-border" />
@@ -183,7 +183,7 @@ export default function WeekGrid({
                 style={{ height: HOUR_ROW_HEIGHT }}
                 className="relative px-2"
               >
-                <span className="absolute -top-2 left-2 bg-white px-1 font-inter text-[11px] text-text-secondary">
+                <span className="absolute -top-2 left-2 bg-surface px-1 font-inter text-[11px] text-text-secondary">
                   {h}:00
                 </span>
               </div>

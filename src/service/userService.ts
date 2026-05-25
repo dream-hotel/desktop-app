@@ -7,12 +7,23 @@ import {
   UpdateUserPayload,
 } from "../types/models/Users";
 
-export function listUsers(query: FindUsersQuery = {}): Promise<PaginatedResponse<BackendUserListItem>> {
-  return apiClient.get("/users", { query });
+function normalizeUser(u: BackendUserListItem): BackendUserListItem {
+  // user_id is bigint in MySQL → arrives as a string; coerce to number.
+  return { ...u, id: Number(u.id) };
 }
 
-export function getUser(id: number): Promise<BackendUserListItem> {
-  return apiClient.get(`/users/${id}`);
+export async function listUsers(
+  query: FindUsersQuery = {},
+): Promise<PaginatedResponse<BackendUserListItem>> {
+  const response = await apiClient.get<PaginatedResponse<BackendUserListItem>>("/users", {
+    query,
+  });
+  return { ...response, data: response.data.map(normalizeUser) };
+}
+
+export async function getUser(id: number): Promise<BackendUserListItem> {
+  const user = await apiClient.get<BackendUserListItem>(`/users/${id}`);
+  return normalizeUser(user);
 }
 
 export function createUser(payload: CreateUserPayload): Promise<BackendUserListItem> {

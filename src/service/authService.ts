@@ -12,7 +12,6 @@ const REFRESH_TOKEN_KEY = "refreshToken";
 function mapRole(backendRoleName: string): UserRole {
   switch (backendRoleName.toUpperCase()) {
     case "ADMIN":
-    case "ROOT":
       return "administrador";
     case "RECEPTIONIST":
       return "recepcionista";
@@ -23,7 +22,9 @@ function mapRole(backendRoleName: string): UserRole {
 
 function mapBackendUser(data: BackendAuthResponse["user"]): User {
   return {
-    id: data.id,
+    // user_id is stored as bigint in MySQL and serialized as a string;
+    // coerce to number so equality checks and DTO validators behave correctly.
+    id: Number(data.id),
     fullName: data.fullName,
     lastName: data.lastName,
     email: data.email,

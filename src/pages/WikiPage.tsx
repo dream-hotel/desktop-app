@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import WikiSidebar from "../components/wiki/WikiSidebar";
 import ArticleList from "../components/wiki/ArticleList";
 import ArticleViewer from "../components/wiki/ArticleViewer";
+import ArticleFullView from "../components/wiki/ArticleFullView";
 import ArticleEditor from "../components/wiki/ArticleEditor";
 import CategoryFormModal from "../components/wiki/CategoryFormModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import { useAuth } from "../hooks/useAuth";
-import { useDashboard } from "../hooks/useDashboard";
+import { useAnnouncementBell, requestNavigate } from "../hooks/useAnnouncementBell";
 import * as wikiService from "../service/wikiService";
 import {
   WikiArticleDetail,
@@ -48,9 +49,18 @@ function buildBreadcrumb(
   return path;
 }
 
-export default function WikiPage() {
+interface WikiPageProps {
+  pendingSelectedId?: number | null;
+  onConsumeSelection?: () => void;
+}
+
+export default function WikiPage({
+  pendingSelectedId,
+  onConsumeSelection,
+}: WikiPageProps = {}) {
   const { user } = useAuth();
-  const { data: dashboardData } = useDashboard();
+  const bell = useAnnouncementBell();
+  const [showNotifications, setShowNotifications] = useState(false);
   const isAdmin = user?.role === "administrador";
 
   const [tree, setTree] = useState<WikiCategoryNode[]>([]);
@@ -59,12 +69,14 @@ export default function WikiPage() {
   const [articles, setArticles] = useState<WikiArticleSummary[]>([]);
   const [totalArticles, setTotalArticles] = useState(0);
   const [articlesLoading, setArticlesLoading] = useState(false);
+  const [allArticles, setAllArticles] = useState<WikiArticleSummary[]>([]);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [selectedArticleId, setSelectedArticleId] = useState<number | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<WikiArticleDetail | null>(null);
   const [articleLoading, setArticleLoading] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [fullView, setFullView] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -76,8 +88,6 @@ export default function WikiPage() {
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const pendingNotifications =
-    dashboardData?.notifications.filter((n) => n.status === "pendiente") ?? [];
 
   const loadTree = useCallback(async () => {
     setTreeLoading(true);
@@ -107,9 +117,28 @@ export default function WikiPage() {
     }
   }, [selectedCategoryId, debouncedSearch]);
 
+  const loadAllArticles = useCallback(async () => {
+    try {
+      const res = await wikiService.findArticles({ limit: 500 });
+      setAllArticles(res.data);
+    } catch (err) {
+      setGlobalError(err instanceof Error ? err.message : "Error al cargar artículos.");
+    }
+  }, []);
+
   useEffect(() => {
     loadTree();
-  }, [loadTree]);
+    loadAllArticles();
+  }, [loadTree, loadAllArticles]);
+
+  useEffect(() => {
+    if (pendingSelectedId != null) {
+      setSelectedCategoryId(null);
+      setSearchQuery("");
+      setSelectedArticleId(pendingSelectedId);
+      onConsumeSelection?.();
+    }
+  }, [pendingSelectedId, onConsumeSelection]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => setDebouncedSearch(searchQuery), 300);
@@ -157,6 +186,11 @@ export default function WikiPage() {
       setSelectedArticleId(null);
     }
   }, [articles, selectedArticleId]);
+
+  // Exit full-view when the selected article is cleared
+  useEffect(() => {
+    if (selectedArticleId == null && fullView) setFullView(false);
+  }, [selectedArticleId, fullView]);
 
   const breadcrumb = useMemo(
     () => buildBreadcrumb(tree, selectedArticle?.categoryId ?? selectedCategoryId),
@@ -223,7 +257,7 @@ export default function WikiPage() {
     setEditorState({ mode: "list" });
     setSelectedArticleId(article.id);
     setSelectedArticle(article);
-    await loadArticles();
+    await Promise.all([loadArticles(), loadAllArticles()]);
   };
 
   const handleDeleteArticleConfirm = async () => {
@@ -237,7 +271,7 @@ export default function WikiPage() {
         setSelectedArticle(null);
       }
       setConfirmState(null);
-      await loadArticles();
+      await Promise.all([loadArticles(), loadAllArticles()]);
     } catch (err) {
       setConfirmError(err instanceof Error ? err.message : "No se pudo eliminar el artículo.");
     } finally {
@@ -251,7 +285,7 @@ export default function WikiPage() {
     try {
       const updated = await wikiService.publishArticle(selectedArticle.id);
       setSelectedArticle(updated);
-      await loadArticles();
+      await Promise.all([loadArticles(), loadAllArticles()]);
     } catch (err) {
       setGlobalError(err instanceof Error ? err.message : "No se pudo publicar el artículo.");
     } finally {
@@ -272,15 +306,47 @@ export default function WikiPage() {
     );
   }
 
+  // Full-view takeover (distraction-free reader)
+  if (fullView && selectedArticle && !articleLoading) {
+    return (
+      <ArticleFullView
+        article={selectedArticle}
+        isAdmin={isAdmin}
+        breadcrumb={breadcrumb}
+        publishing={publishing}
+        onClose={() => setFullView(false)}
+        onEditClick={() => {
+          setFullView(false);
+          handleEdit();
+        }}
+        onDeleteClick={() => {
+          const summary =
+            articles.find((a) => a.id === selectedArticle.id) ??
+            allArticles.find((a) => a.id === selectedArticle.id);
+          if (summary) setConfirmState({ kind: "deleteArticle", article: summary });
+        }}
+        onPublishClick={handlePublish}
+      />
+    );
+  }
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
       <DashboardHeader
         user={user!}
-        notificationCount={pendingNotifications.length}
-        notifications={dashboardData?.notifications ?? []}
-        showNotifications={false}
-        onToggleNotifications={() => {}}
-        onCloseNotifications={() => {}}
+        announcements={bell.announcements}
+        bellLoading={bell.loading}
+        unreadCount={bell.unreadCount}
+        isUnread={bell.isUnread}
+        showNotifications={showNotifications}
+        onToggleNotifications={() => setShowNotifications((v) => !v)}
+        onCloseNotifications={() => setShowNotifications(false)}
+        onAnnouncementClick={(id) => {
+          bell.markSeen(id);
+          setShowNotifications(false);
+          requestNavigate({ section: "anuncios", announcementId: id });
+        }}
+        onMarkAllSeen={bell.markAllSeen}
         customTitle="Wiki institucional"
       />
 
@@ -299,17 +365,24 @@ export default function WikiPage() {
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {treeLoading ? (
-          <div className="flex h-full w-[280px] items-center justify-center border-r border-border bg-white font-inter text-[12px] text-text-secondary">
+          <div className="flex h-full w-[260px] items-center justify-center border-r border-border bg-surface font-inter text-[12px] text-text-secondary">
             Cargando carpetas...
           </div>
         ) : (
           <WikiSidebar
             tree={tree}
+            articles={allArticles}
             selectedCategoryId={selectedCategoryId}
+            selectedArticleId={selectedArticleId}
             isAdmin={isAdmin}
             onSelectCategory={(id) => {
               setSelectedCategoryId(id);
               setSelectedArticleId(null);
+            }}
+            onSelectArticle={(id) => {
+              setSelectedArticleId(id);
+              const a = allArticles.find((x) => x.id === id);
+              if (a) setSelectedCategoryId(a.categoryId ?? null);
             }}
             onCreateRoot={() => setCategoryDialog({ kind: "createRoot" })}
             onCreateChild={(parent) =>
@@ -341,9 +414,12 @@ export default function WikiPage() {
           loading={articleLoading}
           isAdmin={isAdmin}
           breadcrumb={breadcrumb}
+          onExpandClick={() => setFullView(true)}
           onEditClick={handleEdit}
           onDeleteClick={() => {
-            const summary = articles.find((a) => a.id === selectedArticle?.id);
+            const summary =
+              articles.find((a) => a.id === selectedArticle?.id) ??
+              allArticles.find((a) => a.id === selectedArticle?.id);
             if (summary) setConfirmState({ kind: "deleteArticle", article: summary });
           }}
           onPublishClick={handlePublish}

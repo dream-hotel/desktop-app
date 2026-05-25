@@ -1,44 +1,86 @@
-import { Announcement, CreateAnnouncementRequest } from "../types/models/Announcement";
+import { apiClient } from "./apiClient";
+import { PaginatedResponse } from "../types/api";
+import {
+  Announcement,
+  BackendAnnouncement,
+  CreateAnnouncementPayload,
+  FindAnnouncementsParams,
+  UpdateAnnouncementPayload,
+} from "../types/models/Announcement";
 
-let mockAnnouncements: Announcement[] = [
-  {
-    id: "1",
-    title: "Mantenimiento del Elevador Principal",
-    message: "El elevador principal estará fuera de servicio hoy desde las 14:00 hasta las 16:00. Por favor, redirigir a los huéspedes a los elevadores de servicio B y C.",
-    priority: "importante",
-    audience: "todos",
-    author: "Juan Pérez",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-  },
-  {
-    id: "2",
-    title: "Llegada Grupo VIP",
-    message: "El grupo de la delegación diplomática llegará a las 18:00. Recepción, tener listas las llaves. Limpieza, asegurar amenidades extra en la suite presidencial.",
-    priority: "urgente",
-    audience: "recepcion",
-    author: "María González",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-  }
-];
-
-export async function getRecentAnnouncements(): Promise<Announcement[]> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  return [...mockAnnouncements].sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+function mapAnnouncement(a: BackendAnnouncement): Announcement {
+  return {
+    id: a.id,
+    title: a.title,
+    type: a.announcementType,
+    description: a.description,
+    visibleUntil: a.visibleUntil,
+    taskId: a.taskId,
+    articleId: a.articleId,
+    createdAt: a.createdAt,
+    priority: a.priority,
+  };
 }
 
-export async function createAnnouncement(request: CreateAnnouncementRequest, authorName: string): Promise<Announcement> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  const newAnnouncement: Announcement = {
-    id: Math.random().toString(36).substr(2, 9),
-    ...request,
-    author: authorName,
-    createdAt: new Date().toISOString(),
+export async function findAnnouncements(
+  params: FindAnnouncementsParams = {},
+): Promise<PaginatedResponse<Announcement>> {
+  const response = await apiClient.get<PaginatedResponse<BackendAnnouncement>>(
+    "/announcements",
+    {
+      query: {
+        page: params.page ?? 1,
+        limit: params.limit ?? 50,
+        type: params.type,
+      },
+    },
+  );
+  return {
+    data: response.data.map(mapAnnouncement),
+    meta: response.meta,
   };
+}
 
-  mockAnnouncements = [newAnnouncement, ...mockAnnouncements];
-  return newAnnouncement;
+export async function getAnnouncement(id: number): Promise<Announcement> {
+  const a = await apiClient.get<BackendAnnouncement>(`/announcements/${id}`);
+  return mapAnnouncement(a);
+}
+
+export async function createAnnouncement(
+  payload: CreateAnnouncementPayload,
+): Promise<Announcement> {
+  const body: Record<string, unknown> = {
+    title: payload.title,
+    priorityId: payload.priorityId,
+    announcementType: payload.announcementType,
+  };
+  if (payload.description !== undefined) body.description = payload.description;
+  if (payload.visibleUntil) body.visibleUntil = payload.visibleUntil;
+  if (payload.announcementType === "task" && payload.taskId !== undefined) {
+    body.taskId = payload.taskId;
+  }
+  if (payload.announcementType === "article" && payload.articleId !== undefined) {
+    body.articleId = payload.articleId;
+  }
+  const created = await apiClient.post<BackendAnnouncement>("/announcements", body);
+  return mapAnnouncement(created);
+}
+
+export async function updateAnnouncement(
+  id: number,
+  payload: UpdateAnnouncementPayload,
+): Promise<Announcement> {
+  const body: Record<string, unknown> = {};
+  if (payload.title !== undefined) body.title = payload.title;
+  if (payload.priorityId !== undefined) body.priorityId = payload.priorityId;
+  if (payload.description !== undefined) body.description = payload.description;
+  if (payload.visibleUntil !== undefined) {
+    body.visibleUntil = payload.visibleUntil;
+  }
+  const updated = await apiClient.patch<BackendAnnouncement>(`/announcements/${id}`, body);
+  return mapAnnouncement(updated);
+}
+
+export function deleteAnnouncement(id: number): Promise<void> {
+  return apiClient.delete<void>(`/announcements/${id}`);
 }

@@ -11,6 +11,8 @@ export class ApiError extends Error {
 }
 
 const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
+const UNAUTHORIZED_EVENT = "auth:unauthorized";
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -19,6 +21,11 @@ export function getAccessToken(): string | null {
 export function setAccessToken(token: string | null): void {
   if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
   else localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
+export function onUnauthorized(handler: () => void): () => void {
+  window.addEventListener(UNAUTHORIZED_EVENT, handler);
+  return () => window.removeEventListener(UNAUTHORIZED_EVENT, handler);
 }
 
 export interface RequestOptions {
@@ -67,6 +74,11 @@ async function request<T>(path: string, opts: RequestOptions): Promise<T> {
   });
 
   if (!response.ok) {
+    if (response.status === 401 && auth) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
     throw new ApiError(await readErrorMessage(response), response.status);
   }
 
@@ -74,6 +86,32 @@ async function request<T>(path: string, opts: RequestOptions): Promise<T> {
     return undefined as T;
   }
 
+  return response.json() as Promise<T>;
+}
+
+async function requestForm<T>(path: string, form: FormData, auth = true): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (auth) {
+    const token = getAccessToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 && auth) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
+    throw new ApiError(await readErrorMessage(response), response.status);
+  }
+
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -89,4 +127,7 @@ export const apiClient = {
 
   delete: <T = void>(path: string, opts: Omit<RequestOptions, "method" | "body"> = {}) =>
     request<T>(path, { ...opts, method: "DELETE" }),
+
+  postForm: <T>(path: string, form: FormData, opts: { auth?: boolean } = {}) =>
+    requestForm<T>(path, form, opts.auth ?? true),
 };

@@ -1,14 +1,19 @@
+import { Bell } from "lucide-react";
 import { User } from "../../types/response/AuthResponse";
-import { Notification } from "../../types/response/DashboardResponse";
+import { Announcement } from "../../types/models/Announcement";
 import NotificationsPanel from "./NotificationsPanel";
 
 interface DashboardHeaderProps {
   user: User;
-  notificationCount: number;
-  notifications: Notification[];
+  announcements: Announcement[];
+  bellLoading: boolean;
+  unreadCount: number;
+  isUnread: (id: number) => boolean;
   showNotifications: boolean;
   onToggleNotifications: () => void;
   onCloseNotifications: () => void;
+  onAnnouncementClick: (id: number) => void;
+  onMarkAllSeen: () => void;
   customTitle?: string;
 }
 
@@ -36,26 +41,21 @@ function getTurno(): string {
   return "Turno noche";
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 export default function DashboardHeader({
   user,
-  notificationCount,
-  notifications,
+  announcements,
+  bellLoading,
+  unreadCount,
+  isUnread,
   showNotifications,
   onToggleNotifications,
   onCloseNotifications,
+  onAnnouncementClick,
+  onMarkAllSeen,
   customTitle,
 }: DashboardHeaderProps) {
   return (
-    <header className="flex items-start justify-between border-b border-border bg-white px-8 pb-4 pt-6">
+    <header className="flex items-start justify-between border-b border-border bg-surface px-8 pb-4 pt-6">
       <div className="flex flex-col gap-[2px]">
         {customTitle ? (
           <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
@@ -76,41 +76,29 @@ export default function DashboardHeader({
       <div className="flex items-center gap-4">
         <div className="relative">
           <button
-            className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-black/8 bg-transparent shadow-none transition-colors hover:bg-[#f5f3f7]"
+            className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border border-border bg-transparent shadow-none transition-colors hover:bg-surface-hover"
             onClick={onToggleNotifications}
-            aria-label="Notificaciones"
+            aria-label="Anuncios"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2a5 5 0 00-5 5v3l-1.3 2.6a.5.5 0 00.45.7h11.7a.5.5 0 00.45-.7L15 10V7a5 5 0 00-5-5z" stroke="#6b7280" strokeWidth="1.5" strokeLinejoin="round" />
-              <path d="M8 15a2 2 0 004 0" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger font-inter text-[10px] font-semibold text-white">
-                {notificationCount}
+            <Bell size={19} strokeWidth={1.6} className="text-text-secondary" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger px-1 font-inter text-[10px] font-semibold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
             <NotificationsPanel
-              notifications={notifications}
+              announcements={announcements}
+              loading={bellLoading}
+              isUnread={isUnread}
+              unreadCount={unreadCount}
               onClose={onCloseNotifications}
+              onItemClick={onAnnouncementClick}
+              onMarkAllSeen={onMarkAllSeen}
             />
           )}
-        </div>
-
-        <div className="flex items-center gap-[10px]">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-inter text-sm font-semibold text-white">
-            {getInitials(user.fullName)}
-          </div>
-          <div className="flex flex-col">
-            <span className="font-inter text-[13px] leading-[18px] font-medium text-text-primary">
-              {user.fullName}
-            </span>
-            <span className="font-inter text-[11px] leading-4 text-text-secondary">
-              {user.role === "administrador" ? "Gerente general" : user.role}
-            </span>
-          </div>
         </div>
       </div>
     </header>

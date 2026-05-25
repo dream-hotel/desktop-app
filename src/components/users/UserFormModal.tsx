@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
@@ -175,9 +176,9 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
 
   function inputClass(field: keyof FieldErrors): string {
     const base =
-      "w-full min-w-0 rounded-[8px] border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors";
+      "w-full min-w-0 rounded-[8px] border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors";
     if (shouldShowError(field)) {
-      return `${base} border-[#dc2626] focus:border-[#dc2626]`;
+      return `${base} border-danger focus:border-danger`;
     }
     return `${base} border-border focus:border-primary`;
   }
@@ -191,7 +192,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
         noValidate
-        className="flex w-[480px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-[14px] bg-white p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
+        className="flex w-[480px] max-w-[calc(100vw-32px)] flex-col gap-4 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)]"
       >
         <div className="flex items-start justify-between">
           <div>
@@ -208,18 +209,16 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="rounded-md p-1 text-text-secondary hover:bg-[#f3f4f6]"
+            className="rounded-md p-1 text-text-secondary hover:bg-neutral-soft"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+            <X size={16} strokeWidth={1.8} />
           </button>
         </div>
 
         <div className="flex gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">
-              Nombre <span className="text-[#dc2626]">*</span>
+              Nombre <span className="text-danger">*</span>
             </label>
             <input
               maxLength={NAME_MAX}
@@ -230,12 +229,12 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
               className={inputClass("fullName")}
             />
             {shouldShowError("fullName") && (
-              <span className="font-inter text-[11px] text-[#dc2626]">{errors.fullName}</span>
+              <span className="font-inter text-[11px] text-danger">{errors.fullName}</span>
             )}
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">
-              Apellido <span className="text-[#dc2626]">*</span>
+              Apellido <span className="text-danger">*</span>
             </label>
             <input
               maxLength={NAME_MAX}
@@ -246,14 +245,14 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
               className={inputClass("lastName")}
             />
             {shouldShowError("lastName") && (
-              <span className="font-inter text-[11px] text-[#dc2626]">{errors.lastName}</span>
+              <span className="font-inter text-[11px] text-danger">{errors.lastName}</span>
             )}
           </div>
         </div>
 
         <div className="flex flex-col gap-1">
           <label className="font-inter text-[12px] font-medium text-text-body">
-            Correo electrónico <span className="text-[#dc2626]">*</span>
+            Correo electrónico <span className="text-danger">*</span>
           </label>
           <input
             type="email"
@@ -267,7 +266,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             className={inputClass("email")}
           />
           {shouldShowError("email") && (
-            <span className="font-inter text-[11px] text-[#dc2626]">{errors.email}</span>
+            <span className="font-inter text-[11px] text-danger">{errors.email}</span>
           )}
         </div>
 
@@ -292,7 +291,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             className={inputClass("password")}
           />
           {shouldShowError("password") ? (
-            <span className="font-inter text-[11px] text-[#dc2626]">{errors.password}</span>
+            <span className="font-inter text-[11px] text-danger">{errors.password}</span>
           ) : (
             password && (
               <span className="font-inter text-[11px] text-text-secondary">
@@ -305,7 +304,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
         <div className="flex gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">
-              Rol <span className="text-[#dc2626]">*</span>
+              Rol <span className="text-danger">*</span>
             </label>
             <select
               value={roleId}
@@ -321,7 +320,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
               ))}
             </select>
             {shouldShowError("roleId") && (
-              <span className="font-inter text-[11px] text-[#dc2626]">{errors.roleId}</span>
+              <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
             )}
           </div>
           {mode === "edit" && (
@@ -330,7 +329,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
               <select
                 value={isActive ? "1" : "0"}
                 onChange={(e) => setIsActive(e.target.value === "1")}
-                className="w-full min-w-0 rounded-[8px] border border-border bg-white px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+                className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
               >
                 <option value="1">Activo</option>
                 <option value="0">Inactivo</option>
@@ -340,13 +339,13 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
         </div>
 
         {serverError && (
-          <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+          <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
             {serverError}
           </div>
         )}
 
         {submitAttempted && hasErrors && !serverError && (
-          <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-[#fee2e2] px-3 py-2 font-inter text-[12px] text-[#991b1b]">
+          <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
             Revise los campos resaltados antes de guardar.
           </div>
         )}
@@ -356,7 +355,7 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-[10px] bg-[#f3f4f6] px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+            className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
           >
             Cancelar
           </button>
