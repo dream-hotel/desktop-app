@@ -9,7 +9,7 @@ export interface BackendUserListItem {
   lastName: string;
   email: string;
   isActive: boolean;
-  scheduleId: number | null;
+  schedules: any[]; // Changed from scheduleId: number | null
   createdAt: string;
   role: BackendRole;
 }
@@ -29,7 +29,7 @@ export interface UpdateUserPayload {
   password?: string;
   roleId?: number;
   isActive?: boolean;
-  scheduleId?: number | null;
+  scheduleIds?: number[]; // Changed from scheduleId?: number | null
 }
 
 export interface FindUsersQuery {

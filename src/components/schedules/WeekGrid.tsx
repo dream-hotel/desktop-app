@@ -92,20 +92,22 @@ export default function WeekGrid({
     const acc: Record<number, PositionedBlock[]> = {};
     for (let d = 0; d <= 6; d++) acc[d] = [];
     for (const user of users) {
-      if (!user.scheduleId) continue;
-      const schedule = schedulesById.get(user.scheduleId);
-      if (!schedule) continue;
-      for (const block of schedule.dailySchedules) {
-        const startMinutes = minutesFromTime(block.startTime);
-        const endMinutes = minutesFromTime(block.endTime);
-        acc[block.day]?.push({
-          user,
-          block,
-          startMinutes,
-          endMinutes,
-          laneIndex: 0,
-          laneCount: 1,
-        });
+      if (!user.schedules) continue;
+      for (const userSchedule of user.schedules) {
+        const schedule = schedulesById.get(userSchedule.id);
+        if (!schedule) continue;
+        for (const block of schedule.dailySchedules) {
+          const startMinutes = minutesFromTime(block.startTime);
+          const endMinutes = minutesFromTime(block.endTime);
+          acc[block.day]?.push({
+            user,
+            block,
+            startMinutes,
+            endMinutes,
+            laneIndex: 0,
+            laneCount: 1,
+          });
+        }
       }
     }
     for (const d of Object.keys(acc)) {
@@ -113,7 +115,6 @@ export default function WeekGrid({
     }
     return acc;
   }, [users, schedulesById]);
-
   const gridHeight = hours.length * HOUR_ROW_HEIGHT;
   const minutesPerView = (endHour - startHour) * 60;
   const minutesToY = (m: number) => ((m - startHour * 60) / minutesPerView) * gridHeight;

@@ -21,8 +21,8 @@ export default function PersonnelPanel({
   onSelectUser,
   drawingMode,
 }: PersonnelPanelProps) {
-  const usersWithSchedule = users.filter((u) => u.scheduleId !== null);
-  const usersWithoutSchedule = users.filter((u) => u.scheduleId === null);
+  const usersWithSchedule = users.filter((u) => u.schedules && u.schedules.length > 0);
+  const usersWithoutSchedule = users.filter((u) => !u.schedules || u.schedules.length === 0);
 
   return (
     <aside className="flex w-[260px] shrink-0 flex-col gap-4 rounded-[12px] border border-border bg-white p-4">
@@ -37,7 +37,7 @@ export default function PersonnelPanel({
           </p>
         )}
         {usersWithSchedule.map((user) => {
-          const schedule = user.scheduleId ? schedulesById.get(user.scheduleId) ?? null : null;
+          const schedule = user.schedules && user.schedules.length > 0 ? schedulesById.get(user.schedules[0].id) ?? null : null;
           const minutes = totalMinutesForSchedule(schedule);
           const isSelected = selectedUserId === user.id;
           const color = colorForUser(user.id);

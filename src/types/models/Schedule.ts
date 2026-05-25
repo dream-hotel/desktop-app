@@ -9,19 +9,21 @@ export interface DailyBlock {
 export interface WeeklySchedule {
   id: number;
   name: string;
-  isPersonalized: boolean;
+  endDate: string | null; // Added endDate
   createdAt: string;
   dailySchedules: DailyBlock[];
 }
 
 export interface CreateWeeklySchedulePayload {
   name: string;
-  isPersonalized?: boolean;
+  endDate?: string; // Added endDate, removed isPersonalized
+  userIds?: number[];
 }
 
 export interface UpdateWeeklySchedulePayload {
   name?: string;
-  isPersonalized?: boolean;
+  endDate?: string; // Added endDate, removed isPersonalized
+  userIds?: number[];
 }
 
 export interface CreateDailyBlockPayload {

@@ -121,7 +121,7 @@ export default function SchedulesPage() {
     [users, selectedUserId],
   );
   const selectedSchedule = useMemo(
-    () => (selectedUser?.scheduleId ? schedulesById.get(selectedUser.scheduleId) ?? null : null),
+    () => (selectedUser?.schedules && selectedUser.schedules.length > 0 ? schedulesById.get(selectedUser.schedules[0].id) ?? null : null),
     [selectedUser, schedulesById],
   );
 
@@ -147,7 +147,7 @@ export default function SchedulesPage() {
       setSelectedUserId(user.id);
       return;
     }
-    const schedule = user.scheduleId ? schedulesById.get(user.scheduleId) ?? null : null;
+    const schedule = schedulesById.get(block.scheduleId);
     if (!schedule) return;
     setSelectedUserId(user.id);
     setEditTarget({
