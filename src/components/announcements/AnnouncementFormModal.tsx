@@ -11,6 +11,10 @@ import {
 import { listPriorities } from "../../service/priorityService";
 import { listTasks } from "../../service/taskService";
 import { findArticles } from "../../service/wikiService";
+import { listUsers } from "../../service/userService";
+import { listRoles } from "../../service/roleService";
+import AudiencePicker, { AudienceOption } from "./AudiencePicker";
+import { roleDisplayName } from "../../types/models/Roles";
 
 interface EntityOption {
   id: number;
@@ -222,6 +226,18 @@ export default function AnnouncementFormModal({
   const [visibleUntil, setVisibleUntil] = useState<string>(toDateTimeLocal(initial?.visibleUntil));
   const [selectedTask, setSelectedTask] = useState<EntityOption | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<EntityOption | null>(null);
+  const [restrictAudience, setRestrictAudience] = useState<boolean>(
+    Boolean(initial && (initial.audienceUsers.length > 0 || initial.audienceRoles.length > 0)),
+  );
+  const [audienceUserIds, setAudienceUserIds] = useState<number[]>(
+    initial?.audienceUsers.map((u) => u.id) ?? [],
+  );
+  const [audienceRoleIds, setAudienceRoleIds] = useState<number[]>(
+    initial?.audienceRoles.map((r) => r.id) ?? [],
+  );
+  const [userOptions, setUserOptions] = useState<AudienceOption[]>([]);
+  const [roleOptions, setRoleOptions] = useState<AudienceOption[]>([]);
+  const [audienceLoading, setAudienceLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -265,6 +281,43 @@ export default function AnnouncementFormModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    setAudienceLoading(true);
+    Promise.all([listUsers({ page: 1, limit: 100, isActive: true }), listRoles()])
+      .then(([users, roles]) => {
+        if (cancelled) return;
+        setUserOptions(
+          users.data.map((u) => ({
+            id: u.id,
+            label: `${u.fullName} ${u.lastName}`.trim(),
+            sublabel: u.email,
+          })),
+        );
+        setRoleOptions(
+          roles.map((r) => ({
+            id: r.id,
+            label: roleDisplayName(r.name),
+            sublabel:
+              r.permissions.length > 0
+                ? `${r.permissions.length} permiso${r.permissions.length === 1 ? "" : "s"}`
+                : undefined,
+          })),
+        );
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setUserOptions([]);
+        setRoleOptions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setAudienceLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -286,8 +339,14 @@ export default function AnnouncementFormModal({
       setError("Selecciona una fecha de vencimiento o desactiva la opción.");
       return;
     }
+    if (restrictAudience && audienceUserIds.length === 0 && audienceRoleIds.length === 0) {
+      setError("Selecciona al menos un usuario o rol, o desactiva la restricción de audiencia.");
+      return;
+    }
 
     const expiryIso = hasExpiry ? fromDateTimeLocal(visibleUntil) : null;
+    const effectiveUserIds = restrictAudience ? audienceUserIds : [];
+    const effectiveRoleIds = restrictAudience ? audienceRoleIds : [];
 
     setSaving(true);
     try {
@@ -297,6 +356,8 @@ export default function AnnouncementFormModal({
           priorityId: priorityId as number,
           description: description.trim(),
           visibleUntil: expiryIso,
+          audienceUserIds: effectiveUserIds,
+          audienceRoleIds: effectiveRoleIds,
         });
       } else if (!isEdit && onCreate) {
         const payload: CreateAnnouncementPayload = {
@@ -322,6 +383,8 @@ export default function AnnouncementFormModal({
           }
           payload.articleId = selectedArticle.id;
         }
+        if (effectiveUserIds.length > 0) payload.audienceUserIds = effectiveUserIds;
+        if (effectiveRoleIds.length > 0) payload.audienceRoleIds = effectiveRoleIds;
         await onCreate(payload);
       }
     } catch (err) {
@@ -508,6 +571,57 @@ export default function AnnouncementFormModal({
               ) : (
                 <p className="font-inter text-[11.5px] text-text-secondary">
                   El anuncio permanecerá visible indefinidamente.
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="flex cursor-pointer items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  checked={restrictAudience}
+                  onChange={(e) => setRestrictAudience(e.target.checked)}
+                  className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+                />
+                <span className="font-inter text-[12.5px] font-medium text-text-primary">
+                  Limitar quién puede verlo
+                </span>
+              </label>
+              {restrictAudience ? (
+                <div className="flex flex-col gap-3 rounded-[10px] border border-border bg-bg p-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-inter text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                      Roles
+                    </label>
+                    <AudiencePicker
+                      placeholder="Sin roles seleccionados"
+                      emptyLabel="No hay roles disponibles."
+                      options={roleOptions}
+                      selectedIds={audienceRoleIds}
+                      onChange={setAudienceRoleIds}
+                      loading={audienceLoading}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-inter text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                      Usuarios específicos
+                    </label>
+                    <AudiencePicker
+                      placeholder="Sin usuarios seleccionados"
+                      emptyLabel="No hay usuarios disponibles."
+                      options={userOptions}
+                      selectedIds={audienceUserIds}
+                      onChange={setAudienceUserIds}
+                      loading={audienceLoading}
+                    />
+                  </div>
+                  <p className="font-inter text-[11px] leading-snug text-text-secondary">
+                    El anuncio se mostrará a los usuarios elegidos <strong>y</strong> a todos los que tengan alguno de los roles seleccionados.
+                  </p>
+                </div>
+              ) : (
+                <p className="font-inter text-[11.5px] text-text-secondary">
+                  Sin restricciones: todos los usuarios con permiso para ver anuncios lo recibirán.
                 </p>
               )}
             </div>

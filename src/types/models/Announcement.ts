@@ -10,6 +10,18 @@ export interface BackendPriority {
   isActive: boolean;
 }
 
+export interface AudienceUser {
+  id: number;
+  fullName: string;
+  lastName: string;
+  email: string;
+}
+
+export interface AudienceRole {
+  id: number;
+  name: string;
+}
+
 export interface BackendAnnouncement {
   id: number;
   title: string;
@@ -20,6 +32,8 @@ export interface BackendAnnouncement {
   articleId: number | null;
   createdAt: string;
   priority: BackendPriority;
+  audienceUsers: AudienceUser[];
+  audienceRoles: AudienceRole[];
 }
 
 // === Frontend view model ===
@@ -34,6 +48,10 @@ export interface Announcement {
   articleId: number | null;
   createdAt: string;
   priority: BackendPriority;
+  audienceUsers: AudienceUser[];
+  audienceRoles: AudienceRole[];
+  /** True when no audience filter is configured — anyone with announcements:read sees it. */
+  isPublic: boolean;
 }
 
 // === Inputs ===
@@ -46,6 +64,8 @@ export interface CreateAnnouncementPayload {
   visibleUntil?: string | null;
   taskId?: number;
   articleId?: number;
+  audienceUserIds?: number[];
+  audienceRoleIds?: number[];
 }
 
 export interface UpdateAnnouncementPayload {
@@ -53,6 +73,8 @@ export interface UpdateAnnouncementPayload {
   priorityId?: number;
   description?: string;
   visibleUntil?: string | null;
+  audienceUserIds?: number[];
+  audienceRoleIds?: number[];
 }
 
 export interface FindAnnouncementsParams {
