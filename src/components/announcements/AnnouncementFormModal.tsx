@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertCircle, ChevronDown, Search, X } from "lucide-react";
 import {
   Announcement,
   AnnouncementType,
@@ -9,6 +9,161 @@ import {
   priorityLabel,
 } from "../../types/models/Announcement";
 import { listPriorities } from "../../service/priorityService";
+import { listTasks } from "../../service/taskService";
+import { findArticles } from "../../service/wikiService";
+
+interface EntityOption {
+  id: number;
+  title: string;
+  subtitle?: string;
+}
+
+interface EntitySearchSelectProps {
+  selected: EntityOption | null;
+  onChange: (option: EntityOption | null) => void;
+  loadResults: (query: string) => Promise<EntityOption[]>;
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyResultsLabel: string;
+}
+
+function EntitySearchSelect({
+  selected,
+  onChange,
+  loadResults,
+  placeholder,
+  searchPlaceholder,
+  emptyResultsLabel,
+}: EntitySearchSelectProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<EntityOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const list = await loadResults(search);
+        if (!cancelled) setResults(list);
+      } catch {
+        if (!cancelled) setResults([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [open, search, loadResults]);
+
+  function selectItem(opt: EntityOption) {
+    onChange(opt);
+    setOpen(false);
+    setSearch("");
+  }
+
+  if (selected) {
+    return (
+      <div className="flex items-center justify-between gap-2 rounded-[10px] border border-primary/40 bg-primary/5 px-3 py-2">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate font-inter text-[12.5px] font-medium text-text-primary">
+            #{selected.id} · {selected.title}
+          </span>
+          {selected.subtitle && (
+            <span className="truncate font-inter text-[11px] text-text-secondary">
+              {selected.subtitle}
+            </span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(null)}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] text-text-secondary transition-colors hover:bg-bg hover:text-text-primary"
+          aria-label="Quitar selección"
+        >
+          <X size={14} strokeWidth={1.8} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[12.5px] text-text-secondary outline-none transition-colors hover:border-primary/40 hover:bg-surface focus:border-primary/50 focus:bg-surface"
+      >
+        <span className="truncate">{placeholder}</span>
+        <ChevronDown size={14} strokeWidth={1.8} className="shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-[10px] border border-border bg-surface shadow-[0px_12px_28px_rgba(0,0,0,0.18)]">
+          <div className="relative border-b border-border">
+            <Search
+              size={14}
+              strokeWidth={1.8}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
+            />
+            <input
+              autoFocus
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="w-full bg-transparent py-2 pl-9 pr-3 font-inter text-[12.5px] text-text-primary outline-none placeholder:text-text-secondary"
+            />
+          </div>
+          <div className="max-h-[220px] overflow-y-auto">
+            {loading ? (
+              <div className="px-3 py-3 font-inter text-[12px] text-text-secondary">
+                Buscando...
+              </div>
+            ) : results.length === 0 ? (
+              <div className="px-3 py-3 font-inter text-[12px] text-text-secondary">
+                {emptyResultsLabel}
+              </div>
+            ) : (
+              results.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => selectItem(r)}
+                  className="flex w-full flex-col items-start gap-0.5 border-b border-border/50 px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-primary/5"
+                >
+                  <span className="font-inter text-[12.5px] font-medium text-text-primary">
+                    #{r.id} · {r.title}
+                  </span>
+                  {r.subtitle && (
+                    <span className="font-inter text-[11px] text-text-secondary">
+                      {r.subtitle}
+                    </span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface AnnouncementFormModalProps {
   mode: "create" | "edit";
@@ -65,14 +220,28 @@ export default function AnnouncementFormModal({
   const [priorityId, setPriorityId] = useState<number | "">(initial?.priority?.id ?? "");
   const [hasExpiry, setHasExpiry] = useState<boolean>(!!initial?.visibleUntil);
   const [visibleUntil, setVisibleUntil] = useState<string>(toDateTimeLocal(initial?.visibleUntil));
-  const [taskId, setTaskId] = useState<string>(
-    initial?.taskId != null ? String(initial.taskId) : "",
-  );
-  const [articleId, setArticleId] = useState<string>(
-    initial?.articleId != null ? String(initial.articleId) : "",
-  );
+  const [selectedTask, setSelectedTask] = useState<EntityOption | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<EntityOption | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const loadTasks = useCallback(async (query: string): Promise<EntityOption[]> => {
+    const res = await listTasks({ search: query || undefined, limit: 20 });
+    return res.data.map((t) => ({
+      id: t.id,
+      title: t.title,
+      subtitle: t.status?.name ? `Estado: ${t.status.name}` : undefined,
+    }));
+  }, []);
+
+  const loadArticles = useCallback(async (query: string): Promise<EntityOption[]> => {
+    const res = await findArticles({ search: query || undefined, limit: 20 });
+    return res.data.map((a) => ({
+      id: a.id,
+      title: a.title,
+      subtitle: a.categoryName ?? undefined,
+    }));
+  }, []);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -138,22 +307,20 @@ export default function AnnouncementFormModal({
         if (description.trim().length > 0) payload.description = description.trim();
         if (expiryIso) payload.visibleUntil = expiryIso;
         if (type === "task") {
-          const id = parseInt(taskId, 10);
-          if (!Number.isFinite(id) || id <= 0) {
-            setError("Ingresa un ID de tarea válido.");
+          if (!selectedTask) {
+            setError("Selecciona una tarea para vincular.");
             setSaving(false);
             return;
           }
-          payload.taskId = id;
+          payload.taskId = selectedTask.id;
         }
         if (type === "article") {
-          const id = parseInt(articleId, 10);
-          if (!Number.isFinite(id) || id <= 0) {
-            setError("Ingresa un ID de artículo válido.");
+          if (!selectedArticle) {
+            setError("Selecciona un artículo para vincular.");
             setSaving(false);
             return;
           }
-          payload.articleId = id;
+          payload.articleId = selectedArticle.id;
         }
         await onCreate(payload);
       }
@@ -270,38 +437,32 @@ export default function AnnouncementFormModal({
             {!isEdit && type === "task" && (
               <div className="flex flex-col gap-1.5">
                 <label className="font-inter text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">
-                  ID de la tarea
+                  Tarea vinculada <span className="text-danger">*</span>
                 </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={taskId}
-                  onChange={(e) => setTaskId(e.target.value)}
-                  placeholder="Ej. 12"
-                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
+                <EntitySearchSelect
+                  selected={selectedTask}
+                  onChange={setSelectedTask}
+                  loadResults={loadTasks}
+                  placeholder="Selecciona una tarea..."
+                  searchPlaceholder="Buscar tarea por título..."
+                  emptyResultsLabel="No se encontraron tareas."
                 />
-                <p className="font-inter text-[11px] text-text-secondary">
-                  Encuentra el ID en la sección de Tareas.
-                </p>
               </div>
             )}
 
             {!isEdit && type === "article" && (
               <div className="flex flex-col gap-1.5">
                 <label className="font-inter text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">
-                  ID del artículo
+                  Artículo vinculado <span className="text-danger">*</span>
                 </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={articleId}
-                  onChange={(e) => setArticleId(e.target.value)}
-                  placeholder="Ej. 3"
-                  className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface"
+                <EntitySearchSelect
+                  selected={selectedArticle}
+                  onChange={setSelectedArticle}
+                  loadResults={loadArticles}
+                  placeholder="Selecciona un artículo..."
+                  searchPlaceholder="Buscar artículo por título..."
+                  emptyResultsLabel="No se encontraron artículos."
                 />
-                <p className="font-inter text-[11px] text-text-secondary">
-                  Encuentra el ID en la Wiki institucional.
-                </p>
               </div>
             )}
 

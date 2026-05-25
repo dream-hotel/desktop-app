@@ -1,10 +1,14 @@
-import { CheckSquare, FileText, Megaphone, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowUpRight, CheckSquare, FileText, Megaphone, Pencil, Trash2 } from "lucide-react";
 import {
   Announcement,
   AnnouncementType,
   priorityLabel,
   priorityTone,
 } from "../../types/models/Announcement";
+import { getTask } from "../../service/taskService";
+import { getArticle } from "../../service/wikiService";
+import { requestNavigate } from "../../hooks/useAnnouncementBell";
 
 interface AnnouncementDetailProps {
   announcement: Announcement | null;
@@ -83,12 +87,106 @@ export default function AnnouncementDetail({
   }
 
   const expired = isExpired(announcement.visibleUntil);
-  const ref =
+
+  const referencedId =
     announcement.type === "task"
       ? announcement.taskId
       : announcement.type === "article"
         ? announcement.articleId
         : null;
+
+  return (
+    <AnnouncementDetailInner
+      announcement={announcement}
+      referencedId={referencedId}
+      expired={expired}
+      isAdmin={isAdmin}
+      onEditClick={onEditClick}
+      onDeleteClick={onDeleteClick}
+    />
+  );
+}
+
+interface AnnouncementDetailInnerProps {
+  announcement: Announcement;
+  referencedId: number | null;
+  expired: boolean;
+  isAdmin: boolean;
+  onEditClick: () => void;
+  onDeleteClick: () => void;
+}
+
+type RefStatus =
+  | { state: "idle" }
+  | { state: "loading" }
+  | { state: "loaded"; title: string; subtitle?: string }
+  | { state: "error"; message: string };
+
+function AnnouncementDetailInner({
+  announcement,
+  referencedId,
+  expired,
+  isAdmin,
+  onEditClick,
+  onDeleteClick,
+}: AnnouncementDetailInnerProps) {
+  const [refStatus, setRefStatus] = useState<RefStatus>({ state: "idle" });
+
+  useEffect(() => {
+    if (referencedId == null || announcement.type === "text") {
+      setRefStatus({ state: "idle" });
+      return;
+    }
+    let cancelled = false;
+    setRefStatus({ state: "loading" });
+    const load = async () => {
+      try {
+        if (announcement.type === "task") {
+          const task = await getTask(referencedId);
+          if (!cancelled) {
+            setRefStatus({
+              state: "loaded",
+              title: task.title,
+              subtitle: task.status?.name ? `Estado: ${task.status.name}` : undefined,
+            });
+          }
+        } else if (announcement.type === "article") {
+          const article = await getArticle(referencedId);
+          if (!cancelled) {
+            setRefStatus({
+              state: "loaded",
+              title: article.title,
+              subtitle: article.categoryName ?? undefined,
+            });
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setRefStatus({
+            state: "error",
+            message:
+              err instanceof Error
+                ? err.message
+                : announcement.type === "task"
+                  ? "No se pudo cargar la tarea referenciada."
+                  : "No se pudo cargar el artículo referenciado.",
+          });
+        }
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [referencedId, announcement.type]);
+
+  const handleNavigate = () => {
+    if (announcement.type === "task" && announcement.taskId != null) {
+      requestNavigate({ section: "tareas", taskId: announcement.taskId });
+    } else if (announcement.type === "article" && announcement.articleId != null) {
+      requestNavigate({ section: "wiki", articleId: announcement.articleId });
+    }
+  };
 
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden bg-surface">
@@ -165,30 +263,55 @@ export default function AnnouncementDetail({
           </div>
 
           {(announcement.type === "task" || announcement.type === "article") && (
-            <div className="mt-4 flex items-center gap-3 rounded-[12px] border border-border bg-surface px-4 py-3">
+            <button
+              type="button"
+              onClick={handleNavigate}
+              disabled={referencedId == null || refStatus.state === "error"}
+              className="group mt-4 flex w-full items-center gap-3 rounded-[12px] border border-border bg-surface px-4 py-3 text-left transition-colors hover:border-primary/40 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:bg-surface"
+            >
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-[10px] ${
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] ${
                   announcement.type === "task" ? "bg-info/10 text-info" : "bg-primary/10 text-primary"
                 }`}
               >
                 <TypeIcon type={announcement.type} />
               </div>
-              <div className="flex flex-1 flex-col">
+              <div className="flex min-w-0 flex-1 flex-col">
                 <span className="font-inter text-[11.5px] uppercase tracking-wide text-text-secondary">
                   {announcement.type === "task" ? "Tarea referenciada" : "Artículo referenciado"}
                 </span>
-                <span className="font-inter text-[13px] font-medium text-text-primary">
-                  {announcement.type === "task"
-                    ? `Tarea #${announcement.taskId ?? "—"}`
-                    : `Artículo #${announcement.articleId ?? "—"}`}
-                </span>
+                {refStatus.state === "loaded" ? (
+                  <>
+                    <span className="truncate font-inter text-[13px] font-medium text-text-primary">
+                      {refStatus.title}
+                    </span>
+                    {refStatus.subtitle && (
+                      <span className="truncate font-inter text-[11px] text-text-secondary">
+                        {refStatus.subtitle}
+                      </span>
+                    )}
+                  </>
+                ) : refStatus.state === "loading" ? (
+                  <span className="font-inter text-[12.5px] italic text-text-secondary">
+                    Cargando título...
+                  </span>
+                ) : refStatus.state === "error" ? (
+                  <span className="font-inter text-[12.5px] italic text-danger">
+                    {refStatus.message}
+                  </span>
+                ) : (
+                  <span className="font-inter text-[12.5px] italic text-text-secondary">
+                    Sin referencia disponible.
+                  </span>
+                )}
               </div>
-              {ref != null && (
-                <span className="font-inter text-[11px] text-text-secondary">
-                  Abre la sección de {announcement.type === "task" ? "tareas" : "wiki"} para verlo
+              {referencedId != null && refStatus.state !== "error" && (
+                <span className="flex shrink-0 items-center gap-1 font-inter text-[11.5px] font-medium text-primary opacity-70 transition-opacity group-hover:opacity-100">
+                  Abrir
+                  <ArrowUpRight size={14} strokeWidth={1.8} />
                 </span>
               )}
-            </div>
+            </button>
           )}
 
           <dl className="mt-6 grid grid-cols-1 gap-x-8 gap-y-3 border-t border-border pt-5 font-inter text-[12.5px] sm:grid-cols-2">

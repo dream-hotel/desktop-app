@@ -35,11 +35,15 @@ export default function DashboardPage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [pendingAnnouncementId, setPendingAnnouncementId] = useState<number | null>(null);
+  const [pendingTaskId, setPendingTaskId] = useState<number | null>(null);
+  const [pendingArticleId, setPendingArticleId] = useState<number | null>(null);
 
   useEffect(() => {
     return onNavigateRequest((req) => {
       setActiveNav(req.section);
       if (req.announcementId != null) setPendingAnnouncementId(req.announcementId);
+      if (req.taskId != null) setPendingTaskId(req.taskId);
+      if (req.articleId != null) setPendingArticleId(req.articleId);
     });
   }, []);
 
@@ -86,9 +90,15 @@ export default function DashboardPage() {
           {activeNav === "dashboard" ? (
             <DashboardHome user={user} onNavigate={setActiveNav} />
           ) : activeNav === "tareas" ? (
-            <TasksPage />
+            <TasksPage
+              pendingSelectedId={pendingTaskId}
+              onConsumeSelection={() => setPendingTaskId(null)}
+            />
           ) : activeNav === "wiki" ? (
-            <WikiPage />
+            <WikiPage
+              pendingSelectedId={pendingArticleId}
+              onConsumeSelection={() => setPendingArticleId(null)}
+            />
           ) : activeNav === "anuncios" ? (
             <AnnouncementsPage
               pendingSelectedId={pendingAnnouncementId}

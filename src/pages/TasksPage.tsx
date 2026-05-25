@@ -10,7 +10,15 @@ import { notifyAnnouncementsChanged } from "../hooks/useAnnouncementBell";
 
 type EditorMode = { kind: "create" } | { kind: "edit" } | { kind: "closed" };
 
-export default function TasksPage() {
+interface TasksPageProps {
+  pendingSelectedId?: number | null;
+  onConsumeSelection?: () => void;
+}
+
+export default function TasksPage({
+  pendingSelectedId,
+  onConsumeSelection,
+}: TasksPageProps = {}) {
   const { user } = useAuth();
   const isAdmin = user?.role === "administrador";
 
@@ -22,10 +30,17 @@ export default function TasksPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (pendingSelectedId != null) {
+      setSelectedTaskId(pendingSelectedId);
+      onConsumeSelection?.();
+    }
+  }, [pendingSelectedId, onConsumeSelection]);
+
+  useEffect(() => {
     if (!isLoading && selectedTaskId == null && tasks.length > 0) {
       setSelectedTaskId(tasks[0].id);
     }
-    if (selectedTaskId != null && tasks.every((t) => t.id !== selectedTaskId)) {
+    if (selectedTaskId != null && tasks.length > 0 && tasks.every((t) => t.id !== selectedTaskId)) {
       setSelectedTaskId(tasks[0]?.id ?? null);
     }
   }, [isLoading, tasks, selectedTaskId]);

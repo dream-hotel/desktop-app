@@ -49,7 +49,15 @@ function buildBreadcrumb(
   return path;
 }
 
-export default function WikiPage() {
+interface WikiPageProps {
+  pendingSelectedId?: number | null;
+  onConsumeSelection?: () => void;
+}
+
+export default function WikiPage({
+  pendingSelectedId,
+  onConsumeSelection,
+}: WikiPageProps = {}) {
   const { user } = useAuth();
   const bell = useAnnouncementBell();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -122,6 +130,15 @@ export default function WikiPage() {
     loadTree();
     loadAllArticles();
   }, [loadTree, loadAllArticles]);
+
+  useEffect(() => {
+    if (pendingSelectedId != null) {
+      setSelectedCategoryId(null);
+      setSearchQuery("");
+      setSelectedArticleId(pendingSelectedId);
+      onConsumeSelection?.();
+    }
+  }, [pendingSelectedId, onConsumeSelection]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => setDebouncedSearch(searchQuery), 300);

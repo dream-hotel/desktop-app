@@ -35,6 +35,8 @@ const NAVIGATE_EVENT = "app:navigate";
 export interface NavigateRequest {
   section: string;
   announcementId?: number;
+  taskId?: number;
+  articleId?: number;
 }
 
 export function requestNavigate(req: NavigateRequest): void {
