@@ -1,5 +1,5 @@
-import { ReactNode, useMemo } from "react";
-import { Code, IndentDecrease, IndentIncrease, Link as LinkIcon, List, ListChecks, ListOrdered } from "lucide-react";
+import { ReactNode, useMemo, useRef, useState } from "react";
+import { Code, Image as ImageIcon, IndentDecrease, IndentIncrease, Link as LinkIcon, List, ListChecks, ListOrdered } from "lucide-react";
 import type { BlockNoteEditor } from "@blocknote/core";
 import { useEditorState, useSelectedBlocks } from "@blocknote/react";
 import { shortcut } from "../../hooks/usePlatform";
@@ -146,6 +146,45 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
     }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageClick = () => {
+    if (uploading) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!editor.uploadFile) {
+      window.alert("La carga de imágenes no está disponible.");
+      return;
+    }
+    setUploading(true);
+    try {
+      editor.focus();
+      const cursor = editor.getTextCursorPosition();
+      const result = await editor.uploadFile(file);
+      const url = typeof result === "string" ? result : result.url;
+      const block = {
+        type: "image" as const,
+        props: { url, caption: "", name: file.name },
+      };
+      if (cursor?.block) {
+        editor.insertBlocks([block], cursor.block, "after");
+      } else {
+        editor.insertBlocks([block], editor.document[editor.document.length - 1], "after");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error al subir la imagen";
+      window.alert(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-border bg-surface px-3 py-2">
       <select
@@ -242,6 +281,21 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       <ToolbarButton title="Insertar enlace" onClick={handleLink} disabled={isList && false}>
         <LinkIcon size={14} strokeWidth={1.8} />
       </ToolbarButton>
+
+      <ToolbarButton
+        title={uploading ? "Subiendo imagen..." : "Insertar imagen"}
+        onClick={handleImageClick}
+        disabled={uploading}
+      >
+        <ImageIcon size={14} strokeWidth={1.8} />
+      </ToolbarButton>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+        className="hidden"
+        onChange={handleImageSelected}
+      />
     </div>
   );
 }

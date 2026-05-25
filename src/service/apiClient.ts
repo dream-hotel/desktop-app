@@ -89,6 +89,32 @@ async function request<T>(path: string, opts: RequestOptions): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function requestForm<T>(path: string, form: FormData, auth = true): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (auth) {
+    const token = getAccessToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 && auth) {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
+    throw new ApiError(await readErrorMessage(response), response.status);
+  }
+
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
+
 export const apiClient = {
   get: <T>(path: string, opts: Omit<RequestOptions, "method" | "body"> = {}) =>
     request<T>(path, { ...opts, method: "GET" }),
@@ -101,4 +127,7 @@ export const apiClient = {
 
   delete: <T = void>(path: string, opts: Omit<RequestOptions, "method" | "body"> = {}) =>
     request<T>(path, { ...opts, method: "DELETE" }),
+
+  postForm: <T>(path: string, form: FormData, opts: { auth?: boolean } = {}) =>
+    requestForm<T>(path, form, opts.auth ?? true),
 };

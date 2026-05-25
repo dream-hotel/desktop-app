@@ -65,7 +65,13 @@ export default function ArticleEditor({
     article?.updatedAt ? new Date(article.updatedAt) : null,
   );
 
-  const editor = useCreateBlockNote({ dictionary: blocknoteEs });
+  const editor = useCreateBlockNote({
+    dictionary: blocknoteEs,
+    uploadFile: async (file: File) => {
+      const result = await wikiService.uploadArticleImage(file);
+      return result.url;
+    },
+  });
 
   useEffect(() => {
     let cancelled = false;
