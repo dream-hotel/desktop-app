@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { AlertTriangle, ClipboardCheck, ListChecks, PieChart } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useDashboard } from "../hooks/useDashboard";
 import { useAnnouncementBell, onNavigateRequest } from "../hooks/useAnnouncementBell";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import StatusBar from "../components/layout/StatusBar";
-import StatsCard from "../components/dashboard/StatsCard";
-import RecentTasks from "../components/dashboard/RecentTasks";
+import DashboardHome from "../components/dashboard/DashboardHome";
 import WelcomeNotificationsModal from "../components/dashboard/WelcomeNotificationsModal";
 import UnderConstructionPage from "./UnderConstructionPage";
 import TasksPage from "./TasksPage";
@@ -33,7 +30,6 @@ const PAGE_LABELS: Record<string, string> = {
 
 export default function DashboardPage() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { data, isLoading } = useDashboard();
   const bell = useAnnouncementBell();
   const [activeNav, setActiveNav] = useState("dashboard");
   const [showNotifications, setShowNotifications] = useState(false);
@@ -49,14 +45,6 @@ export default function DashboardPage() {
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
-  }
-
-  if (isLoading || !data) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center font-inter text-base text-text-secondary">
-        Cargando...
-      </div>
-    );
   }
 
   const unseenAnnouncements = bell.announcements.filter((a) => bell.isUnread(a.id));
@@ -96,43 +84,7 @@ export default function DashboardPage() {
           )}
 
           {activeNav === "dashboard" ? (
-            <div className="flex flex-1 flex-col gap-5 px-8 pb-6 pt-0">
-              <div className="flex gap-4">
-                <StatsCard
-                  icon={<ListChecks size={20} strokeWidth={1.7} />}
-                  value={data.stats.tareasActivas}
-                  label="Tareas activas"
-                  diff={data.stats.tareasActivasDiff}
-                  diffColor="#16a34a"
-                />
-                <StatsCard
-                  icon={<PieChart size={20} strokeWidth={1.7} />}
-                  value={data.stats.porcentajeCompletado}
-                  suffix="%"
-                  label="Porcentaje completado"
-                  diff={data.stats.porcentajeCompletadoDiff}
-                  diffColor="#16a34a"
-                />
-                <StatsCard
-                  icon={<ClipboardCheck size={20} strokeWidth={1.7} />}
-                  value={data.stats.checkInsPendientes}
-                  label="Check-ins pendientes"
-                  diff={data.stats.checkInsPendientesDiff}
-                  diffColor="#f59e0b"
-                />
-                <StatsCard
-                  icon={<AlertTriangle size={20} strokeWidth={1.7} />}
-                  value={data.stats.alertasCriticas}
-                  label="Alertas críticas"
-                  diff={data.stats.alertasCriticasDiff}
-                  diffColor="#ef4444"
-                />
-              </div>
-
-              <div className="flex flex-1 gap-4">
-                <RecentTasks tasks={data.recentTasks} />
-              </div>
-            </div>
+            <DashboardHome user={user} onNavigate={setActiveNav} />
           ) : activeNav === "tareas" ? (
             <TasksPage />
           ) : activeNav === "wiki" ? (
