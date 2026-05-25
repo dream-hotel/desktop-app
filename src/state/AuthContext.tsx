@@ -69,15 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const permissionSet = useMemo(() => new Set(permissions), [permissions]);
+  // global:admin acts as a wildcard, mirroring the backend guard.
+  const isGlobalAdmin = useMemo(() => permissionSet.has("global:admin"), [permissionSet]);
 
   const hasPermission = useCallback(
-    (permission: string) => permissionSet.has(permission),
-    [permissionSet],
+    (permission: string) => isGlobalAdmin || permissionSet.has(permission),
+    [permissionSet, isGlobalAdmin],
   );
 
   const hasAnyPermission = useCallback(
-    (requested: string[]) => requested.some((p) => permissionSet.has(p)),
-    [permissionSet],
+    (requested: string[]) => isGlobalAdmin || requested.some((p) => permissionSet.has(p)),
+    [permissionSet, isGlobalAdmin],
   );
 
   return (

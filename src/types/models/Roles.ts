@@ -42,6 +42,7 @@ const MODULE_DESCRIPTORS: PermissionModuleDescriptor[] = [
   { module: "Horarios", label: "Horarios", description: "Turnos y planificación" },
   { module: "Auditoría", label: "Actividad", description: "Registro de auditoría del sistema" },
   { module: "Dashboard", label: "Dashboard", description: "Indicadores y resúmenes" },
+  { module: "Sistema", label: "Sistema", description: "Permisos transversales — saltean filtros de audiencia, asignación y rol" },
 ];
 
 const ACTION_LABELS: Record<string, { label: string; description: string }> = {
@@ -61,10 +62,35 @@ const MODULE_NAMES: Record<string, string> = {
   schedules: "horarios",
   audit: "actividad",
   dashboard: "dashboard",
+  global: "sistema",
 };
 
+/**
+ * Permisos con etiquetas/explicaciones específicas que no encajan con el patrón
+ * verbo+sustantivo derivado de `module:action`. Cuando el permiso aparece acá,
+ * `describePermission` usa esto en lugar de armar la descripción automáticamente.
+ */
+const SPECIAL_PERMISSION_LABELS: Record<string, { label: string; description: string }> = {
+  "global:admin": {
+    label: "Administrador global",
+    description:
+      "Acceso total: ve todos los anuncios, tareas y artículos sin importar la audiencia, asignación o rol.",
+  },
+};
+
+export const GLOBAL_ADMIN_PERMISSION = "global:admin";
+
 export function describePermission(name: string): PermissionDescriptor {
+  const special = SPECIAL_PERMISSION_LABELS[name];
   const [module, action] = name.split(":");
+  if (special) {
+    return {
+      name,
+      action: action ?? name,
+      label: special.label,
+      description: special.description,
+    };
+  }
   const actionInfo = ACTION_LABELS[action] ?? { label: action, description: action };
   const moduleNoun = MODULE_NAMES[module] ?? module;
   return {
