@@ -17,6 +17,7 @@ import ActivityLogPage from "./ActivityLogPage";
 import SchedulesPage from "./SchedulesPage";
 import AccountPage from "./AccountPage";
 import ConfigurationPage, { readWelcomeModalEnabled } from "./ConfigurationPage";
+import HelpSupportPage from "./HelpSupportPage";
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -97,7 +98,7 @@ export default function DashboardPage() {
     readWelcomeModalEnabled() && !welcomeDismissed && unseenAnnouncements.length > 0;
 
   const FULL_HEIGHT_PAGES = [
-    "tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios", "cuenta", "configuracion",
+    "tareas", "wiki", "anuncios", "usuarios", "actividad", "horarios", "cuenta", "configuracion", "ayuda",
   ];
   const isFullHeightPage = FULL_HEIGHT_PAGES.includes(activeNav);
 
@@ -160,6 +161,8 @@ export default function DashboardPage() {
             <AccountPage user={user} onLogout={logout} />
           ) : activeNav === "configuracion" ? (
             <ConfigurationPage />
+          ) : activeNav === "ayuda" ? (
+            <HelpSupportPage />
           ) : (
             <UnderConstructionPage pageName={PAGE_LABELS[activeNav] ?? activeNav} />
           )}
