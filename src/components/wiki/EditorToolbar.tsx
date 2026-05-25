@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from "react";
 import { Code, IndentDecrease, IndentIncrease, Link as LinkIcon, List, ListChecks, ListOrdered } from "lucide-react";
 import type { BlockNoteEditor } from "@blocknote/core";
-import { useActiveStyles, useSelectedBlocks } from "@blocknote/react";
+import { useEditorState, useSelectedBlocks } from "@blocknote/react";
 import { shortcut } from "../../hooks/usePlatform";
 
 interface EditorToolbarProps {
@@ -71,8 +71,37 @@ function Divider() {
   return <span className="mx-1 h-5 w-px bg-border" aria-hidden />;
 }
 
+type StyleFlags = {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  code: boolean;
+};
+
+const EMPTY_STYLES: StyleFlags = {
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  code: false,
+};
+
 export default function EditorToolbar({ editor }: EditorToolbarProps) {
-  const activeStyles = useActiveStyles(editor);
+  const activeStyles = useEditorState({
+    editor,
+    selector: ({ editor: ed }) => {
+      const tt = (ed as unknown as { _tiptapEditor?: { isActive?: (n: string) => boolean } })._tiptapEditor;
+      if (!tt?.isActive) return EMPTY_STYLES;
+      return {
+        bold: tt.isActive("bold"),
+        italic: tt.isActive("italic"),
+        underline: tt.isActive("underline"),
+        strike: tt.isActive("strike"),
+        code: tt.isActive("code"),
+      };
+    },
+  }) as StyleFlags;
   const selectedBlocks = useSelectedBlocks(editor);
 
   const { blockType, headingLevel, isList } = useMemo(() => {
@@ -90,11 +119,12 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
   const blockSelectValue = currentBlockOption(blockType, headingLevel);
 
   const toggleStyle = (style: "bold" | "italic" | "underline" | "strike" | "code") => {
-    editor.toggleStyles({ [style]: true } as never);
     editor.focus();
+    editor.toggleStyles({ [style]: true } as never);
   };
 
   const setList = (type: "bulletListItem" | "numberedListItem" | "checkListItem") => {
+    editor.focus();
     const block = editor.getTextCursorPosition().block;
     if (!block) return;
     if (block.type === type) {
@@ -102,19 +132,18 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
     } else {
       editor.updateBlock(block, { type });
     }
-    editor.focus();
   };
 
   const handleLink = () => {
     const url = window.prompt("URL del enlace");
     if (!url) return;
+    editor.focus();
     const text = window.getSelection()?.toString();
     if (text && text.length > 0) {
       editor.createLink(url);
     } else {
       editor.createLink(url, url);
     }
-    editor.focus();
   };
 
   return (
@@ -123,8 +152,8 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
         value={blockSelectValue}
         onMouseDown={(e) => e.stopPropagation()}
         onChange={(e) => {
-          applyBlockOption(editor, e.target.value);
           editor.focus();
+          applyBlockOption(editor, e.target.value);
         }}
         className="h-8 rounded-[6px] border border-border bg-surface px-2 font-inter text-[12px] text-text-primary outline-none focus:border-primary/50"
         title="Tipo de bloque"
@@ -201,10 +230,10 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
 
       <Divider />
 
-      <ToolbarButton title="Disminuir sangría" onClick={() => { editor.unnestBlock(); editor.focus(); }}>
+      <ToolbarButton title="Disminuir sangría" onClick={() => { editor.focus(); editor.unnestBlock(); }}>
         <IndentDecrease size={14} strokeWidth={1.8} />
       </ToolbarButton>
-      <ToolbarButton title="Aumentar sangría" onClick={() => { editor.nestBlock(); editor.focus(); }}>
+      <ToolbarButton title="Aumentar sangría" onClick={() => { editor.focus(); editor.nestBlock(); }}>
         <IndentIncrease size={14} strokeWidth={1.8} />
       </ToolbarButton>
 
