@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react";
+import { useMemo, useState, ReactNode } from "react";
 import {
   LayoutDashboard,
   ListChecks,
@@ -13,25 +13,27 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { User } from "../../types/response/AuthResponse";
+import { usePermissions } from "../../hooks/usePermissions";
 import dreamLogo from "../../assets/dream_logo.svg";
 
 interface SidebarItem {
   id: string;
   label: string;
   icon: ReactNode;
+  permissions?: string[]; // any of these grants visibility
 }
 
 const ICON_SIZE = 18;
 const ICON_STROKE = 1.6;
 
 const NAV_ITEMS: SidebarItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-  { id: "tareas", label: "Tareas", icon: <ListChecks size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-  { id: "wiki", label: "Wiki", icon: <BookOpen size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-  { id: "anuncios", label: "Anuncios", icon: <Megaphone size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-  { id: "horarios", label: "Horarios", icon: <CalendarDays size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-  { id: "usuarios", label: "Usuarios", icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-  { id: "actividad", label: "Actividad", icon: <ScrollText size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
+  { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["dashboard:read"] },
+  { id: "tareas", label: "Tareas", icon: <ListChecks size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["tasks:read"] },
+  { id: "wiki", label: "Wiki", icon: <BookOpen size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["wiki:read"] },
+  { id: "anuncios", label: "Anuncios", icon: <Megaphone size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["announcements:read"] },
+  { id: "horarios", label: "Horarios", icon: <CalendarDays size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["schedules:read"] },
+  { id: "usuarios", label: "Usuarios", icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["users:read", "roles:read"] },
+  { id: "actividad", label: "Actividad", icon: <ScrollText size={ICON_SIZE} strokeWidth={ICON_STROKE} />, permissions: ["audit:read"] },
 ];
 
 const BOTTOM_ITEMS: SidebarItem[] = [
@@ -67,7 +69,17 @@ function roleLabel(role: User["role"]): string {
 
 export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { hasAny } = usePermissions();
   const accountActive = activeItem === "cuenta";
+
+  const visibleNav = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.permissions || hasAny(item.permissions)),
+    [hasAny],
+  );
+  const visibleBottom = useMemo(
+    () => BOTTOM_ITEMS.filter((item) => !item.permissions || hasAny(item.permissions)),
+    [hasAny],
+  );
 
   return (
     <aside
@@ -115,7 +127,7 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
       {/* Navigation */}
       <nav className="flex flex-1 flex-col justify-between px-3 py-3">
         <div className="flex flex-col gap-1">
-          {NAV_ITEMS.map((item) => (
+          {visibleNav.map((item) => (
             <button
               key={item.id}
               className={`flex h-[36px] w-full items-center gap-3 rounded-[10px] border-none px-[13px] text-left font-inter text-[13px] leading-[20px] shadow-none transition-colors ${
@@ -140,7 +152,7 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
         </div>
 
         <div className="flex flex-col gap-1">
-          {BOTTOM_ITEMS.map((item) => (
+          {visibleBottom.map((item) => (
             <button
               key={item.id}
               className={`flex h-[36px] w-full items-center gap-3 rounded-[10px] border-none px-[13px] text-left font-inter text-[13px] leading-[20px] shadow-none transition-colors ${

@@ -6,61 +6,56 @@ import {
   listRoles,
   updateRole,
 } from "../../service/roleService";
+import { listPermissions } from "../../service/permissionService";
 import {
+  BackendPermission,
+  BackendRole,
   CreateRolePayload,
-  PERMISSION_MODULES,
-  Role,
   UpdateRolePayload,
+  describeModule,
+  isSystemRole,
   roleDisplayName,
 } from "../../types/models/Roles";
 import RoleFormModal from "./RoleFormModal";
+import { usePermissions } from "../../hooks/usePermissions";
 
-function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
-  }
-}
-
-function permissionSummary(role: Role): { label: string; tone: "all" | "partial" | "none" } {
-  const total = PERMISSION_MODULES.reduce((acc, m) => acc + m.permissions.length, 0);
+function permissionSummary(role: BackendRole, total: number): { label: string; tone: "all" | "partial" | "none" } {
   if (role.permissions.length === 0) return { label: "Sin permisos", tone: "none" };
-  if (role.permissions.length === total) return { label: "Acceso total", tone: "all" };
+  if (role.permissions.length >= total && total > 0) return { label: "Acceso total", tone: "all" };
   return { label: `${role.permissions.length} permisos`, tone: "partial" };
 }
 
-function modulesCovered(role: Role): string[] {
+function modulesCovered(role: BackendRole): string[] {
   const set = new Set<string>();
-  role.permissions.forEach((id) => {
-    const mod = PERMISSION_MODULES.find((m) => m.permissions.some((p) => p.id === id));
-    if (mod) set.add(mod.label);
-  });
+  role.permissions.forEach((p) => set.add(describeModule(p.module).label));
   return Array.from(set);
 }
 
 export default function RolesView() {
-  const [roles, setRoles] = useState<Role[]>([]);
+  const { has } = usePermissions();
+  const canCreate = has("roles:create");
+  const canUpdate = has("roles:update");
+  const canDelete = has("roles:delete");
+
+  const [roles, setRoles] = useState<BackendRole[]>([]);
+  const [permissions, setPermissions] = useState<BackendPermission[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [showCreate, setShowCreate] = useState(false);
-  const [editing, setEditing] = useState<Role | null>(null);
-  const [deleting, setDeleting] = useState<Role | null>(null);
+  const [editing, setEditing] = useState<BackendRole | null>(null);
+  const [deleting, setDeleting] = useState<BackendRole | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const fetchRoles = useCallback(async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await listRoles();
-      setRoles(list);
+      const [rolesData, permsData] = await Promise.all([listRoles(), listPermissions()]);
+      setRoles(rolesData);
+      setPermissions(permsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar los roles");
     } finally {
@@ -69,8 +64,8 @@ export default function RolesView() {
   }, []);
 
   useEffect(() => {
-    fetchRoles();
-  }, [fetchRoles]);
+    fetchAll();
+  }, [fetchAll]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -78,7 +73,6 @@ export default function RolesView() {
     return roles.filter(
       (r) =>
         r.name.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
         roleDisplayName(r.name).toLowerCase().includes(q),
     );
   }, [roles, search]);
@@ -86,14 +80,14 @@ export default function RolesView() {
   async function handleCreate(payload: CreateRolePayload | UpdateRolePayload) {
     await createRole(payload as CreateRolePayload);
     setShowCreate(false);
-    await fetchRoles();
+    await fetchAll();
   }
 
   async function handleEdit(payload: CreateRolePayload | UpdateRolePayload) {
     if (!editing) return;
     await updateRole(editing.id, payload);
     setEditing(null);
-    await fetchRoles();
+    await fetchAll();
   }
 
   async function handleDelete() {
@@ -103,7 +97,7 @@ export default function RolesView() {
     try {
       await deleteRole(deleting.id);
       setDeleting(null);
-      await fetchRoles();
+      await fetchAll();
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : "Error al eliminar");
     } finally {
@@ -116,6 +110,8 @@ export default function RolesView() {
     if (roles.length === 1) return "1 rol";
     return `${roles.length} roles`;
   }, [roles.length]);
+
+  const totalPermissions = permissions.length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -140,13 +136,15 @@ export default function RolesView() {
               className="w-[240px] rounded-[10px] bg-neutral-soft py-2 pl-9 pr-3 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
-          >
-            <Plus size={16} strokeWidth={2} />
-            Nuevo Rol
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
+            >
+              <Plus size={16} strokeWidth={2} />
+              Nuevo Rol
+            </button>
+          )}
         </div>
       </div>
 
@@ -161,9 +159,8 @@ export default function RolesView() {
           <colgroup>
             <col className="w-[28%]" />
             <col className="w-[18%]" />
-            <col className="w-[32%]" />
+            <col className="w-[42%]" />
             <col className="w-[12%]" />
-            <col className="w-[10%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-border bg-surface-2">
@@ -176,9 +173,6 @@ export default function RolesView() {
               <th className="px-5 py-3 text-left font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                 Módulos
               </th>
-              <th className="px-5 py-3 text-left font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
-                Actualizado
-              </th>
               <th className="px-5 py-3 text-right font-inter text-[12px] font-medium uppercase tracking-wide text-text-secondary">
                 Acciones
               </th>
@@ -187,22 +181,23 @@ export default function RolesView() {
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-center font-inter text-[13px] text-text-secondary">
+                <td colSpan={4} className="px-5 py-8 text-center font-inter text-[13px] text-text-secondary">
                   Cargando roles...
                 </td>
               </tr>
             )}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-center font-inter text-[13px] text-text-secondary">
+                <td colSpan={4} className="px-5 py-8 text-center font-inter text-[13px] text-text-secondary">
                   {search ? `No se encontraron roles con "${search}".` : "Aún no creaste ningún rol."}
                 </td>
               </tr>
             )}
             {!loading &&
               filtered.map((role) => {
-                const summary = permissionSummary(role);
+                const summary = permissionSummary(role, totalPermissions);
                 const mods = modulesCovered(role);
+                const system = isSystemRole(role);
                 return (
                   <tr key={role.id} className="border-b border-border last:border-b-0 hover:bg-surface-2">
                     <td className="px-5 py-3 align-top">
@@ -215,17 +210,12 @@ export default function RolesView() {
                             <span className="truncate font-inter text-[13px] font-medium text-text-primary">
                               {roleDisplayName(role.name)}
                             </span>
-                            {role.isSystem && (
+                            {system && (
                               <span className="shrink-0 rounded-full bg-warning/15 px-2 py-[1.5px] font-inter text-[10px] font-medium text-warning">
                                 Sistema
                               </span>
                             )}
                           </div>
-                          {role.description && (
-                            <span className="truncate font-inter text-[11px] text-text-secondary" title={role.description}>
-                              {role.description}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </td>
@@ -274,29 +264,30 @@ export default function RolesView() {
                         )}
                       </div>
                     </td>
-                    <td className="px-5 py-3 align-top font-inter text-[12px] text-text-secondary">
-                      <span className="whitespace-nowrap">{formatDate(role.updatedAt)}</span>
-                    </td>
                     <td className="px-5 py-3 align-top">
                       <div className="flex justify-end gap-1">
-                        <button
-                          onClick={() => setEditing(role)}
-                          title="Editar"
-                          className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
-                        >
-                          <Pencil size={14} strokeWidth={1.8} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setDeleting(role);
-                            setDeleteError(null);
-                          }}
-                          title={role.isSystem ? "Roles del sistema no se pueden eliminar" : "Eliminar"}
-                          disabled={role.isSystem}
-                          className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
-                        >
-                          <Trash2 size={14} strokeWidth={1.8} />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            onClick={() => setEditing(role)}
+                            title="Editar"
+                            className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
+                          >
+                            <Pencil size={14} strokeWidth={1.8} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => {
+                              setDeleting(role);
+                              setDeleteError(null);
+                            }}
+                            title={system ? "Roles del sistema no se pueden eliminar" : "Eliminar"}
+                            disabled={system}
+                            className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary"
+                          >
+                            <Trash2 size={14} strokeWidth={1.8} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -309,6 +300,7 @@ export default function RolesView() {
       {showCreate && (
         <RoleFormModal
           mode="create"
+          allPermissions={permissions}
           onClose={() => setShowCreate(false)}
           onSubmit={handleCreate}
         />
@@ -317,6 +309,7 @@ export default function RolesView() {
         <RoleFormModal
           mode="edit"
           role={editing}
+          allPermissions={permissions}
           onClose={() => setEditing(null)}
           onSubmit={handleEdit}
         />

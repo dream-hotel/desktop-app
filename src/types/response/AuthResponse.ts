@@ -5,6 +5,8 @@ export interface User {
   fullName: string;
   lastName?: string;
   role: UserRole;
+  roleId: number;
+  roleName: string;
   email: string;
   avatar?: string;
   isActive?: boolean;
@@ -16,6 +18,7 @@ export interface AuthResponse {
   message: string;
   user?: User;
   token?: string;
+  permissions?: string[];
 }
 
 export interface BackendUser {
@@ -35,4 +38,5 @@ export interface BackendAuthResponse {
   accessToken: string;
   refreshToken: string;
   user: BackendUser;
+  permissions?: string[];
 }

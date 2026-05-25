@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 import { useAnnouncementBell, onNavigateRequest } from "../hooks/useAnnouncementBell";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardHeader from "../components/layout/DashboardHeader";
@@ -28,10 +29,43 @@ const PAGE_LABELS: Record<string, string> = {
   configuracion: "Configuración",
 };
 
+const SECTION_PERMISSIONS: Record<string, string[]> = {
+  dashboard: ["dashboard:read"],
+  tareas: ["tasks:read"],
+  wiki: ["wiki:read"],
+  anuncios: ["announcements:read"],
+  horarios: ["schedules:read"],
+  usuarios: ["users:read", "roles:read"],
+  actividad: ["audit:read"],
+};
+
+const FALLBACK_ORDER = ["dashboard", "tareas", "wiki", "anuncios", "horarios", "usuarios", "actividad"];
+
+function NoAccessView() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-10 text-center">
+      <h2 className="font-alexandria text-[24px] font-normal text-text-primary">Sin acceso</h2>
+      <p className="mt-2 font-inter text-[13px] text-text-secondary">
+        No tenés permisos para ver esta sección. Pedile al administrador que ajuste tu rol.
+      </p>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { hasAny } = usePermissions();
   const bell = useAnnouncementBell();
-  const [activeNav, setActiveNav] = useState("dashboard");
+
+  const firstAllowedSection = useMemo(() => {
+    for (const section of FALLBACK_ORDER) {
+      const required = SECTION_PERMISSIONS[section];
+      if (!required || hasAny(required)) return section;
+    }
+    return "cuenta";
+  }, [hasAny]);
+
+  const [activeNav, setActiveNav] = useState(firstAllowedSection);
   const [showNotifications, setShowNotifications] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [pendingAnnouncementId, setPendingAnnouncementId] = useState<number | null>(null);
@@ -46,6 +80,13 @@ export default function DashboardPage() {
       if (req.articleId != null) setPendingArticleId(req.articleId);
     });
   }, []);
+
+  useEffect(() => {
+    const required = SECTION_PERMISSIONS[activeNav];
+    if (required && !hasAny(required)) {
+      setActiveNav(firstAllowedSection);
+    }
+  }, [activeNav, hasAny, firstAllowedSection]);
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
@@ -67,6 +108,9 @@ export default function DashboardPage() {
     setPendingAnnouncementId(id);
   };
 
+  const required = SECTION_PERMISSIONS[activeNav];
+  const sectionAllowed = !required || hasAny(required);
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-bg">
       <div className="flex min-h-0 flex-1">
@@ -87,7 +131,9 @@ export default function DashboardPage() {
             />
           )}
 
-          {activeNav === "dashboard" ? (
+          {!sectionAllowed ? (
+            <NoAccessView />
+          ) : activeNav === "dashboard" ? (
             <DashboardHome user={user} onNavigate={setActiveNav} />
           ) : activeNav === "tareas" ? (
             <TasksPage

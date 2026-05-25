@@ -4,19 +4,21 @@ import {
   BackendUserListItem,
   CreateUserPayload,
   FindUsersQuery,
-  ROLE_OPTIONS,
   UpdateUserPayload,
   roleLabel,
 } from "../types/models/Users";
+import { BackendRole } from "../types/models/Roles";
 import {
   createUser,
   deleteUser,
   listUsers,
   updateUser,
 } from "../service/userService";
+import { listRoles } from "../service/roleService";
 import UserFormModal from "../components/users/UserFormModal";
 import ConfirmDeleteModal from "../components/users/ConfirmDeleteModal";
 import RolesView from "../components/users/RolesView";
+import { usePermissions } from "../hooks/usePermissions";
 
 type ActiveFilter = "all" | "active" | "inactive";
 type RoleFilter = "all" | number;
@@ -43,9 +45,18 @@ function initials(user: BackendUserListItem): string {
 }
 
 export default function UsersPage() {
-  const [tab, setTab] = useState<Tab>("users");
+  const { has, hasAny } = usePermissions();
+  const canReadUsers = has("users:read");
+  const canCreateUsers = has("users:create");
+  const canUpdateUsers = has("users:update");
+  const canDeleteUsers = has("users:delete");
+  const canViewRoles = hasAny(["roles:read"]);
+
+  const initialTab: Tab = canReadUsers ? "users" : canViewRoles ? "roles" : "users";
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   const [users, setUsers] = useState<BackendUserListItem[]>([]);
+  const [roles, setRoles] = useState<BackendRole[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: PAGE_SIZE, pages: 1, total: 0 });
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
@@ -71,6 +82,10 @@ export default function UsersPage() {
   }, [searchDebounced, activeFilter, roleFilter]);
 
   const fetchUsers = useCallback(async () => {
+    if (!canReadUsers) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -87,11 +102,25 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchDebounced, roleFilter, activeFilter]);
+  }, [page, searchDebounced, roleFilter, activeFilter, canReadUsers]);
+
+  const fetchRoles = useCallback(async () => {
+    if (!canViewRoles) return;
+    try {
+      const data = await listRoles();
+      setRoles(data);
+    } catch {
+      setRoles([]);
+    }
+  }, [canViewRoles]);
 
   useEffect(() => {
     if (tab === "users") fetchUsers();
   }, [tab, fetchUsers]);
+
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
 
   async function handleCreate(payload: CreateUserPayload | UpdateUserPayload) {
     await createUser(payload as CreateUserPayload);
@@ -127,6 +156,18 @@ export default function UsersPage() {
     return `${meta.total} usuarios`;
   }, [meta.total]);
 
+  if (!canReadUsers && !canViewRoles) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-10">
+        <ShieldCheck size={36} className="text-text-secondary" />
+        <h2 className="mt-3 font-alexandria text-[22px] font-normal text-text-primary">Sin acceso</h2>
+        <p className="mt-1 font-inter text-[13px] text-text-secondary">
+          No tenés permisos para ver usuarios ni roles.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex flex-col gap-4 border-b border-border px-8 pb-0 pt-6">
@@ -141,7 +182,7 @@ export default function UsersPage() {
                 : "Definí roles personalizados y asigná qué permisos puede ejercer cada uno."}
             </p>
           </div>
-          {tab === "users" && (
+          {tab === "users" && canCreateUsers && (
             <button
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
@@ -153,28 +194,32 @@ export default function UsersPage() {
         </div>
 
         <div className="flex items-center gap-1 border-b border-transparent">
-          <button
-            onClick={() => setTab("users")}
-            className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
-              tab === "users"
-                ? "border-primary text-primary"
-                : "border-transparent text-text-secondary hover:text-text-primary"
-            }`}
-          >
-            <UsersIcon size={15} strokeWidth={1.8} />
-            Usuarios
-          </button>
-          <button
-            onClick={() => setTab("roles")}
-            className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
-              tab === "roles"
-                ? "border-primary text-primary"
-                : "border-transparent text-text-secondary hover:text-text-primary"
-            }`}
-          >
-            <ShieldCheck size={15} strokeWidth={1.8} />
-            Roles y permisos
-          </button>
+          {canReadUsers && (
+            <button
+              onClick={() => setTab("users")}
+              className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
+                tab === "users"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              <UsersIcon size={15} strokeWidth={1.8} />
+              Usuarios
+            </button>
+          )}
+          {canViewRoles && (
+            <button
+              onClick={() => setTab("roles")}
+              className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
+                tab === "roles"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              <ShieldCheck size={15} strokeWidth={1.8} />
+              Roles y permisos
+            </button>
+          )}
         </div>
 
         {tab === "users" && (
@@ -202,9 +247,9 @@ export default function UsersPage() {
               className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
             >
               <option value="all">Todos los roles</option>
-              {ROLE_OPTIONS.map((r) => (
+              {roles.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.label}
+                  {roleLabel(r.name)}
                 </option>
               ))}
             </select>
@@ -321,23 +366,27 @@ export default function UsersPage() {
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex justify-end gap-1">
-                            <button
-                              onClick={() => setEditingUser(u)}
-                              title="Editar"
-                              className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
-                            >
-                              <Pencil size={14} strokeWidth={1.8} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setDeletingUser(u);
-                                setDeleteError(null);
-                              }}
-                              title="Eliminar"
-                              className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger"
-                            >
-                              <Trash2 size={14} strokeWidth={1.8} />
-                            </button>
+                            {canUpdateUsers && (
+                              <button
+                                onClick={() => setEditingUser(u)}
+                                title="Editar"
+                                className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary"
+                              >
+                                <Pencil size={14} strokeWidth={1.8} />
+                              </button>
+                            )}
+                            {canDeleteUsers && (
+                              <button
+                                onClick={() => {
+                                  setDeletingUser(u);
+                                  setDeleteError(null);
+                                }}
+                                title="Eliminar"
+                                className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger"
+                              >
+                                <Trash2 size={14} strokeWidth={1.8} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -376,6 +425,7 @@ export default function UsersPage() {
       {showCreateModal && (
         <UserFormModal
           mode="create"
+          roles={roles}
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreate}
         />
@@ -384,6 +434,7 @@ export default function UsersPage() {
         <UserFormModal
           mode="edit"
           user={editingUser}
+          roles={roles}
           onClose={() => setEditingUser(null)}
           onSubmit={handleEdit}
         />

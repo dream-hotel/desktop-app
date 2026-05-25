@@ -1,59 +1,91 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 import {
-  ALL_PERMISSION_IDS,
+  BackendPermission,
+  BackendRole,
   CreateRolePayload,
-  PERMISSION_MODULES,
-  Role,
   UpdateRolePayload,
+  describeModule,
+  describePermission,
+  isSystemRole,
 } from "../../types/models/Roles";
 
 interface RoleFormModalProps {
   mode: "create" | "edit";
-  role?: Role | null;
+  role?: BackendRole | null;
+  allPermissions: BackendPermission[];
   onClose: () => void;
   onSubmit: (payload: CreateRolePayload | UpdateRolePayload) => Promise<void>;
 }
 
-export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFormModalProps) {
+interface GroupedModule {
+  module: string;
+  label: string;
+  description: string;
+  permissions: BackendPermission[];
+}
+
+function groupPermissions(perms: BackendPermission[]): GroupedModule[] {
+  const byModule = new Map<string, BackendPermission[]>();
+  for (const p of perms) {
+    const list = byModule.get(p.module) ?? [];
+    list.push(p);
+    byModule.set(p.module, list);
+  }
+  return Array.from(byModule.entries()).map(([module, permissions]) => {
+    const meta = describeModule(module);
+    return {
+      module,
+      label: meta.label,
+      description: meta.description,
+      permissions: permissions.sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  });
+}
+
+export default function RoleFormModal({ mode, role, allPermissions, onClose, onSubmit }: RoleFormModalProps) {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isSystem = mode === "edit" && role?.isSystem === true;
+  const system = mode === "edit" && role ? isSystemRole(role) : false;
 
   useEffect(() => {
     if (mode === "edit" && role) {
       setName(role.name);
-      setDescription(role.description);
-      setSelected(new Set(role.permissions));
+      setSelected(new Set(role.permissions.map((p) => p.id)));
     }
   }, [mode, role]);
 
-  const totalCount = ALL_PERMISSION_IDS.length;
+  const totalCount = allPermissions.length;
   const selectedCount = selected.size;
-  const allSelected = selectedCount === totalCount;
+  const allSelected = totalCount > 0 && selectedCount === totalCount;
+
+  const groupedModules = useMemo(() => groupPermissions(allPermissions), [allPermissions]);
 
   const filteredModules = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return PERMISSION_MODULES;
-    return PERMISSION_MODULES.map((m) => {
-      const matchesModule = m.label.toLowerCase().includes(q);
-      const perms = matchesModule
-        ? m.permissions
-        : m.permissions.filter(
-            (p) =>
-              p.label.toLowerCase().includes(q) ||
-              p.description.toLowerCase().includes(q) ||
-              p.id.toLowerCase().includes(q),
-          );
-      return { ...m, permissions: perms };
-    }).filter((m) => m.permissions.length > 0);
-  }, [search]);
+    if (!q) return groupedModules;
+    return groupedModules
+      .map((m) => {
+        const matchesModule = m.label.toLowerCase().includes(q);
+        const perms = matchesModule
+          ? m.permissions
+          : m.permissions.filter((p) => {
+              const desc = describePermission(p.name);
+              return (
+                desc.label.toLowerCase().includes(q) ||
+                desc.description.toLowerCase().includes(q) ||
+                p.name.toLowerCase().includes(q)
+              );
+            });
+        return { ...m, permissions: perms };
+      })
+      .filter((m) => m.permissions.length > 0);
+  }, [groupedModules, search]);
 
   function toggleModuleCollapsed(module: string) {
     setCollapsed((prev) => {
@@ -64,7 +96,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
     });
   }
 
-  function togglePermission(id: string) {
+  function togglePermission(id: number) {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -74,7 +106,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
   }
 
   function toggleModule(module: string, allOn: boolean) {
-    const ids = PERMISSION_MODULES.find((m) => m.module === module)?.permissions.map((p) => p.id) ?? [];
+    const ids = groupedModules.find((m) => m.module === module)?.permissions.map((p) => p.id) ?? [];
     setSelected((prev) => {
       const next = new Set(prev);
       if (allOn) ids.forEach((id) => next.delete(id));
@@ -84,7 +116,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
   }
 
   function toggleAll() {
-    setSelected(allSelected ? new Set() : new Set(ALL_PERMISSION_IDS));
+    setSelected(allSelected ? new Set() : new Set(allPermissions.map((p) => p.id)));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -100,12 +132,19 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
     }
     setSaving(true);
     try {
-      const payload = {
-        name: name.trim(),
-        description: description.trim(),
-        permissions: Array.from(selected),
-      };
-      await onSubmit(payload);
+      if (mode === "create") {
+        const payload: CreateRolePayload = {
+          name: name.trim(),
+          permissionIds: Array.from(selected),
+        };
+        await onSubmit(payload);
+      } else {
+        const payload: UpdateRolePayload = {
+          permissionIds: Array.from(selected),
+          ...(system ? {} : { name: name.trim() }),
+        };
+        await onSubmit(payload);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
     } finally {
@@ -126,14 +165,14 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
         <div className="flex shrink-0 items-start justify-between">
           <div>
             <h2 className="font-alexandria text-[22px] font-normal leading-[26px] text-text-primary">
-              {mode === "create" ? "Nuevo rol" : isSystem ? "Editar rol del sistema" : "Editar rol"}
+              {mode === "create" ? "Nuevo rol" : system ? "Editar rol del sistema" : "Editar rol"}
             </h2>
             <p className="mt-1 font-inter text-[12px] text-text-secondary">
               {mode === "create"
                 ? "Definí el nombre y elegí qué módulos podrá manejar este rol."
-                : isSystem
+                : system
                 ? "Es un rol del sistema: podés ajustar sus permisos pero no renombrarlo ni eliminarlo."
-                : "Actualizá la información y los permisos asignados."}
+                : "Actualizá el nombre y los permisos asignados."}
             </p>
           </div>
           <button
@@ -146,29 +185,17 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
           </button>
         </div>
 
-        <div className="flex shrink-0 gap-3">
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <label className="font-inter text-[12px] font-medium text-text-body">Nombre del rol</label>
-            <input
-              required
-              maxLength={50}
-              disabled={isSystem}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Supervisor de turno"
-              className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary disabled:bg-surface-2 disabled:text-text-secondary"
-            />
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <label className="font-inter text-[12px] font-medium text-text-body">Descripción</label>
-            <input
-              maxLength={120}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Breve descripción del rol"
-              className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
-            />
-          </div>
+        <div className="flex shrink-0 flex-col gap-1">
+          <label className="font-inter text-[12px] font-medium text-text-body">Nombre del rol</label>
+          <input
+            required
+            maxLength={50}
+            disabled={system}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej: Supervisor de turno"
+            className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary disabled:bg-surface-2 disabled:text-text-secondary"
+          />
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
@@ -197,7 +224,8 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
               <button
                 type="button"
                 onClick={toggleAll}
-                className="shrink-0 whitespace-nowrap rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body hover:border-primary hover:text-primary"
+                disabled={totalCount === 0}
+                className="shrink-0 whitespace-nowrap rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[12px] font-medium text-text-body hover:border-primary hover:text-primary disabled:opacity-50"
               >
                 {allSelected ? "Deseleccionar todo" : "Seleccionar todo"}
               </button>
@@ -208,7 +236,12 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
             className="flex flex-col gap-2 overflow-y-auto rounded-[10px] border border-border bg-surface-2 p-2"
             style={{ height: "min(420px, 55vh)" }}
           >
-            {filteredModules.length === 0 && (
+            {totalCount === 0 && (
+              <div className="shrink-0 px-3 py-6 text-center font-inter text-[12px] text-text-secondary">
+                No hay permisos disponibles en el sistema.
+              </div>
+            )}
+            {totalCount > 0 && filteredModules.length === 0 && (
               <div className="shrink-0 px-3 py-6 text-center font-inter text-[12px] text-text-secondary">
                 Sin resultados para "{search}".
               </div>
@@ -261,6 +294,7 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                     <div className="grid grid-cols-2 gap-2 p-3">
                       {mod.permissions.map((perm) => {
                         const checked = selected.has(perm.id);
+                        const desc = describePermission(perm.name);
                         return (
                           <label
                             key={perm.id}
@@ -280,10 +314,10 @@ export default function RoleFormModal({ mode, role, onClose, onSubmit }: RoleFor
                                   checked ? "text-primary" : "text-text-primary"
                                 }`}
                               >
-                                {perm.label}
+                                {desc.label}
                               </span>
                               <span className="font-inter text-[11px] leading-[14px] text-text-secondary break-words">
-                                {perm.description}
+                                {perm.name}
                               </span>
                             </div>
                           </label>

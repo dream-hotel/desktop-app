@@ -1,3 +1,5 @@
+import { roleDisplayName } from "./Roles";
+
 export interface BackendRole {
   id: number;
   name: string;
@@ -9,7 +11,7 @@ export interface BackendUserListItem {
   lastName: string;
   email: string;
   isActive: boolean;
-  schedules: any[]; // Changed from scheduleId: number | null
+  schedules: any[];
   createdAt: string;
   role: BackendRole;
 }
@@ -29,7 +31,7 @@ export interface UpdateUserPayload {
   password?: string;
   roleId?: number;
   isActive?: boolean;
-  scheduleIds?: number[]; // Changed from scheduleId?: number | null
+  scheduleIds?: number[];
 }
 
 export interface FindUsersQuery {
@@ -40,18 +42,6 @@ export interface FindUsersQuery {
   isActive?: boolean;
 }
 
-export const ROLE_OPTIONS: { id: number; label: string; key: string }[] = [
-  { id: 1, label: "Administrador", key: "ADMIN" },
-  { id: 2, label: "Recepcionista", key: "RECEPTIONIST" },
-];
-
 export function roleLabel(name: string): string {
-  switch (name.toUpperCase()) {
-    case "ADMIN":
-      return "Administrador";
-    case "RECEPTIONIST":
-      return "Recepcionista";
-    default:
-      return name;
-  }
+  return roleDisplayName(name);
 }

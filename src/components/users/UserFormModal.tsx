@@ -3,13 +3,19 @@ import { X } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
-  ROLE_OPTIONS,
   UpdateUserPayload,
 } from "../../types/models/Users";
+import { roleDisplayName } from "../../types/models/Roles";
+
+interface RoleOption {
+  id: number;
+  name: string;
+}
 
 interface UserFormModalProps {
   mode: "create" | "edit";
   user?: BackendUserListItem | null;
+  roles: RoleOption[];
   onClose: () => void;
   onSubmit: (payload: CreateUserPayload | UpdateUserPayload) => Promise<void>;
 }
@@ -67,8 +73,8 @@ function validatePassword(value: string, mode: "create" | "edit"): string | unde
   return undefined;
 }
 
-function validateRoleId(value: number): string | undefined {
-  if (!ROLE_OPTIONS.some((opt) => opt.id === value)) return "Seleccione un rol válido.";
+function validateRoleId(value: number, roles: RoleOption[]): string | undefined {
+  if (!roles.some((opt) => opt.id === value)) return "Seleccione un rol válido.";
   return undefined;
 }
 
@@ -86,12 +92,18 @@ function translateServerError(message: string): string {
   return message;
 }
 
-export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFormModalProps) {
+export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: UserFormModalProps) {
+  const defaultRoleId = useMemo(() => {
+    if (mode === "edit" && user) return user.role.id;
+    const fallback = roles.find((r) => r.name.toUpperCase() === "RECEPTIONIST") ?? roles[0];
+    return fallback ? fallback.id : 0;
+  }, [mode, user, roles]);
+
   const [fullName, setFullName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [roleId, setRoleId] = useState<number>(ROLE_OPTIONS[1].id);
+  const [roleId, setRoleId] = useState<number>(defaultRoleId);
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -112,8 +124,10 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
       setRoleId(user.role.id);
       setIsActive(user.isActive);
       setPassword("");
+    } else if (mode === "create") {
+      setRoleId(defaultRoleId);
     }
-  }, [mode, user]);
+  }, [mode, user, defaultRoleId]);
 
   const errors: FieldErrors = useMemo(
     () => ({
@@ -121,9 +135,9 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
       lastName: validateLastName(lastName),
       email: validateEmail(email),
       password: validatePassword(password, mode),
-      roleId: validateRoleId(roleId),
+      roleId: validateRoleId(roleId, roles),
     }),
-    [fullName, lastName, email, password, roleId, mode],
+    [fullName, lastName, email, password, roleId, mode, roles],
   );
 
   const hasErrors = Object.values(errors).some(Boolean);
@@ -313,9 +327,10 @@ export default function UserFormModal({ mode, user, onClose, onSubmit }: UserFor
               aria-invalid={shouldShowError("roleId")}
               className={inputClass("roleId")}
             >
-              {ROLE_OPTIONS.map((opt) => (
+              {roles.length === 0 && <option value={0}>Sin roles disponibles</option>}
+              {roles.map((opt) => (
                 <option key={opt.id} value={opt.id}>
-                  {opt.label}
+                  {roleDisplayName(opt.name)}
                 </option>
               ))}
             </select>

@@ -1,4 +1,4 @@
-import { createContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { createContext, useState, useCallback, useEffect, useMemo, ReactNode } from "react";
 import { User } from "../types/response/AuthResponse";
 import { LoginRequest } from "../types/request/LoginRequest";
 import * as authService from "../service/authService";
@@ -6,6 +6,7 @@ import { onUnauthorized } from "../service/apiClient";
 
 export interface AuthState {
   user: User | null;
+  permissions: string[];
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -13,12 +14,15 @@ export interface AuthState {
   login: (request: LoginRequest) => Promise<boolean>;
   logout: () => void;
   clearSessionExpired: () => void;
+  hasPermission: (permission: string) => boolean;
+  hasAnyPermission: (permissions: string[]) => boolean;
 }
 
 export const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -30,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authService.login(request);
       if (response.success && response.user) {
         setUser(response.user);
+        setPermissions(response.permissions ?? []);
         setSessionExpired(false);
         return true;
       }
@@ -45,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    setPermissions([]);
     authService.logout();
   }, []);
 
@@ -58,13 +64,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (prev) setSessionExpired(true);
         return null;
       });
+      setPermissions([]);
     });
   }, []);
+
+  const permissionSet = useMemo(() => new Set(permissions), [permissions]);
+
+  const hasPermission = useCallback(
+    (permission: string) => permissionSet.has(permission),
+    [permissionSet],
+  );
+
+  const hasAnyPermission = useCallback(
+    (requested: string[]) => requested.some((p) => permissionSet.has(p)),
+    [permissionSet],
+  );
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        permissions,
         isAuthenticated: !!user,
         isLoading,
         error,
@@ -72,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         clearSessionExpired,
+        hasPermission,
+        hasAnyPermission,
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTaskActivity, useTaskCatalogs, useTaskDetail, useTasks } from "../hooks/useTasks";
-import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 import TaskList from "../components/tasks/TaskList";
 import TaskDetail from "../components/tasks/TaskDetail";
 import TaskFullView from "../components/tasks/TaskFullView";
@@ -19,8 +19,10 @@ export default function TasksPage({
   pendingSelectedId,
   onConsumeSelection,
 }: TasksPageProps = {}) {
-  const { user } = useAuth();
-  const isAdmin = user?.role === "administrador";
+  const { has } = usePermissions();
+  const canCreate = has("tasks:create");
+  const canUpdate = has("tasks:update");
+  const canDelete = has("tasks:delete");
 
   const { tasks, isLoading, refresh } = useTasks();
   const { statuses, priorities } = useTaskCatalogs();
@@ -95,8 +97,8 @@ export default function TasksPage({
           task={detail}
           comments={commentEntries}
           isLoadingComments={isLoadingActivity}
-          canManage={isAdmin}
-          canDelete={isAdmin}
+          canManage={canUpdate}
+          canDelete={canDelete}
           onClose={() => setFullScreen(false)}
           onCommentAdded={handleCommentAdded}
           onEdit={() => setEditor({ kind: "edit" })}
@@ -132,6 +134,7 @@ export default function TasksPage({
             setEditor({ kind: "closed" });
           }}
           onNewTask={() => setEditor({ kind: "create" })}
+          canCreate={canCreate}
         />
       </div>
       <div className="min-w-0 flex-1 overflow-hidden">
@@ -172,8 +175,8 @@ export default function TasksPage({
                 task={detail}
                 comments={commentEntries}
                 isLoadingComments={isLoadingActivity}
-                canManage={isAdmin}
-                canDelete={isAdmin}
+                canManage={canUpdate}
+                canDelete={canDelete}
                 onCommentAdded={handleCommentAdded}
                 onEdit={() => setEditor({ kind: "edit" })}
                 onDelete={handleDelete}

@@ -8,6 +8,7 @@ import CategoryFormModal from "../components/wiki/CategoryFormModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 import { useAnnouncementBell, requestNavigate } from "../hooks/useAnnouncementBell";
 import * as wikiService from "../service/wikiService";
 import {
@@ -59,9 +60,13 @@ export default function WikiPage({
   onConsumeSelection,
 }: WikiPageProps = {}) {
   const { user } = useAuth();
+  const { has } = usePermissions();
   const bell = useAnnouncementBell();
   const [showNotifications, setShowNotifications] = useState(false);
-  const isAdmin = user?.role === "administrador";
+  // Wiki write covers both create and edit on the backend; delete is a separate permission.
+  // We expose the union here so existing components keep their action affordances; the backend
+  // is the source of truth and will reject any action the user is not actually allowed to do.
+  const isAdmin = has("wiki:write") || has("wiki:delete");
 
   const [tree, setTree] = useState<WikiCategoryNode[]>([]);
   const [treeLoading, setTreeLoading] = useState(true);

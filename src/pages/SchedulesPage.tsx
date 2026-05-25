@@ -16,7 +16,7 @@ import {
 import WeekGrid from "../components/schedules/WeekGrid";
 import PersonnelPanel from "../components/schedules/PersonnelPanel";
 import BlockEditorModal from "../components/schedules/BlockEditorModal";
-import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 
 const MONTH_LABELS_ES_SHORT = [
   "Ene",
@@ -77,8 +77,11 @@ interface EditTarget {
 }
 
 export default function SchedulesPage() {
-  const { user: currentUser } = useAuth();
-  const isAdmin = currentUser?.role === "administrador";
+  const { has } = usePermissions();
+  // schedules:write covers both create and edit on the backend; delete is separate.
+  const canManage = has("schedules:write");
+  const canDelete = has("schedules:delete");
+  const isAdmin = canManage;
 
   const [users, setUsers] = useState<BackendUserListItem[]>([]);
   const [schedules, setSchedules] = useState<WeeklySchedule[]>([]);
@@ -302,7 +305,7 @@ export default function SchedulesPage() {
           block={editTarget.block}
           onClose={() => setEditTarget(null)}
           onSave={handleSaveBlock}
-          onDelete={editTarget.mode === "edit" ? handleDeleteBlock : undefined}
+          onDelete={editTarget.mode === "edit" && canDelete ? handleDeleteBlock : undefined}
         />
       )}
     </div>

@@ -510,6 +510,7 @@ interface TaskListProps {
   selectedTaskId: number | null;
   onSelectTask: (id: number) => void;
   onNewTask: () => void;
+  canCreate?: boolean;
 }
 
 export default function TaskList({
@@ -518,6 +519,7 @@ export default function TaskList({
   selectedTaskId,
   onSelectTask,
   onNewTask,
+  canCreate = true,
 }: TaskListProps) {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
@@ -553,13 +555,15 @@ export default function TaskList({
           <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
             Lista de Tareas
           </h1>
-          <button
-            onClick={onNewTask}
-            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
-          >
-            <Plus size={16} strokeWidth={2} />
-            Nueva Tarea
-          </button>
+          {canCreate && (
+            <button
+              onClick={onNewTask}
+              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
+            >
+              <Plus size={16} strokeWidth={2} />
+              Nueva Tarea
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3">

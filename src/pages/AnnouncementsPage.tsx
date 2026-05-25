@@ -5,6 +5,7 @@ import AnnouncementDetail from "../components/announcements/AnnouncementDetail";
 import AnnouncementFormModal from "../components/announcements/AnnouncementFormModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 import { useAuth } from "../hooks/useAuth";
+import { usePermissions } from "../hooks/usePermissions";
 import {
   useAnnouncementBell,
   notifyAnnouncementsChanged,
@@ -33,9 +34,16 @@ export default function AnnouncementsPage({
   onConsumeSelection,
 }: AnnouncementsPageProps = {}) {
   const { user } = useAuth();
+  const { has } = usePermissions();
   const bell = useAnnouncementBell();
   const { markSeen: bellMarkSeen } = bell;
-  const isAdmin = user?.role === "administrador";
+  // The downstream components treat isAdmin as a single "can manage" flag; we expose the
+  // union of create/update/delete so the affordances remain visible and the backend remains
+  // the source of truth for fine-grained checks.
+  const isAdmin =
+    has("announcements:create") ||
+    has("announcements:update") ||
+    has("announcements:delete");
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [totalCount, setTotalCount] = useState(0);
