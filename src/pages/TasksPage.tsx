@@ -84,7 +84,6 @@ export default function TasksPage() {
           canDelete={isAdmin}
           onClose={() => setFullScreen(false)}
           onCommentAdded={handleCommentAdded}
-          onAttachmentsChanged={refreshDetail}
           onEdit={() => setEditor({ kind: "edit" })}
           onDelete={handleDelete}
         />

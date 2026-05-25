@@ -90,6 +90,37 @@ export function addTaskComment(id: number, comment: string): Promise<BackendTask
   return apiClient.post(`/tasks/${id}/comments`, { comment });
 }
 
+export async function addTaskCommentWithFiles(
+  id: number,
+  comment: string,
+  files: File[],
+): Promise<BackendTaskActivityLog> {
+  const { API_URL } = await import("./apiConfig");
+  const { getAccessToken } = await import("./apiClient");
+  const form = new FormData();
+  form.append("comment", comment);
+  for (const f of files) form.append("files", f);
+  const res = await fetch(`${API_URL}/tasks/${id}/comments/upload`, {
+    method: "POST",
+    headers: {
+      ...(getAccessToken() ? { Authorization: `Bearer ${getAccessToken()}` } : {}),
+    },
+    body: form,
+  });
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      if (Array.isArray(body?.message)) message = body.message.join(", ");
+      else if (typeof body?.message === "string") message = body.message;
+    } catch {
+      /* not JSON */
+    }
+    throw new Error(message);
+  }
+  return res.json();
+}
+
 export function listTaskStatuses(): Promise<BackendTaskStatus[]> {
   return apiClient.get("/task-statuses");
 }

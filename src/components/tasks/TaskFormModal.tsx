@@ -4,12 +4,17 @@ import {
   Check,
   ChevronDown,
   Clock,
+  Film,
+  Paperclip,
+  Trash2,
+  Upload,
   User as UserIcon,
   X,
 } from "lucide-react";
 import { BackendPriority, priorityLabel } from "../../types/models/Announcement";
 import {
   BackendTask,
+  BackendTaskFile,
   BackendTaskStatus,
   CreateTaskPayload,
   fullName,
@@ -18,8 +23,38 @@ import {
 } from "../../types/models/Task";
 import { BackendUserListItem } from "../../types/models/Users";
 import { listUsers } from "../../service/userService";
-import { createTask, updateTask } from "../../service/taskService";
+import {
+  createTask,
+  removeTaskFile,
+  updateTask,
+  uploadTaskFile,
+} from "../../service/taskService";
 import { useAuth } from "../../hooks/useAuth";
+import ImageLightbox from "./ImageLightbox";
+
+const MAX_FILE_BYTES = 15 * 1024 * 1024;
+const IMAGE_EXT_RE = /\.(jpe?g|png|gif|webp|svg|avif|bmp)(\?.*)?$/i;
+
+function isAllowedFile(file: File): boolean {
+  if (file.size > MAX_FILE_BYTES) return false;
+  return file.type.startsWith("image/") || file.type.startsWith("video/");
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function fileNameFromUrl(url: string): string {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    const last = parsed.pathname.split("/").filter(Boolean).pop();
+    return last ? decodeURIComponent(last) : url;
+  } catch {
+    return url;
+  }
+}
 
 interface TaskForm {
   title: string;
@@ -128,6 +163,11 @@ export default function TaskFormModal({
   const [assigneeSearch, setAssigneeSearch] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [filesError, setFilesError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  // In edit mode, IDs of existing files the user marked for deletion before saving.
+  const [pendingDeleteFileIds, setPendingDeleteFileIds] = useState<Set<number>>(new Set());
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Pre-select self when creating
@@ -188,6 +228,39 @@ export default function TaskFormModal({
     if (isEdit) return; // not exposed in edit mode
     setForm({ ...EMPTY_FORM, assigneeIds: user ? [user.id] : [] });
     setSubmitError(null);
+    setStagedFiles([]);
+    setFilesError(null);
+  }
+
+  function addStagedFiles(list: FileList | File[]) {
+    const incoming = Array.from(list);
+    const accepted: File[] = [];
+    const rejected: string[] = [];
+    for (const f of incoming) {
+      if (isAllowedFile(f)) accepted.push(f);
+      else rejected.push(f.name);
+    }
+    if (accepted.length > 0) setStagedFiles((prev) => [...prev, ...accepted]);
+    if (rejected.length > 0) {
+      setFilesError(
+        `Archivos no permitidos (formato o tamaño > 15 MB): ${rejected.join(", ")}`,
+      );
+    } else {
+      setFilesError(null);
+    }
+  }
+
+  function removeStagedFile(index: number) {
+    setStagedFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function togglePendingDelete(fileId: number) {
+    setPendingDeleteFileIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(fileId)) next.delete(fileId);
+      else next.add(fileId);
+      return next;
+    });
   }
 
   function toggleAssignee(id: number) {
@@ -253,7 +326,9 @@ export default function TaskFormModal({
     }
 
     setSubmitting(true);
+    setUploadProgress(null);
     try {
+      let targetTaskId: number;
       if (isEdit && initialTask) {
         const patch: UpdateTaskPayload = {
           title: form.title.trim(),
@@ -266,6 +341,21 @@ export default function TaskFormModal({
           limitDate: combineDateTime(form.endDate, form.endTime, form.endAllDay),
         };
         await updateTask(initialTask.id, patch);
+        targetTaskId = initialTask.id;
+
+        // Delete existing files flagged for removal.
+        const toDelete = Array.from(pendingDeleteFileIds);
+        for (let i = 0; i < toDelete.length; i++) {
+          const fileId = toDelete[i];
+          setUploadProgress(`Eliminando archivo ${i + 1} de ${toDelete.length}...`);
+          try {
+            await removeTaskFile(targetTaskId, fileId);
+          } catch (e) {
+            setFilesError(
+              `No se pudo eliminar un archivo: ${e instanceof Error ? e.message : "error desconocido"}`,
+            );
+          }
+        }
       } else {
         const payload: CreateTaskPayload = {
           title: form.title.trim(),
@@ -277,8 +367,23 @@ export default function TaskFormModal({
           startDate: combineDateTime(form.startDate, form.startTime, form.startAllDay),
           limitDate: combineDateTime(form.endDate, form.endTime, form.endAllDay),
         };
-        await createTask(payload);
+        const created = await createTask(payload);
+        targetTaskId = created.id;
       }
+
+      // Upload any staged files now that the task exists.
+      for (let i = 0; i < stagedFiles.length; i++) {
+        const file = stagedFiles[i];
+        setUploadProgress(`Subiendo archivo ${i + 1} de ${stagedFiles.length} — ${file.name}`);
+        try {
+          await uploadTaskFile(targetTaskId, file);
+        } catch (e) {
+          setFilesError(
+            `No se pudo subir "${file.name}": ${e instanceof Error ? e.message : "error desconocido"}`,
+          );
+        }
+      }
+      setUploadProgress(null);
       onSaved();
     } catch (e) {
       setSubmitError(
@@ -290,6 +395,7 @@ export default function TaskFormModal({
       );
     } finally {
       setSubmitting(false);
+      setUploadProgress(null);
     }
   }
 
@@ -479,11 +585,27 @@ export default function TaskFormModal({
               onAllDay={(v) => update("endAllDay", v)}
             />
           </div>
+
+          {/* Archivos adjuntos */}
+          <FieldGroup label="Archivos adjuntos" optional>
+            <TaskFilesField
+              existingFiles={isEdit && initialTask ? initialTask.files : []}
+              pendingDeleteIds={pendingDeleteFileIds}
+              onTogglePendingDelete={togglePendingDelete}
+              stagedFiles={stagedFiles}
+              onAdd={addStagedFiles}
+              onRemoveStaged={removeStagedFile}
+              error={filesError}
+            />
+          </FieldGroup>
         </div>
       </div>
 
       <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-surface px-5 py-3.5">
         {submitError && <p className="font-inter text-[11px] text-danger">{submitError}</p>}
+        {uploadProgress && (
+          <p className="font-inter text-[11px] text-text-secondary">{uploadProgress}</p>
+        )}
         <div className="flex items-center justify-between">
           <button onClick={onClose} className="font-inter text-[11px] font-medium text-text-secondary">
             Cancelar
@@ -603,6 +725,257 @@ function PriorityCard({
         </span>
       )}
     </button>
+  );
+}
+
+function TaskFilesField({
+  existingFiles,
+  pendingDeleteIds,
+  onTogglePendingDelete,
+  stagedFiles,
+  onAdd,
+  onRemoveStaged,
+  error,
+}: {
+  existingFiles: BackendTaskFile[];
+  pendingDeleteIds: Set<number>;
+  onTogglePendingDelete: (id: number) => void;
+  stagedFiles: File[];
+  onAdd: (list: FileList | File[]) => void;
+  onRemoveStaged: (index: number) => void;
+  error: string | null;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [lightboxUrls, setLightboxUrls] = useState<string[] | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const stagedPreviews = useMemo(
+    () =>
+      stagedFiles.map((f) => (f.type.startsWith("image/") ? URL.createObjectURL(f) : null)),
+    [stagedFiles],
+  );
+
+  useEffect(() => {
+    return () => {
+      stagedPreviews.forEach((u) => {
+        if (u) URL.revokeObjectURL(u);
+      });
+    };
+  }, [stagedPreviews]);
+
+  const existingImageUrls = existingFiles
+    .filter((f) => IMAGE_EXT_RE.test(f.url))
+    .map((f) => f.url);
+
+  const stagedImageUrls = stagedPreviews.filter((u): u is string => u !== null);
+
+  function openLightboxForExisting(url: string) {
+    const idx = existingImageUrls.indexOf(url);
+    if (idx < 0) return;
+    setLightboxUrls(existingImageUrls);
+    setLightboxIndex(idx);
+  }
+
+  function openLightboxForStaged(stagedIndex: number) {
+    const preview = stagedPreviews[stagedIndex];
+    if (!preview) return;
+    const idx = stagedImageUrls.indexOf(preview);
+    if (idx < 0) return;
+    setLightboxUrls(stagedImageUrls);
+    setLightboxIndex(idx);
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Drop zone */}
+      <div
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          if (e.dataTransfer.files.length > 0) onAdd(e.dataTransfer.files);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed py-5 transition-colors ${
+          isDragging
+            ? "border-primary bg-primary-light"
+            : "border-[rgba(0,0,0,0.12)] bg-surface hover:bg-neutral-soft"
+        }`}
+      >
+        <Upload size={18} strokeWidth={1.5} className="text-text-secondary" />
+        <p className="font-inter text-[12px] text-text-secondary">
+          {isDragging
+            ? "Suelta los archivos para adjuntarlos"
+            : "Arrastra fotos aquí o haz clic para seleccionarlas"}
+        </p>
+        <p className="font-inter text-[10px] text-text-secondary">
+          JPG, PNG, GIF, WEBP, SVG, MP4, MOV — máx. 15 MB por archivo
+        </p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              onAdd(e.target.files);
+              e.target.value = "";
+            }
+          }}
+        />
+      </div>
+
+      {error && <p className="font-inter text-[11px] text-danger">{error}</p>}
+
+      {/* Existing files (edit mode) */}
+      {existingFiles.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <span className="font-inter text-[10px] text-text-secondary">
+            Archivos actuales
+          </span>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {existingFiles.map((file) => {
+              const isImage = IMAGE_EXT_RE.test(file.url);
+              const flagged = pendingDeleteIds.has(file.id);
+              return (
+                <div
+                  key={file.id}
+                  className={`group relative aspect-square overflow-hidden rounded-lg border bg-neutral-soft ${
+                    flagged ? "border-danger/50 opacity-50" : "border-border"
+                  }`}
+                >
+                  {isImage ? (
+                    <button
+                      type="button"
+                      onClick={() => openLightboxForExisting(file.url)}
+                      className="absolute inset-0 h-full w-full"
+                      title="Ver imagen"
+                      disabled={flagged}
+                    >
+                      <img
+                        src={file.url}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    </button>
+                  ) : (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      onClick={(e) => flagged && e.preventDefault()}
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-1 p-1 text-center"
+                    >
+                      <Paperclip size={18} strokeWidth={1.6} className="text-text-secondary" />
+                      <span className="line-clamp-2 break-all px-1 font-inter text-[9px] text-text-secondary">
+                        {fileNameFromUrl(file.url)}
+                      </span>
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTogglePendingDelete(file.id);
+                    }}
+                    className={`absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full text-white transition-opacity ${
+                      flagged
+                        ? "bg-danger opacity-100"
+                        : "bg-black/55 opacity-0 hover:bg-danger group-hover:opacity-100"
+                    }`}
+                    title={flagged ? "Restaurar (no eliminar)" : "Marcar para eliminar"}
+                  >
+                    {flagged ? <X size={12} strokeWidth={2} /> : <Trash2 size={12} strokeWidth={2} />}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Staged files (about to be uploaded) */}
+      {stagedFiles.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <span className="font-inter text-[10px] text-text-secondary">
+            Por subir al guardar
+          </span>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {stagedFiles.map((file, i) => {
+              const preview = stagedPreviews[i];
+              return (
+                <div
+                  key={`${file.name}-${i}`}
+                  className="group relative aspect-square overflow-hidden rounded-lg border border-primary/30 bg-neutral-soft"
+                >
+                  {preview ? (
+                    <button
+                      type="button"
+                      onClick={() => openLightboxForStaged(i)}
+                      className="absolute inset-0 h-full w-full"
+                      title="Ver imagen"
+                    >
+                      <img
+                        src={preview}
+                        alt={file.name}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    </button>
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-1 text-center">
+                      {file.type.startsWith("video/") ? (
+                        <Film size={20} strokeWidth={1.6} className="text-text-secondary" />
+                      ) : (
+                        <Paperclip size={18} strokeWidth={1.6} className="text-text-secondary" />
+                      )}
+                      <span className="line-clamp-2 break-all px-1 font-inter text-[9px] text-text-secondary">
+                        {file.name}
+                      </span>
+                      <span className="font-inter text-[9px] text-text-secondary">
+                        {formatBytes(file.size)}
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveStaged(i);
+                    }}
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity hover:bg-danger group-hover:opacity-100"
+                    title="Quitar"
+                  >
+                    <Trash2 size={12} strokeWidth={2} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {lightboxUrls && lightboxUrls.length > 0 && (
+        <ImageLightbox
+          urls={lightboxUrls}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxUrls(null)}
+        />
+      )}
+    </div>
   );
 }
 

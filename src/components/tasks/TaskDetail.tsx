@@ -3,12 +3,13 @@ import {
   Ban,
   CheckCircle2,
   CircleDashed,
+  Image as ImageIcon,
   Loader,
   Maximize2,
   MessageSquare,
   MoreVertical,
+  Paperclip,
   Pencil,
-  Send,
   Trash2,
   Users,
 } from "lucide-react";
@@ -19,7 +20,9 @@ import {
   priorityNameLabel,
   statusLabel,
 } from "../../types/models/Task";
-import { addTaskComment } from "../../service/taskService";
+import CommentComposer from "./CommentComposer";
+import CommentDetailModal from "./CommentDetailModal";
+import TaskFilesGallery from "./TaskFilesGallery";
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }> = {
   in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
@@ -96,10 +99,8 @@ export default function TaskDetail({
   onEdit,
   onDelete,
 }: TaskDetailProps) {
-  const [draft, setDraft] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openComment, setOpenComment] = useState<BackendTaskActivityLog | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
@@ -111,22 +112,6 @@ export default function TaskDetail({
       ),
     [comments],
   );
-
-  async function handleSend() {
-    const text = draft.trim();
-    if (!text || posting) return;
-    setPosting(true);
-    setError(null);
-    try {
-      await addTaskComment(task.id, text);
-      setDraft("");
-      onCommentAdded();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo enviar el comentario");
-    } finally {
-      setPosting(false);
-    }
-  }
 
   return (
     <div className="flex h-full flex-col bg-surface">
@@ -242,7 +227,22 @@ export default function TaskDetail({
         </div>
       </div>
 
-      {/* Comments thread (handover) */}
+      {/* Files (read-only) */}
+      {task.files.length > 0 && (
+        <div className="border-b border-border px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Paperclip size={13} strokeWidth={1.6} className="text-text-secondary" />
+            <span className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+              Archivos ({task.files.length})
+            </span>
+          </div>
+          <div className="mt-2">
+            <TaskFilesGallery files={task.files} variant="compact" />
+          </div>
+        </div>
+      )}
+
+      {/* Comments thread */}
       <div className="flex flex-1 flex-col overflow-hidden px-5 pt-5">
         <div className="flex items-center justify-between">
           <h3 className="font-alexandria text-xl font-normal leading-[21px] text-text-primary">
@@ -256,7 +256,7 @@ export default function TaskDetail({
           )}
         </div>
         <p className="mt-1 font-inter text-[11px] leading-[16px] text-text-secondary">
-          Deja constancia del estado en que dejas la tarea para que otra persona pueda continuarla.
+          Haz clic sobre un comentario para verlo completo. Puedes adjuntar fotos al escribir uno nuevo.
         </p>
 
         <div className="relative mt-4 flex-1 overflow-y-auto pr-1">
@@ -271,50 +271,50 @@ export default function TaskDetail({
           ) : (
             <div className="flex flex-col gap-3">
               {sortedComments.map((entry) => (
-                <CommentBubble key={entry.id} entry={entry} />
+                <CommentBubble
+                  key={entry.id}
+                  entry={entry}
+                  onClick={() => setOpenComment(entry)}
+                />
               ))}
             </div>
           )}
         </div>
 
         <div className="mt-3 shrink-0 border-t border-border pt-3 pb-4">
-          <div className="flex items-end gap-2">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Escribe tu comentario de relevo..."
-              rows={2}
-              className="flex-1 resize-none rounded-lg border border-[rgba(0,0,0,0.1)] bg-surface px-3 py-2 font-inter text-[12px] leading-[18px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none focus:border-primary"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!draft.trim() || posting}
-              className="flex h-9 items-center gap-2 rounded-lg bg-primary px-3 font-inter text-[12px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Send size={12} strokeWidth={2} />
-              {posting ? "Enviando..." : "Enviar"}
-            </button>
-          </div>
-          {error && <p className="mt-1 font-inter text-[11px] text-danger">{error}</p>}
+          <CommentComposer taskId={task.id} onAdded={onCommentAdded} />
         </div>
       </div>
+
+      {openComment && (
+        <CommentDetailModal
+          comment={openComment}
+          onClose={() => setOpenComment(null)}
+        />
+      )}
     </div>
   );
 }
 
-function CommentBubble({ entry }: { entry: BackendTaskActivityLog }) {
+function CommentBubble({
+  entry,
+  onClick,
+}: {
+  entry: BackendTaskActivityLog;
+  onClick: () => void;
+}) {
+  const images = entry.imageUrls ?? [];
+  const hasImages = images.length > 0;
   return (
-    <div className="flex gap-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full gap-3 text-left transition-colors hover:opacity-90"
+    >
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-light font-inter text-[11px] font-semibold text-primary">
         {(entry.user?.fullName ?? "?").charAt(0).toUpperCase()}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-[rgba(0,0,0,0.06)] bg-bg p-2.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-lg border border-[rgba(0,0,0,0.06)] bg-bg p-2.5 hover:border-primary/40">
         <div className="flex items-baseline justify-between gap-2">
           <span className="truncate font-inter text-[12px] font-medium text-text-primary">
             {authorName(entry)}
@@ -323,10 +323,29 @@ function CommentBubble({ entry }: { entry: BackendTaskActivityLog }) {
             {formatRelativeTime(entry.createdAt)}
           </span>
         </div>
-        <p className="whitespace-pre-wrap break-words font-inter text-[12px] leading-[18px] text-text-primary">
+        <p className="line-clamp-3 whitespace-pre-wrap break-words font-inter text-[12px] leading-[18px] text-text-primary">
           {entry.action}
         </p>
+
+        {hasImages && (
+          <div className="mt-1 flex items-center gap-1.5">
+            <div className="flex -space-x-2">
+              {images.slice(0, 3).map((url) => (
+                <img
+                  key={url}
+                  src={url}
+                  alt=""
+                  className="h-7 w-7 rounded-md border-2 border-bg object-cover"
+                />
+              ))}
+            </div>
+            <span className="flex items-center gap-1 font-inter text-[10px] text-text-secondary">
+              <ImageIcon size={10} strokeWidth={1.6} />
+              {images.length} imagen{images.length === 1 ? "" : "es"}
+            </span>
+          </div>
+        )}
       </div>
-    </div>
+    </button>
   );
 }

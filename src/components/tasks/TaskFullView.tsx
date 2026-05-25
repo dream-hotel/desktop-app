@@ -7,11 +7,11 @@ import {
   CircleDashed,
   Clock,
   FileText,
+  Image as ImageIcon,
   Loader,
   MessageSquare,
   Paperclip,
   Pencil,
-  Send,
   Trash2,
   Users,
 } from "lucide-react";
@@ -22,8 +22,9 @@ import {
   priorityNameLabel,
   statusLabel,
 } from "../../types/models/Task";
-import { addTaskComment } from "../../service/taskService";
-import TaskAttachments from "./TaskAttachments";
+import CommentComposer from "./CommentComposer";
+import CommentDetailModal from "./CommentDetailModal";
+import TaskFilesGallery from "./TaskFilesGallery";
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }> = {
   in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
@@ -89,7 +90,6 @@ interface TaskFullViewProps {
   canDelete: boolean;
   onClose: () => void;
   onCommentAdded: () => void;
-  onAttachmentsChanged: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -102,13 +102,10 @@ export default function TaskFullView({
   canDelete,
   onClose,
   onCommentAdded,
-  onAttachmentsChanged,
   onEdit,
   onDelete,
 }: TaskFullViewProps) {
-  const [draft, setDraft] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [openComment, setOpenComment] = useState<BackendTaskActivityLog | null>(null);
 
   const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
   const priorityStyle = PRIORITY_STYLE[task.priority.name] ?? PRIORITY_STYLE.low;
@@ -120,22 +117,6 @@ export default function TaskFullView({
       ),
     [comments],
   );
-
-  async function handleSend() {
-    const text = draft.trim();
-    if (!text || posting) return;
-    setPosting(true);
-    setError(null);
-    try {
-      await addTaskComment(task.id, text);
-      setDraft("");
-      onCommentAdded();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo enviar el comentario");
-    } finally {
-      setPosting(false);
-    }
-  }
 
   return (
     <div className="flex h-full flex-col bg-bg">
@@ -211,26 +192,23 @@ export default function TaskFullView({
             </section>
           )}
 
-          {/* Attachments with drag-and-drop + lightbox */}
-          <section className="mt-6">
-            <SectionHeader icon={<Paperclip size={14} strokeWidth={1.8} />}>
-              Archivos adjuntos ({task.files.length})
-            </SectionHeader>
-            <div className="mt-2">
-              <TaskAttachments
-                taskId={task.id}
-                files={task.files}
-                onChanged={onAttachmentsChanged}
-              />
-            </div>
-          </section>
+          {task.files.length > 0 && (
+            <section className="mt-6">
+              <SectionHeader icon={<Paperclip size={14} strokeWidth={1.8} />}>
+                Archivos adjuntos ({task.files.length})
+              </SectionHeader>
+              <div className="mt-2">
+                <TaskFilesGallery files={task.files} variant="full" />
+              </div>
+            </section>
+          )}
 
           <section className="mt-8 flex flex-col">
             <SectionHeader icon={<MessageSquare size={14} strokeWidth={1.8} />}>
               Comentarios de relevo ({sortedComments.length})
             </SectionHeader>
             <p className="mt-1 font-inter text-[12px] leading-[18px] text-text-secondary">
-              Cuando dejes una tarea a medio terminar, deja aquí una nota explicando en qué estado quedó para que otro compañero pueda retomarla.
+              Cuando dejes una tarea a medio terminar, deja aquí una nota explicando en qué estado quedó para que otro compañero pueda retomarla. Haz clic sobre un comentario para verlo completo.
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
@@ -241,38 +219,22 @@ export default function TaskFullView({
                   Aún no hay comentarios para esta tarea.
                 </div>
               ) : (
-                sortedComments.map((entry) => <FullComment key={entry.id} entry={entry} />)
+                sortedComments.map((entry) => (
+                  <FullComment
+                    key={entry.id}
+                    entry={entry}
+                    onClick={() => setOpenComment(entry)}
+                  />
+                ))
               )}
             </div>
 
-            <div className="mt-4 rounded-lg border border-border bg-surface p-3">
-              <textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder="Escribe tu comentario de relevo..."
-                rows={3}
-                className="w-full resize-none rounded-md bg-bg px-3 py-2 font-inter text-sm leading-[20px] text-text-primary placeholder-[rgba(26,26,26,0.5)] outline-none focus:ring-1 focus:ring-primary"
+            <div className="mt-4">
+              <CommentComposer
+                taskId={task.id}
+                onAdded={onCommentAdded}
+                variant="full"
               />
-              <div className="mt-2 flex items-center justify-between">
-                <span className="font-inter text-[10px] text-text-secondary">
-                  Ctrl/Cmd + Enter para enviar
-                </span>
-                <button
-                  onClick={handleSend}
-                  disabled={!draft.trim() || posting}
-                  className="flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 font-inter text-[12px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Send size={12} strokeWidth={2} />
-                  {posting ? "Enviando..." : "Enviar comentario"}
-                </button>
-              </div>
-              {error && <p className="mt-2 font-inter text-[11px] text-danger">{error}</p>}
             </div>
           </section>
         </div>
@@ -331,6 +293,13 @@ export default function TaskFullView({
           )}
         </aside>
       </div>
+
+      {openComment && (
+        <CommentDetailModal
+          comment={openComment}
+          onClose={() => setOpenComment(null)}
+        />
+      )}
     </div>
   );
 }
@@ -374,10 +343,21 @@ function DetailRow({
   );
 }
 
-function FullComment({ entry }: { entry: BackendTaskActivityLog }) {
+function FullComment({
+  entry,
+  onClick,
+}: {
+  entry: BackendTaskActivityLog;
+  onClick: () => void;
+}) {
   const name = entry.user ? fullName(entry.user) : "Sistema";
+  const images = entry.imageUrls ?? [];
   return (
-    <div className="flex gap-3 rounded-lg border border-border bg-surface p-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full gap-3 rounded-lg border border-border bg-surface p-3 text-left transition-colors hover:border-primary/40"
+    >
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-light font-inter text-[12px] font-semibold text-primary">
         {(entry.user?.fullName ?? "?").charAt(0).toUpperCase()}
       </div>
@@ -393,10 +373,34 @@ function FullComment({ entry }: { entry: BackendTaskActivityLog }) {
             {formatRelativeTime(entry.createdAt)}
           </span>
         </div>
-        <p className="whitespace-pre-wrap break-words font-inter text-[13px] leading-[20px] text-text-primary">
+        <p className="line-clamp-3 whitespace-pre-wrap break-words font-inter text-[13px] leading-[20px] text-text-primary">
           {entry.action}
         </p>
+
+        {images.length > 0 && (
+          <div className="mt-1 flex items-center gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              {images.slice(0, 4).map((url) => (
+                <img
+                  key={url}
+                  src={url}
+                  alt=""
+                  className="h-10 w-10 rounded-md border border-border object-cover"
+                />
+              ))}
+              {images.length > 4 && (
+                <span className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-neutral-soft font-inter text-[10px] text-text-secondary">
+                  +{images.length - 4}
+                </span>
+              )}
+            </div>
+            <span className="flex items-center gap-1 font-inter text-[11px] text-text-secondary">
+              <ImageIcon size={11} strokeWidth={1.6} />
+              {images.length} imagen{images.length === 1 ? "" : "es"}
+            </span>
+          </div>
+        )}
       </div>
-    </div>
+    </button>
   );
 }

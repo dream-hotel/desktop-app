@@ -63,6 +63,7 @@ export interface BackendTaskActivityLog {
   newValue: string | null;
   userId: number | null;
   createdAt: string;
+  imageUrls: string[] | null;
   user: BackendTaskUser | null;
 }
 
