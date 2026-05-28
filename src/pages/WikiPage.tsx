@@ -9,10 +9,9 @@ import ArticleRenameModal from "../components/wiki/ArticleRenameModal";
 import ArticleTypeModal from "../components/wiki/ArticleTypeModal";
 import ArticleFileUploadModal from "../components/wiki/ArticleFileUploadModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
-import DashboardHeader from "../components/layout/DashboardHeader";
 import { useAuth } from "../hooks/useAuth";
 import { usePermissions } from "../hooks/usePermissions";
-import { useAnnouncementBell, requestNavigate } from "../hooks/useAnnouncementBell";
+import { notifyAnnouncementsChanged } from "../hooks/useAnnouncementBell";
 import * as wikiService from "../service/wikiService";
 import {
   WikiArticleDetail,
@@ -73,8 +72,6 @@ export default function WikiPage({
 }: WikiPageProps = {}) {
   const { user } = useAuth();
   const { has } = usePermissions();
-  const bell = useAnnouncementBell();
-  const [showNotifications, setShowNotifications] = useState(false);
   const isAdmin = has("wiki:write") || has("wiki:delete");
 
   const [tree, setTree] = useState<WikiCategoryNode[]>([]);
@@ -316,6 +313,7 @@ export default function WikiPage({
       setCreationFlow(null);
       await Promise.all([loadArticles(), loadAllArticles()]);
       setSelectedArticleId(article.id);
+      notifyAnnouncementsChanged();
     } catch (err) {
       throw err;
     }
@@ -358,6 +356,7 @@ export default function WikiPage({
     setSelectedArticleId(article.id);
     setSelectedArticle(article);
     await Promise.all([loadArticles(), loadAllArticles()]);
+    notifyAnnouncementsChanged();
   };
 
   const handleDeleteArticleConfirm = async () => {
@@ -372,6 +371,7 @@ export default function WikiPage({
       }
       setConfirmState(null);
       await Promise.all([loadArticles(), loadAllArticles()]);
+      notifyAnnouncementsChanged();
     } catch (err) {
       setConfirmError(err instanceof Error ? err.message : "No se pudo eliminar el artículo.");
     } finally {
@@ -386,6 +386,7 @@ export default function WikiPage({
       const updated = await wikiService.publishArticle(selectedArticle.id);
       setSelectedArticle(updated);
       await Promise.all([loadArticles(), loadAllArticles()]);
+      notifyAnnouncementsChanged();
     } catch (err) {
       setGlobalError(err instanceof Error ? err.message : "No se pudo publicar el artículo.");
     } finally {
@@ -430,24 +431,7 @@ export default function WikiPage({
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
-      <DashboardHeader
-        user={user!}
-        announcements={bell.announcements}
-        bellLoading={bell.loading}
-        unreadCount={bell.unreadCount}
-        isUnread={bell.isUnread}
-        showNotifications={showNotifications}
-        onToggleNotifications={() => setShowNotifications((v) => !v)}
-        onCloseNotifications={() => setShowNotifications(false)}
-        onAnnouncementClick={(id) => {
-          bell.markSeen(id);
-          setShowNotifications(false);
-          requestNavigate({ section: "anuncios", announcementId: id });
-        }}
-        onMarkAllSeen={bell.markAllSeen}
-        customTitle="Wiki institucional"
-      />
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
 
       {globalError && (
         <div className="mx-8 mt-3 flex items-center justify-between rounded-[10px] border border-danger/30 bg-danger/10 px-4 py-2 font-inter text-[12px] text-danger">

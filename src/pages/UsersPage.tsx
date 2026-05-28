@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pencil, Plus, Search, ShieldCheck, Trash2, Users as UsersIcon } from "lucide-react";
 import {
   BackendUserListItem,
@@ -150,11 +150,6 @@ export default function UsersPage() {
     }
   }
 
-  const totalLabel = useMemo(() => {
-    if (meta.total === 0) return "Sin usuarios";
-    if (meta.total === 1) return "1 usuario";
-    return `${meta.total} usuarios`;
-  }, [meta.total]);
 
   if (!canReadUsers && !canViewRoles) {
     return (
@@ -169,55 +164,45 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex flex-col gap-4 border-b border-border px-8 pb-0 pt-6">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
+      <div className="flex flex-col gap-4 border-b border-border px-8 pb-0 pt-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
-              Usuarios y Roles
-            </h1>
-            <p className="mt-1 font-inter text-[13px] text-text-secondary">
-              {tab === "users"
-                ? `Administra cuentas, roles y acceso al sistema. ${totalLabel}.`
-                : "Definí roles personalizados y asigná qué permisos puede ejercer cada uno."}
-            </p>
+          <div className="flex items-center gap-1 border-b border-transparent">
+            {canReadUsers && (
+              <button
+                onClick={() => setTab("users")}
+                className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
+                  tab === "users"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-text-secondary hover:text-text-primary"
+                }`}
+              >
+                <UsersIcon size={15} strokeWidth={1.8} />
+                Usuarios
+              </button>
+            )}
+            {canViewRoles && (
+              <button
+                onClick={() => setTab("roles")}
+                className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
+                  tab === "roles"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-text-secondary hover:text-text-primary"
+                }`}
+              >
+                <ShieldCheck size={15} strokeWidth={1.8} />
+                Roles y permisos
+              </button>
+            )}
           </div>
+
           {tab === "users" && canCreateUsers && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
+              className="mb-2 flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
             >
               <Plus size={16} strokeWidth={2} />
               Nuevo Usuario
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1 border-b border-transparent">
-          {canReadUsers && (
-            <button
-              onClick={() => setTab("users")}
-              className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
-                tab === "users"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              <UsersIcon size={15} strokeWidth={1.8} />
-              Usuarios
-            </button>
-          )}
-          {canViewRoles && (
-            <button
-              onClick={() => setTab("roles")}
-              className={`flex items-center gap-2 border-b-2 px-3 pb-3 pt-1 font-inter text-[13px] font-medium transition-colors ${
-                tab === "roles"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              <ShieldCheck size={15} strokeWidth={1.8} />
-              Roles y permisos
             </button>
           )}
         </div>

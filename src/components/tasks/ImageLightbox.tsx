@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface ImageLightboxProps {
   urls: string[];

@@ -262,16 +262,15 @@ export default function SchedulesPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
-      <div className="flex items-center justify-between border-b border-border bg-surface px-8 py-5">
+      <div className="flex items-center justify-between border-b border-border bg-surface px-8 py-4">
         <div>
-          <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
-            Gestión de Horario
-          </h1>
-          {!loading && (
-            <p className="mt-1 font-inter text-[12px] text-text-secondary">
+          {!loading ? (
+            <p className="font-inter text-[13px] text-text-secondary">
               {users.length} {users.length === 1 ? "usuario" : "usuarios"} ·{" "}
               {schedules.length} {schedules.length === 1 ? "plantilla" : "plantillas"} de horario
             </p>
+          ) : (
+            <p className="font-inter text-[13px] text-text-secondary">Cargando datos...</p>
           )}
         </div>
         {isAdmin && (

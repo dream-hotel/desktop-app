@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import * as announcementService from "../service/announcementService";
 import { Announcement } from "../types/models/Announcement";
+import { useAuth } from "./useAuth";
 
-const SEEN_KEY = "announcement-bell:seen";
 const CHANGED_EVENT = "app:announcements-changed";
 const SEEN_UPDATED_EVENT = "app:bell-seen-updated";
 
-function loadSeen(): Set<number> {
+export function notifyAnnouncementsChanged(): void {
+  window.dispatchEvent(new Event(CHANGED_EVENT));
+}
+
+function loadSeen(userId: number | null): Set<number> {
   try {
-    const raw = localStorage.getItem(SEEN_KEY);
+    const key = userId ? `announcement-bell:seen:${userId}` : "announcement-bell:seen:guest";
+    const raw = localStorage.getItem(key);
     if (!raw) return new Set();
     const arr = JSON.parse(raw);
     if (!Array.isArray(arr)) return new Set();
@@ -18,16 +23,13 @@ function loadSeen(): Set<number> {
   }
 }
 
-function saveSeen(seen: Set<number>): void {
+function saveSeen(seen: Set<number>, userId: number | null): void {
   try {
-    localStorage.setItem(SEEN_KEY, JSON.stringify([...seen]));
+    const key = userId ? `announcement-bell:seen:${userId}` : "announcement-bell:seen:guest";
+    localStorage.setItem(key, JSON.stringify([...seen]));
   } catch {
     /* localStorage might be unavailable; degrade silently */
   }
-}
-
-export function notifyAnnouncementsChanged(): void {
-  window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
 const NAVIGATE_EVENT = "app:navigate";
@@ -64,9 +66,12 @@ export interface UseAnnouncementBellResult {
 }
 
 export function useAnnouncementBell(): UseAnnouncementBellResult {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [seenIds, setSeenIds] = useState<Set<number>>(() => loadSeen());
+  const [seenIds, setSeenIds] = useState<Set<number>>(() => loadSeen(userId));
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -85,26 +90,30 @@ export function useAnnouncementBell(): UseAnnouncementBellResult {
   }, [reload]);
 
   useEffect(() => {
+    setSeenIds(loadSeen(userId));
+  }, [userId]);
+
+  useEffect(() => {
     const handleChanged = () => reload();
-    const handleSeenUpdated = () => setSeenIds(loadSeen());
+    const handleSeenUpdated = () => setSeenIds(loadSeen(userId));
     window.addEventListener(CHANGED_EVENT, handleChanged);
     window.addEventListener(SEEN_UPDATED_EVENT, handleSeenUpdated);
     return () => {
       window.removeEventListener(CHANGED_EVENT, handleChanged);
       window.removeEventListener(SEEN_UPDATED_EVENT, handleSeenUpdated);
     };
-  }, [reload]);
+  }, [reload, userId]);
 
   const markSeen = useCallback((id: number) => {
     setSeenIds((prev) => {
       if (prev.has(id)) return prev;
       const next = new Set(prev);
       next.add(id);
-      saveSeen(next);
+      saveSeen(next, userId);
       window.dispatchEvent(new Event(SEEN_UPDATED_EVENT));
       return next;
     });
-  }, []);
+  }, [userId]);
 
   const markAllSeen = useCallback(() => {
     setSeenIds((prev) => {
@@ -117,11 +126,11 @@ export function useAnnouncementBell(): UseAnnouncementBellResult {
         }
       }
       if (!changed) return prev;
-      saveSeen(next);
+      saveSeen(next, userId);
       window.dispatchEvent(new Event(SEEN_UPDATED_EVENT));
       return next;
     });
-  }, [announcements]);
+  }, [announcements, userId]);
 
   const isUnread = useCallback((id: number) => !seenIds.has(id), [seenIds]);
 

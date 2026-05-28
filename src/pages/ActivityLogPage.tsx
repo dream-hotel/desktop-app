@@ -224,27 +224,8 @@ export default function ActivityLogPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex flex-col gap-5 border-b border-border px-8 pb-5 pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
-              Actividad del Sistema
-            </h1>
-            <p className="mt-1 font-inter text-[13px] text-text-secondary">
-              Todo lo que ha pasado en el sistema, contado de manera simple.
-            </p>
-          </div>
-          <button
-            onClick={() => fetchLogs()}
-            disabled={loading}
-            className="flex items-center gap-[9px] rounded-[10px] border border-border bg-surface px-3 py-[6px] font-inter text-[13px] font-medium text-text-body hover:bg-surface-hover disabled:opacity-50"
-          >
-            <RefreshCw size={15} strokeWidth={1.8} className={loading ? "animate-spin" : undefined} />
-            Actualizar
-          </button>
-        </div>
-
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
+      <div className="flex flex-col gap-5 border-b border-border px-8 pb-5 pt-4">
         <div className="flex flex-wrap items-end gap-3">
           <div className="relative min-w-[260px] flex-1">
             <Search
@@ -313,6 +294,15 @@ export default function ActivityLogPage() {
               Limpiar filtros
             </button>
           )}
+
+          <button
+            onClick={() => fetchLogs()}
+            disabled={loading}
+            className="self-end ml-auto flex items-center gap-[9px] rounded-[10px] border border-border bg-surface px-3 py-[9px] font-inter text-[13px] font-medium text-text-body hover:bg-surface-hover disabled:opacity-50"
+          >
+            <RefreshCw size={15} strokeWidth={1.8} className={loading ? "animate-spin" : undefined} />
+            Actualizar
+          </button>
         </div>
       </div>
 

@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import DashboardHeader from "../components/layout/DashboardHeader";
+
 import AnnouncementsList from "../components/announcements/AnnouncementsList";
 import AnnouncementDetail from "../components/announcements/AnnouncementDetail";
 import AnnouncementFormModal from "../components/announcements/AnnouncementFormModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
-import { useAuth } from "../hooks/useAuth";
+
 import { usePermissions } from "../hooks/usePermissions";
 import {
   useAnnouncementBell,
   notifyAnnouncementsChanged,
-  requestNavigate,
 } from "../hooks/useAnnouncementBell";
 import {
   Announcement,
@@ -33,7 +32,7 @@ export default function AnnouncementsPage({
   pendingSelectedId,
   onConsumeSelection,
 }: AnnouncementsPageProps = {}) {
-  const { user } = useAuth();
+
   const { has } = usePermissions();
   const bell = useAnnouncementBell();
   const { markSeen: bellMarkSeen } = bell;
@@ -59,7 +58,7 @@ export default function AnnouncementsPage({
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const [showNotifications, setShowNotifications] = useState(false);
+
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   const loadAnnouncements = useCallback(async () => {
@@ -171,26 +170,7 @@ export default function AnnouncementsPage({
   };
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
-      <DashboardHeader
-        user={user!}
-        announcements={bell.announcements}
-        bellLoading={bell.loading}
-        unreadCount={bell.unreadCount}
-        isUnread={bell.isUnread}
-        showNotifications={showNotifications}
-        onToggleNotifications={() => setShowNotifications((v) => !v)}
-        onCloseNotifications={() => setShowNotifications(false)}
-        onAnnouncementClick={(id) => {
-          bell.markSeen(id);
-          setShowNotifications(false);
-          if (typeFilter !== "all") setTypeFilter("all");
-          setSelectedId(id);
-          requestNavigate({ section: "anuncios" });
-        }}
-        onMarkAllSeen={bell.markAllSeen}
-        customTitle="Anuncios"
-      />
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
 
       {globalError && (
         <div className="mx-8 mt-3 flex items-center justify-between rounded-[10px] border border-danger/30 bg-danger/10 px-4 py-2 font-inter text-[12px] text-danger">
