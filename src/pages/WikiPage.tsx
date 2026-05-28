@@ -81,7 +81,6 @@ export default function WikiPage({
   const [treeLoading, setTreeLoading] = useState(true);
 
   const [articles, setArticles] = useState<WikiArticleSummary[]>([]);
-  const [totalArticles, setTotalArticles] = useState(0);
   const [articlesLoading, setArticlesLoading] = useState(false);
   const [allArticles, setAllArticles] = useState<WikiArticleSummary[]>([]);
 
@@ -137,7 +136,6 @@ export default function WikiPage({
       collectIds(tree);
       data = data.filter(a => !a.categoryId || !categoryIdsInTree.has(a.categoryId));
       setArticles(data);
-      setTotalArticles(data.length);
       return;
     }
 
@@ -150,7 +148,6 @@ export default function WikiPage({
       if (debouncedSearch.trim().length > 0) params.search = debouncedSearch.trim();
       const res = await wikiService.findArticles(params);
       setArticles(res.data);
-      setTotalArticles(res.meta.total);
     } catch (err) {
       setGlobalError(err instanceof Error ? err.message : "Error al cargar artículos.");
     } finally {

@@ -16,6 +16,8 @@ export interface BackendArticleAuthor {
 export interface BackendArticleContent {
   id: number;
   contentMarkdown: string | null;
+  fileUrl: string | null;
+  mimetype: string | null;
 }
 
 export interface BackendArticleList {

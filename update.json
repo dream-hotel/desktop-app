@@ -1,0 +1,11 @@
+{
+    "version": "0.1.0",
+    "notes": "Versión inicial del sistema de gestión hotelera.",
+    "pub_date": "2026-05-26T12:00:00Z",
+    "platforms": {
+        "windows-x86_64": {
+        "signature": "CONTENIDO_DEL_ARCHIVO_.sig",
+        "url": "https://github.com/dream-hotel/desktop-app/releases/download/v0.1.0/Dream-by-Stannum_0.1.0_x64_en-US.msi.zip"
+        }
+    }
+}

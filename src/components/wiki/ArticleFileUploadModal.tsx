@@ -66,7 +66,7 @@ export default function ArticleFileUploadModal({
   useEffect(() => {
     // Listen for native OS drag & drop events (Tauri v2)
     const unlisten = getCurrentWebviewWindow().onDragDropEvent((event) => {
-      if (event.payload.type === "hover") {
+      if (event.payload.type === "enter" || event.payload.type === "over") {
         setIsDragover(true);
       } else if (event.payload.type === "drop") {
         setIsDragover(false);

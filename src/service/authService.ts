@@ -14,7 +14,6 @@ import {
   setRefreshToken,
 } from "./apiClient";
 
-const REFRESH_TOKEN_KEY = "refreshToken";
 const PERMISSIONS_KEY = "permissions";
 
 function mapRole(backendRoleName: string): UserRole {
@@ -100,5 +99,41 @@ export async function logout(): Promise<void> {
     // Logout failures shouldn't block clearing local credentials.
   } finally {
     clearSession();
+  }
+}
+
+export async function requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const data = await apiClient.post<{ message: string }>("/auth/reset-password-request", { email }, { auth: false });
+    return { success: true, message: data.message || "Código enviado con éxito." };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Error de red. No se pudo conectar al servidor." };
+  }
+}
+
+export async function verifyResetToken(email: string, token: string): Promise<{ success: boolean; message: string }> {
+  try {
+    await apiClient.post("/auth/verify-reset-token", { email, token }, { auth: false });
+    return { success: true, message: "Código verificado correctamente." };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Error de red. No se pudo conectar al servidor." };
+  }
+}
+
+export async function verifyAndSetPassword(email: string, token: string, password: string): Promise<{ success: boolean; message: string }> {
+  try {
+    await apiClient.post("/auth/verify-password", { email, token, password }, { auth: false });
+    return { success: true, message: "Contraseña cambiada con éxito." };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, message: error.message };
+    }
+    return { success: false, message: "Error de red. No se pudo conectar al servidor." };
   }
 }

@@ -49,17 +49,6 @@ export default function ImageLightbox({ urls, startIndex, onClose }: ImageLightb
         <X size={18} strokeWidth={2} />
       </button>
 
-      <a
-        href={current}
-        target="_blank"
-        rel="noreferrer noopener"
-        onClick={(e) => e.stopPropagation()}
-        className="absolute right-16 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/70"
-        title="Abrir en nueva pestaña"
-      >
-        <ExternalLink size={16} strokeWidth={2} />
-      </a>
-
       {urls.length > 1 && (
         <>
           <button
