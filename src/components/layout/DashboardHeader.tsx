@@ -15,6 +15,7 @@ interface DashboardHeaderProps {
   onAnnouncementClick: (id: number) => void;
   onMarkAllSeen: () => void;
   customTitle?: string;
+  customSubtitle?: string;
 }
 
 function getGreeting(): string {
@@ -53,14 +54,22 @@ export default function DashboardHeader({
   onAnnouncementClick,
   onMarkAllSeen,
   customTitle,
+  customSubtitle,
 }: DashboardHeaderProps) {
   return (
     <header className="flex items-start justify-between border-b border-border bg-surface px-8 pb-4 pt-6">
       <div className="flex flex-col gap-[2px]">
         {customTitle ? (
-          <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
-            {customTitle}
-          </h1>
+          <>
+            <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
+              {customTitle}
+            </h1>
+            {customSubtitle && (
+              <p className="m-0 font-inter text-[13px] leading-[19.5px] text-text-secondary">
+                {customSubtitle}
+              </p>
+            )}
+          </>
         ) : (
           <>
             <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">

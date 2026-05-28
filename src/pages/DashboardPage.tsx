@@ -89,6 +89,10 @@ export default function DashboardPage() {
     }
   }, [activeNav, hasAny, firstAllowedSection]);
 
+  useEffect(() => {
+    bell.reload();
+  }, [activeNav]);
+
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
   }
@@ -109,6 +113,29 @@ export default function DashboardPage() {
     setPendingAnnouncementId(id);
   };
 
+  const headerContent = {
+    title: activeNav === "dashboard" ? undefined : (
+      activeNav === "tareas" ? "Lista de Tareas" :
+      activeNav === "wiki" ? "Wiki institucional" :
+      activeNav === "anuncios" ? "Anuncios" :
+      activeNav === "usuarios" ? "Usuarios y Roles" :
+      activeNav === "actividad" ? "Actividad del Sistema" :
+      activeNav === "horarios" ? "Gestión de Horario" :
+      activeNav === "cuenta" ? "Mi cuenta" :
+      activeNav === "configuracion" ? "Configuración" :
+      activeNav === "ayuda" ? "Ayuda & Soporte" :
+      (PAGE_LABELS[activeNav] || activeNav)
+    ),
+    subtitle: (
+      activeNav === "usuarios" ? "Administra cuentas, roles y acceso al sistema." :
+      activeNav === "actividad" ? "Todo lo que ha pasado en el sistema, contado de manera simple." :
+      activeNav === "cuenta" ? "Información personal, seguridad y sesión." :
+      activeNav === "configuracion" ? "Preferencias generales de la aplicación." :
+      activeNav === "ayuda" ? "Preguntas frecuentes sobre el uso de la aplicación." :
+      undefined
+    ),
+  };
+
   const required = SECTION_PERMISSIONS[activeNav];
   const sectionAllowed = !required || hasAny(required);
 
@@ -117,20 +144,20 @@ export default function DashboardPage() {
       <div className="flex min-h-0 flex-1">
         <Sidebar activeItem={activeNav} onNavigate={setActiveNav} user={user} />
         <main className={`flex min-w-0 flex-1 flex-col ${isFullHeightPage ? "overflow-hidden" : "overflow-y-auto"}`}>
-          {!isFullHeightPage && (
-            <DashboardHeader
-              user={user}
-              announcements={bell.announcements}
-              bellLoading={bell.loading}
-              unreadCount={bell.unreadCount}
-              isUnread={bell.isUnread}
-              showNotifications={showNotifications}
-              onToggleNotifications={() => setShowNotifications((prev) => !prev)}
-              onCloseNotifications={() => setShowNotifications(false)}
-              onAnnouncementClick={handleAnnouncementClick}
-              onMarkAllSeen={bell.markAllSeen}
-            />
-          )}
+          <DashboardHeader
+            user={user}
+            announcements={bell.announcements}
+            bellLoading={bell.loading}
+            unreadCount={bell.unreadCount}
+            isUnread={bell.isUnread}
+            showNotifications={showNotifications}
+            onToggleNotifications={() => setShowNotifications((prev) => !prev)}
+            onCloseNotifications={() => setShowNotifications(false)}
+            onAnnouncementClick={handleAnnouncementClick}
+            onMarkAllSeen={bell.markAllSeen}
+            customTitle={headerContent.title}
+            customSubtitle={headerContent.subtitle}
+          />
 
           {!sectionAllowed ? (
             <NoAccessView />
@@ -173,7 +200,6 @@ export default function DashboardPage() {
       {showWelcomeModal && (
         <WelcomeNotificationsModal
           announcements={unseenAnnouncements}
-          onMarkSeen={bell.markSeen}
           onMarkAllSeen={bell.markAllSeen}
           onDismiss={() => setWelcomeDismissed(true)}
           onOpenAnnouncement={handleAnnouncementClick}

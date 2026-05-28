@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { CheckCircle2, CheckSquare, FileText, Megaphone } from "lucide-react";
+import { CheckSquare, FileText, Megaphone } from "lucide-react";
 import { Announcement, AnnouncementType } from "../../types/models/Announcement";
 import dreamLogo from "../../assets/dream_logo.svg";
 
 interface WelcomeNotificationsModalProps {
   announcements: Announcement[];
-  onMarkSeen: (id: number) => void;
   onMarkAllSeen: () => void;
   onDismiss: () => void;
   onOpenAnnouncement: (id: number) => void;
@@ -63,64 +61,10 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
 
 export default function WelcomeNotificationsModal({
   announcements,
-  onMarkSeen,
   onMarkAllSeen,
   onDismiss,
   onOpenAnnouncement,
 }: WelcomeNotificationsModalProps) {
-  const [readIds, setReadIds] = useState<Set<number>>(new Set());
-  const observerRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const allRead = announcements.length > 0 && readIds.size >= announcements.length;
-
-  const handleObserve = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = Number(entry.target.getAttribute("data-announcement-id"));
-          if (!isNaN(id)) {
-            setReadIds((prev) => {
-              if (prev.has(id)) return prev;
-              const next = new Set(prev);
-              next.add(id);
-              return next;
-            });
-            onMarkSeen(id);
-          }
-        }
-      });
-    },
-    [onMarkSeen],
-  );
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(handleObserve, {
-      root: container,
-      threshold: 0.8,
-    });
-
-    observerRefs.current.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [handleObserve, announcements]);
-
-  function setRef(id: number, el: HTMLDivElement | null) {
-    if (el) {
-      observerRefs.current.set(id, el);
-    } else {
-      observerRefs.current.delete(id);
-    }
-  }
-
-  const handleDismiss = () => {
-    onMarkAllSeen();
-    onDismiss();
-  };
-
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-border0 backdrop-blur-sm">
       <div className="flex max-h-[85vh] w-[520px] flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
@@ -138,41 +82,23 @@ export default function WelcomeNotificationsModal({
               </p>
             </div>
             <button
-              onClick={handleDismiss}
-              className="flex h-7 w-7 items-center justify-center rounded-[8px] text-text-secondary transition-colors hover:bg-bg"
-              aria-label="Omitir"
+              onClick={onDismiss}
+              className="flex h-7 w-7 items-center justify-center rounded-[8px] text-text-secondary transition-colors hover:bg-bg cursor-pointer"
+              aria-label="Cerrar"
             >
               ✕
             </button>
           </div>
-          <div className="mt-2 flex items-center gap-3">
-            <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-neutral-soft">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-300"
-                style={{
-                  width: `${announcements.length > 0 ? (readIds.size / announcements.length) * 100 : 0}%`,
-                }}
-              />
-            </div>
-            <span className="font-inter text-xs font-medium text-text-secondary">
-              {readIds.size}/{announcements.length}
-            </span>
-          </div>
         </div>
 
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="flex flex-col gap-3">
             {announcements.map((a) => {
               const meta = typeMeta(a.type);
-              const isRead = readIds.has(a.id);
               return (
                 <div
                   key={a.id}
-                  ref={(el) => setRef(a.id, el)}
-                  data-announcement-id={a.id}
-                  className={`rounded-xl border p-4 transition-all duration-300 ${meta.bg} ${
-                    isRead ? "border-border opacity-100" : "border-primary/30 ring-1 ring-primary/10"
-                  }`}
+                  className={`rounded-xl border p-4 transition-all duration-300 ${meta.bg} border-primary/20 hover:border-primary/40`}
                 >
                   <div className="mb-2 flex items-start gap-3">
                     <div
@@ -193,9 +119,6 @@ export default function WelcomeNotificationsModal({
                         {a.title}
                       </h3>
                     </div>
-                    {isRead && (
-                      <CheckCircle2 size={18} strokeWidth={2} fill="#22c55e" className="mt-[2px] shrink-0 text-white" />
-                    )}
                   </div>
                   <p className="m-0 mb-3 whitespace-pre-wrap pl-10 font-inter text-[13px] leading-5 text-text-body">
                     {previewText(a)}
@@ -203,7 +126,7 @@ export default function WelcomeNotificationsModal({
                   <div className="pl-10">
                     <button
                       onClick={() => onOpenAnnouncement(a.id)}
-                      className="border-none bg-transparent p-0 font-inter text-xs font-semibold text-primary shadow-none hover:underline"
+                      className="border-none bg-transparent p-0 font-inter text-xs font-semibold text-primary shadow-none hover:underline cursor-pointer"
                     >
                       Ver anuncio completo →
                     </button>
@@ -214,18 +137,21 @@ export default function WelcomeNotificationsModal({
           </div>
         </div>
 
-        <div className="border-t border-border px-6 py-4">
+        <div className="flex gap-3 border-t border-border px-6 py-4">
           <button
-            className={`w-full rounded-xl py-3 font-inter text-sm font-semibold text-white shadow-none transition-all ${
-              allRead
-                ? "cursor-pointer bg-primary hover:bg-primary-hover active:scale-[0.99]"
-                : "cursor-pointer bg-text-secondary hover:bg-text-primary"
-            }`}
-            onClick={handleDismiss}
+            className="flex-1 rounded-xl py-3 border border-border bg-transparent font-inter text-sm font-semibold text-text-secondary hover:bg-neutral-soft transition-all cursor-pointer text-center"
+            onClick={onDismiss}
           >
-            {allRead
-              ? "Entendido, continuar"
-              : `Marcar todos como leídos (${readIds.size}/${announcements.length})`}
+            Ver más tarde
+          </button>
+          <button
+            className="flex-1 rounded-xl py-3 bg-primary hover:bg-primary-hover font-inter text-sm font-semibold text-white shadow-none transition-all cursor-pointer text-center"
+            onClick={() => {
+              onMarkAllSeen();
+              onDismiss();
+            }}
+          >
+            Marcar todos como leídos
           </button>
         </div>
       </div>

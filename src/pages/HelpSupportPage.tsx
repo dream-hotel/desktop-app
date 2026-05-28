@@ -331,17 +331,7 @@ export default function HelpSupportPage() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-bg">
-      <header className="flex items-start justify-between border-b border-border bg-surface px-8 pb-4 pt-6">
-        <div className="flex flex-col gap-[2px]">
-          <h1 className="m-0 font-alexandria text-[28px] font-medium leading-9 text-text-primary">
-            Ayuda & Soporte
-          </h1>
-          <p className="m-0 font-inter text-[13px] leading-[19.5px] text-text-secondary">
-            Preguntas frecuentes sobre el uso de Dream by Stannum.
-          </p>
-        </div>
-      </header>
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
 
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="mx-auto flex max-w-[860px] flex-col gap-5">

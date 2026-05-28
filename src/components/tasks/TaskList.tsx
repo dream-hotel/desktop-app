@@ -550,23 +550,8 @@ export default function TaskList({
 
   return (
     <div className="flex h-full flex-col border-r border-border">
-      <div className="flex flex-col gap-4 border-b border-border px-4 py-[17px]">
-        <div className="flex items-center justify-between">
-          <h1 className="font-alexandria text-[31px] font-normal leading-[30px] text-text-primary">
-            Lista de Tareas
-          </h1>
-          {canCreate && (
-            <button
-              onClick={onNewTask}
-              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
-            >
-              <Plus size={16} strokeWidth={2} />
-              Nueva Tarea
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="relative flex-1">
             <Search size={15} strokeWidth={1.6} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
@@ -577,6 +562,15 @@ export default function TaskList({
               className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
             />
           </div>
+          {canCreate && (
+            <button
+              onClick={onNewTask}
+              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-2 font-inter text-[13px] font-medium leading-[19.5px] text-white shrink-0"
+            >
+              <Plus size={16} strokeWidth={2} />
+              Nueva Tarea
+            </button>
+          )}
           <FilterButton filter={advancedFilter} onFilterChange={setAdvancedFilter} />
         </div>
 
