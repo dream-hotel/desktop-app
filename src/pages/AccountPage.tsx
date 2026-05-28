@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { AlertCircle, CheckCircle2, Eye, EyeOff, LogOut, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AlertCircle, CheckCircle2, Eye, EyeOff, LogOut, Lock, RefreshCw, Download, Info } from "lucide-react";
 import { User } from "../types/response/AuthResponse";
 import * as userService from "../service/userService";
 import { ApiError } from "../service/apiClient";
+import { useUpdater } from "../hooks/useUpdater";
+import { getVersion } from "@tauri-apps/api/app";
 
 interface AccountPageProps {
   user: User;
@@ -47,6 +49,13 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [currentAppVersion, setCurrentAppVersion] = useState<string>("...");
+
+  const { status, error: updaterError, manifest, checkForUpdates, downloadAndInstall } = useUpdater();
+
+  useEffect(() => {
+    getVersion().then(setCurrentAppVersion).catch(console.error);
+  }, []);
 
   const submitPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +152,81 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                 <dd className="text-text-primary">{formatDateLong(user.createdAt)}</dd>
               </div>
             </dl>
+          </section>
+
+          {/* App Updates */}
+          <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
+            <div className="flex items-start gap-3 border-b border-border px-6 py-4">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-primary/10 text-primary">
+                <RefreshCw size={16} strokeWidth={1.8} className={status === "checking" ? "animate-spin" : ""} />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="font-alexandria text-[16px] font-medium leading-tight text-text-primary">
+                  Actualizaciones del sistema
+                </h3>
+                <p className="mt-0.5 font-inter text-[12px] text-text-secondary">
+                  Versión actual: {currentAppVersion}. Comprueba si hay mejoras disponibles.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 px-6 py-5">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1">
+                  <span className="font-inter text-[13px] font-medium text-text-primary">
+                    {status === "idle" && "El sistema está actualizado"}
+                    {status === "checking" && "Buscando actualizaciones..."}
+                    {status === "available" && "¡Nueva versión disponible!"}
+                    {status === "not-available" && "Ya tienes la última versión"}
+                    {status === "downloading" && "Descargando actualización..."}
+                    {status === "ready" && "Actualización lista"}
+                    {status === "error" && "Error al buscar actualizaciones"}
+                  </span>
+                  <span className="font-inter text-[12px] text-text-secondary">
+                    {status === "available" && manifest && (
+                      <>Se encontró la versión <span className="font-semibold text-primary">{manifest.version}</span></>
+                    )}
+                    {(status === "idle" || status === "not-available") && "No hay acciones pendientes."}
+                    {status === "error" && updaterError}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {(status === "idle" || status === "not-available" || status === "error" || status === "checking") && (
+                    <button
+                      onClick={() => checkForUpdates()}
+                      disabled={status === "checking"}
+                      className="flex items-center gap-1.5 rounded-[10px] border border-border bg-surface px-4 py-2 font-inter text-[12px] font-medium text-text-secondary transition-colors hover:bg-bg disabled:opacity-40"
+                    >
+                      <RefreshCw size={14} strokeWidth={1.8} className={status === "checking" ? "animate-spin" : ""} />
+                      {status === "checking" ? "Buscando..." : "Buscar ahora"}
+                    </button>
+                  )}
+
+                  {status === "available" && (
+                    <button
+                      onClick={downloadAndInstall}
+                      className="flex items-center gap-1.5 rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-white transition-colors hover:bg-primary-hover"
+                    >
+                      <Download size={14} strokeWidth={1.8} />
+                      Instalar versión {manifest?.version}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {status === "available" && manifest?.body && (
+                <div className="mt-2 flex flex-col gap-2 rounded-[10px] bg-bg/50 p-4 border border-border/50">
+                  <div className="flex items-center gap-1.5 text-text-primary">
+                    <Info size={14} strokeWidth={1.8} className="text-primary" />
+                    <span className="font-inter text-[12px] font-semibold">Novedades en esta versión:</span>
+                  </div>
+                  <p className="font-inter text-[12px] text-text-secondary leading-relaxed whitespace-pre-wrap">
+                    {manifest.body}
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Change password */}

@@ -5,7 +5,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  tone?: "danger" | "primary";
+  tone?: "danger" | "primary" | "warning";
   loading?: boolean;
   error?: string | null;
   onCancel: () => void;
@@ -26,7 +26,23 @@ export default function ConfirmDialog({
   const confirmClass =
     tone === "danger"
       ? "bg-danger hover:bg-danger/90"
+      : tone === "warning"
+      ? "bg-warning hover:bg-warning/90"
       : "bg-primary hover:bg-primary-hover";
+
+  const iconBgClass =
+    tone === "danger"
+      ? "bg-danger/10"
+      : tone === "warning"
+      ? "bg-warning/10"
+      : "bg-primary/10";
+
+  const iconColorClass =
+    tone === "danger"
+      ? "text-danger"
+      : tone === "warning"
+      ? "text-warning"
+      : "text-primary";
 
   return (
     <div
@@ -39,14 +55,12 @@ export default function ConfirmDialog({
       >
         <div className="flex items-start gap-3">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-              tone === "danger" ? "bg-danger/10" : "bg-primary/10"
-            }`}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${iconBgClass}`}
           >
             <AlertTriangle
               size={20}
               strokeWidth={1.8}
-              className={tone === "danger" ? "text-danger" : "text-primary"}
+              className={iconColorClass}
             />
           </div>
           <div className="flex flex-col gap-1">

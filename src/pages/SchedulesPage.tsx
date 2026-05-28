@@ -6,9 +6,10 @@ import {
   WeeklySchedule,
   formatTime,
 } from "../types/models/Schedule";
-import { listUsers } from "../service/userService";
+import { listUsers, updateUser } from "../service/userService";
 import {
   addDailyBlock,
+  createSchedule,
   deleteDailyBlock,
   listSchedules,
   updateDailyBlock,
@@ -90,11 +91,44 @@ export default function SchedulesPage() {
 
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [daysToShow, setDaysToShow] = useState<number>(7);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
+  const selectedUserId = selectedUserIds.length === 1 ? selectedUserIds[0] : null;
   const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
 
-  const fetchAll = useCallback(async () => {
-    setLoading(true);
+  const [showNewScheduleModal, setShowNewScheduleModal] = useState(false);
+  const [newScheduleName, setNewScheduleName] = useState("");
+  const [newScheduleError, setNewScheduleError] = useState<string | null>(null);
+  const [creatingSchedule, setCreatingSchedule] = useState(false);
+
+  async function handleCreateSchedule(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newScheduleName.trim()) return;
+    setCreatingSchedule(true);
+    setNewScheduleError(null);
+    try {
+      await createSchedule({ name: newScheduleName });
+      setNewScheduleName("");
+      setShowNewScheduleModal(false);
+      await fetchAll();
+    } catch (err) {
+      setNewScheduleError(err instanceof Error ? err.message : "Error al crear la plantilla");
+    } finally {
+      setCreatingSchedule(false);
+    }
+  }
+
+  async function handleAssignSchedule(userId: number, scheduleId: number | null) {
+    setError(null);
+    try {
+      await updateUser(userId, { scheduleIds: scheduleId !== null ? [scheduleId] : [] });
+      await fetchAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al vincular el horario");
+    }
+  }
+
+  const fetchAll = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const [userResp, scheduleResp] = await Promise.all([
@@ -103,6 +137,11 @@ export default function SchedulesPage() {
       ]);
       setUsers(userResp.data);
       setSchedules(scheduleResp.data);
+
+      // Auto-select the first user in the personal list by default if none is selected yet
+      if (userResp.data.length > 0) {
+        setSelectedUserIds((prev) => (prev.length === 0 ? [userResp.data[0].id] : prev));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar los horarios");
     } finally {
@@ -131,29 +170,59 @@ export default function SchedulesPage() {
 
   const drawingMode = isAdmin && selectedUser !== null && selectedSchedule !== null;
 
-  function handleCellClick(dow: number, hour: number, minute: number) {
+  async function handleCellClick(
+    dow: number,
+    hour: number,
+    minute: number,
+    endHourParam?: number,
+    endMinuteParam?: number,
+  ) {
     if (!drawingMode || !selectedUser || !selectedSchedule) return;
     const startStr = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-    const endHour = Math.min(23, hour + 1);
-    const endStr = `${String(endHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-    setEditTarget({
-      mode: "create",
-      user: selectedUser,
-      schedule: selectedSchedule,
-      initialDay: dow,
-      initialStart: startStr,
-      initialEnd: endStr,
-    });
+    
+    let endStr = "";
+    if (endHourParam !== undefined && endMinuteParam !== undefined) {
+      endStr = `${String(endHourParam).padStart(2, "0")}:${String(endMinuteParam).padStart(2, "0")}`;
+    } else {
+      const endHour = Math.min(23, hour + 1);
+      endStr = `${String(endHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    }
+
+    setError(null);
+    try {
+      await addDailyBlock(selectedSchedule.id, {
+        day: dow,
+        startTime: startStr,
+        endTime: endStr,
+      });
+      await fetchAll(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al crear el bloque");
+    }
+  }
+
+  async function handleBlockResize(block: DailyBlock, newStart: string, newEnd: string) {
+    if (!isAdmin) return;
+    setError(null);
+    try {
+      await updateDailyBlock(block.scheduleId, block.id, {
+        startTime: newStart,
+        endTime: newEnd,
+      });
+      await fetchAll(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al redimensionar el bloque");
+    }
   }
 
   function handleBlockClick(block: DailyBlock, user: BackendUserListItem) {
     if (!isAdmin) {
-      setSelectedUserId(user.id);
+      setSelectedUserIds([user.id]);
       return;
     }
     const schedule = schedulesById.get(block.scheduleId);
     if (!schedule) return;
-    setSelectedUserId(user.id);
+    setSelectedUserIds([user.id]);
     setEditTarget({
       mode: "edit",
       block,
@@ -167,20 +236,28 @@ export default function SchedulesPage() {
 
   async function handleSaveBlock(payload: { day: number; startTime: string; endTime: string }) {
     if (!editTarget) return;
-    if (editTarget.mode === "create") {
-      await addDailyBlock(editTarget.schedule.id, payload);
-    } else if (editTarget.block) {
-      await updateDailyBlock(editTarget.schedule.id, editTarget.block.id, payload);
+    try {
+      if (editTarget.mode === "create") {
+        await addDailyBlock(editTarget.schedule.id, payload);
+      } else if (editTarget.block) {
+        await updateDailyBlock(editTarget.schedule.id, editTarget.block.id, payload);
+      }
+      setEditTarget(null);
+      await fetchAll(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar el bloque");
     }
-    setEditTarget(null);
-    await fetchAll();
   }
 
   async function handleDeleteBlock() {
     if (!editTarget || !editTarget.block) return;
-    await deleteDailyBlock(editTarget.schedule.id, editTarget.block.id);
-    setEditTarget(null);
-    await fetchAll();
+    try {
+      await deleteDailyBlock(editTarget.schedule.id, editTarget.block.id);
+      setEditTarget(null);
+      await fetchAll(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al eliminar el bloque");
+    }
   }
 
   return (
@@ -197,6 +274,14 @@ export default function SchedulesPage() {
             </p>
           )}
         </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowNewScheduleModal(true)}
+            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white hover:bg-primary/90 transition-colors cursor-pointer"
+          >
+            Nueva Plantilla
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-6 border-b border-border bg-surface px-8 py-3">
@@ -251,7 +336,7 @@ export default function SchedulesPage() {
               Editando horario de {selectedUser.lastName}, {selectedUser.fullName}
             </span>
             <button
-              onClick={() => setSelectedUserId(null)}
+              onClick={() => setSelectedUserIds([])}
               className="rounded-full p-0.5 hover:bg-surface"
               title="Limpiar selección"
             >
@@ -276,27 +361,34 @@ export default function SchedulesPage() {
             <WeekGrid
               users={users}
               schedulesById={schedulesById}
-              selectedUserId={selectedUserId}
+              selectedUserIds={selectedUserIds}
               weekStart={weekStart}
               daysToShow={daysToShow}
               startHour={0}
               endHour={24}
+              isAdmin={isAdmin}
               onCellClick={isAdmin ? handleCellClick : undefined}
               onBlockClick={handleBlockClick}
+              onBlockResize={isAdmin ? handleBlockResize : undefined}
             />
           )}
         </div>
         <PersonnelPanel
           users={users}
           schedulesById={schedulesById}
-          selectedUserId={selectedUserId}
-          onSelectUser={setSelectedUserId}
+          selectedUserIds={selectedUserIds}
+          onSelectUserIdsChange={setSelectedUserIds}
           drawingMode={drawingMode}
+          onAssignSchedule={handleAssignSchedule}
+          canManage={isAdmin}
+          weekStart={weekStart}
+          daysToShow={daysToShow}
         />
       </div>
 
       {editTarget && (
         <BlockEditorModal
+          key={editTarget ? `${editTarget.mode}-${editTarget.initialStart}-${editTarget.initialEnd}-${editTarget.initialDay}` : "none"}
           mode={editTarget.mode}
           scheduleName={editTarget.schedule.name}
           initialDay={editTarget.initialDay}
@@ -307,6 +399,64 @@ export default function SchedulesPage() {
           onSave={handleSaveBlock}
           onDelete={editTarget.mode === "edit" && canDelete ? handleDeleteBlock : undefined}
         />
+      )}
+
+      {showNewScheduleModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setShowNewScheduleModal(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleCreateSchedule}
+            className="flex w-[380px] flex-col gap-4 rounded-[14px] bg-surface p-6 shadow-[0px_20px_40px_rgba(0,0,0,0.18)] border border-border"
+          >
+            <div>
+              <h2 className="font-alexandria text-[20px] font-normal leading-[24px] text-text-primary">
+                Nueva Plantilla de Horario
+              </h2>
+              <p className="mt-1 font-inter text-[12px] text-text-secondary">
+                Crea una plantilla semanal para asignar a tus empleados.
+              </p>
+            </div>
+            
+            <div className="flex flex-col gap-1">
+              <label className="font-inter text-[12px] font-medium text-text-body">Nombre de la plantilla</label>
+              <input
+                type="text"
+                placeholder="Ej. Recepción Rotativo, Administrativos..."
+                value={newScheduleName}
+                onChange={(e) => setNewScheduleName(e.target.value)}
+                required
+                className="rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
+              />
+            </div>
+
+            {newScheduleError && (
+              <div className="rounded-[8px] border border-[rgba(239,68,68,0.3)] bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
+                {newScheduleError}
+              </div>
+            )}
+
+            <div className="mt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowNewScheduleModal(false)}
+                disabled={creatingSchedule}
+                className="rounded-[10px] bg-neutral-soft px-4 py-2 font-inter text-[13px] font-medium text-text-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={creatingSchedule}
+                className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+              >
+                {creatingSchedule ? "Creando..." : "Crear plantilla"}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

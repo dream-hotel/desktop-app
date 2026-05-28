@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, FileText, Pencil, Trash2 } from "lucide-react";
 import { WikiArticleDetail } from "../../types/models/Wiki";
 import MarkdownView from "./MarkdownView";
 import DocumentViewer from "./DocumentViewer";

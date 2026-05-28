@@ -29,6 +29,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "category": "Productivity",
     "shortDescription": "Dream by Stannum — gestión hotelera",
     "longDescription": "Aplicación de gestión para hoteles Stannum: usuarios, tareas, wiki, horarios y dashboard.",
@@ -56,6 +57,14 @@
       "deb": {
         "depends": []
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://raw.githubusercontent.com/dream-hotel/desktop-app/main/update.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNUJDNTQ0QzZCOTU1RgpSV1JmbFd0TVZMd0ZERWJQTHp1MFREOXh6YnBJUHJ1ck5zUnpsMDlJUXliQVZQMUZ5N3RRd25qaQo="
     }
   }
 }

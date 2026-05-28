@@ -9,7 +9,14 @@ import {
 
 function normalizeUser(u: BackendUserListItem): BackendUserListItem {
   // user_id is bigint in MySQL → arrives as a string; coerce to number.
-  return { ...u, id: Number(u.id) };
+  return {
+    ...u,
+    id: Number(u.id),
+    schedules: (u.schedules || []).map((s: any) => ({
+      ...s,
+      id: Number(s.id),
+    })),
+  };
 }
 
 export async function listUsers(
