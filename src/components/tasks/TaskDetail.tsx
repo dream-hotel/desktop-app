@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import {
+  ChevronDown,
   Image as ImageIcon,
   Maximize2,
   MessageSquare,
@@ -10,6 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 import {
   BackendTask,
   BackendTaskActivityLog,
@@ -87,7 +89,29 @@ export default function TaskDetail({
 }: TaskDetailProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openComment, setOpenComment] = useState<BackendTaskActivityLog | null>(null);
+  const [showViewersDropdown, setShowViewersDropdown] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === "administrador";
+
+  const { viewedAssignees, notViewedAssignees } = useMemo(() => {
+    const viewersMap = new Map((task.viewers || []).map((v) => [v.id, v]));
+    const viewed: any[] = [];
+    const notViewed: any[] = [];
+    for (const assignment of task.assignments) {
+      const viewer = viewersMap.get(assignment.userId);
+      if (viewer) {
+        viewed.push({
+          ...assignment.user,
+          viewedAt: viewer.viewedAt,
+        });
+      } else {
+        notViewed.push(assignment.user);
+      }
+    }
+    return { viewedAssignees: viewed, notViewedAssignees: notViewed };
+  }, [task.assignments, task.viewers]);
 
   const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
 
@@ -217,6 +241,99 @@ export default function TaskDetail({
             {priorityNameLabel(task.priority.name)}
           </span>
         </div>
+        {isAdmin && (
+          <div className="relative flex w-[175px] flex-col gap-[2px]">
+            <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
+              Visto por:
+            </span>
+            {task.assignments.length === 0 ? (
+              <span className="font-inter text-sm font-medium leading-[21px] text-text-secondary">
+                Sin asignar
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowViewersDropdown(!showViewersDropdown)}
+                className="flex items-center gap-1 border-none bg-transparent p-0 text-left font-inter text-sm font-medium leading-[21px] text-primary hover:underline cursor-pointer"
+              >
+                {viewedAssignees.length} / {task.assignments.length} vistos
+                <ChevronDown
+                  size={14}
+                  className={`text-text-secondary transition-transform ${showViewersDropdown ? "rotate-180" : ""}`}
+                />
+              </button>
+            )}
+            {showViewersDropdown && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowViewersDropdown(false)}
+                />
+                <div className="absolute top-[42px] left-0 z-20 flex w-[260px] flex-col gap-3 rounded-[12px] border border-border bg-surface p-4 shadow-[0px_8px_24px_rgba(0,0,0,0.12)]">
+                  <div className="flex items-center justify-between border-b border-border pb-2">
+                    <span className="font-inter text-[12px] font-semibold text-text-primary">
+                      Control de lectura
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowViewersDropdown(false)}
+                      className="rounded p-0.5 text-text-secondary hover:bg-neutral-soft"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <span className="block font-inter text-[10.5px] font-semibold uppercase tracking-wider text-success">
+                        Visto ({viewedAssignees.length})
+                      </span>
+                      {viewedAssignees.length === 0 ? (
+                        <span className="mt-1 block font-inter text-xs text-text-secondary">
+                          Nadie ha visto esta tarea.
+                        </span>
+                      ) : (
+                        <ul className="mt-1.5 flex flex-col gap-1.5 pl-0 list-none">
+                          {viewedAssignees.map((u) => (
+                            <li key={u.id} className="flex flex-col">
+                              <span className="font-inter text-xs font-medium text-text-primary">
+                                {fullName(u)}
+                              </span>
+                              {u.viewedAt && (
+                                <span className="font-inter text-[10px] text-text-secondary">
+                                  Visto el {formatDateTime(u.viewedAt)}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="border-t border-border pt-2">
+                      <span className="block font-inter text-[10.5px] font-semibold uppercase tracking-wider text-danger">
+                        Pendiente ({notViewedAssignees.length})
+                      </span>
+                      {notViewedAssignees.length === 0 ? (
+                        <span className="mt-1 block font-inter text-xs text-text-secondary">
+                          Todos la han visto.
+                        </span>
+                      ) : (
+                        <ul className="mt-1.5 flex flex-col gap-1.5 pl-0 list-none">
+                          {notViewedAssignees.map((u) => (
+                            <li key={u.id} className="font-inter text-xs font-medium text-text-primary">
+                              {fullName(u)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Files (read-only) */}
