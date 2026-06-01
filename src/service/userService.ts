@@ -44,3 +44,7 @@ export function updateUser(id: number, payload: UpdateUserPayload): Promise<Back
 export function deleteUser(id: number): Promise<void> {
   return apiClient.delete(`/users/${id}`);
 }
+
+export function restoreUser(id: number): Promise<void> {
+  return apiClient.post(`/users/${id}/restore`);
+}

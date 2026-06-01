@@ -11,6 +11,7 @@ export interface User {
   avatar?: string;
   isActive?: boolean;
   createdAt?: string;
+  mustChangePassword?: boolean;
 }
 
 export interface AuthResponse {
@@ -32,6 +33,7 @@ export interface BackendUser {
     id: number;
     name: string;
   };
+  mustChangePassword?: boolean;
 }
 
 export interface BackendAuthResponse {

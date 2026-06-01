@@ -1,10 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import {
-  Ban,
-  CheckCircle2,
-  CircleDashed,
   Image as ImageIcon,
-  Loader,
   Maximize2,
   MessageSquare,
   MoreVertical,
@@ -12,6 +8,7 @@ import {
   Pencil,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 import {
   BackendTask,
@@ -23,6 +20,7 @@ import {
 import CommentComposer from "./CommentComposer";
 import CommentDetailModal from "./CommentDetailModal";
 import TaskFilesGallery from "./TaskFilesGallery";
+import { getFullUrl } from "../../service/apiConfig";
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }> = {
   in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
@@ -30,20 +28,6 @@ const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }>
   completed: { bg: "bg-success/10", border: "border-[rgba(118,199,194,0.2)]", text: "text-success" },
   archived: { bg: "bg-danger/10", border: "border-[rgba(239,68,68,0.2)]", text: "text-danger" },
 };
-
-function StatusIcon({ name }: { name: string }) {
-  switch (name) {
-    case "in_progress":
-      return <Loader size={16} strokeWidth={1.6} className="shrink-0 text-warning" />;
-    case "completed":
-      return <CheckCircle2 size={16} strokeWidth={1.6} className="shrink-0 text-success" />;
-    case "archived":
-      return <Ban size={16} strokeWidth={1.6} className="shrink-0 text-danger" />;
-    case "pending":
-    default:
-      return <CircleDashed size={16} strokeWidth={1.6} className="shrink-0 text-text-secondary" />;
-  }
-}
 
 function formatDateTime(iso: string | null): string {
   if (!iso) return "—";
@@ -86,6 +70,7 @@ interface TaskDetailProps {
   onExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onClose: () => void;
 }
 
 export default function TaskDetail({
@@ -98,6 +83,7 @@ export default function TaskDetail({
   onExpand,
   onEdit,
   onDelete,
+  onClose,
 }: TaskDetailProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openComment, setOpenComment] = useState<BackendTaskActivityLog | null>(null);
@@ -119,7 +105,13 @@ export default function TaskDetail({
       <div className="border-b border-border p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <StatusIcon name={task.status.name} />
+            <button
+              onClick={onClose}
+              className="flex h-6 w-6 items-center justify-center rounded-full text-text-secondary hover:bg-neutral-soft hover:text-text-primary transition-colors shrink-0"
+              title="Cerrar detalles"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
             <span
               className={`inline-flex items-center rounded-full border px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text}`}
             >
@@ -333,7 +325,7 @@ function CommentBubble({
               {images.slice(0, 3).map((url) => (
                 <img
                   key={url}
-                  src={url}
+                  src={getFullUrl(url)}
                   alt=""
                   className="h-7 w-7 rounded-md border-2 border-bg object-cover"
                 />

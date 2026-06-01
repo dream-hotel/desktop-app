@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, LogOut, Lock, RefreshCw, Download, Info } from "lucide-react";
 import { User } from "../types/response/AuthResponse";
-import * as userService from "../service/userService";
 import { ApiError } from "../service/apiClient";
+import { changePassword as apiChangePassword } from "../service/authService";
 import { useUpdater } from "../hooks/useUpdater";
 import { getVersion } from "@tauri-apps/api/app";
 
@@ -61,8 +61,25 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+
+    const hasLetter = /[a-zA-Z]/.test(newPassword);
+    const hasNumber = /\d/.test(newPassword);
+    const hasSpecial = /[^a-zA-Z\d]/.test(newPassword);
+
     if (newPassword.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+    if (!hasLetter) {
+      setError("La contraseña debe tener al menos una letra (mayúscula o minúscula).");
+      return;
+    }
+    if (!hasNumber) {
+      setError("La contraseña debe tener al menos un número.");
+      return;
+    }
+    if (!hasSpecial) {
+      setError("La contraseña debe tener al menos un carácter especial (ej. punto, guion, barra baja).");
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -71,14 +88,12 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
     }
     setSaving(true);
     try {
-      await userService.updateUser(user.id, { password: newPassword });
+      await apiChangePassword(newPassword);
       setSuccess(true);
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        setError("No tienes permisos para cambiar tu contraseña desde aquí. Contacta a un administrador.");
-      } else if (err instanceof ApiError) {
+      if (err instanceof ApiError) {
         setError(err.message);
       } else {
         setError("Error al actualizar la contraseña.");
@@ -115,10 +130,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
             </div>
 
             <dl className="grid grid-cols-1 gap-x-8 gap-y-3 px-6 py-5 font-inter text-[13px] sm:grid-cols-2">
-              <div className="flex flex-col gap-0.5">
-                <dt className="text-[11px] uppercase tracking-wide text-text-secondary">ID de usuario</dt>
-                <dd className="text-text-primary">#{user.id}</dd>
-              </div>
+
               <div className="flex flex-col gap-0.5">
                 <dt className="text-[11px] uppercase tracking-wide text-text-secondary">Estado</dt>
                 <dd>
@@ -230,7 +242,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                   Cambiar contraseña
                 </h3>
                 <p className="mt-0.5 font-inter text-[12px] text-text-secondary">
-                  Mínimo 8 caracteres. Tras actualizarla deberás usarla en tu próximo inicio de sesión.
+                  Mínimo 8 caracteres, una letra, un número y un carácter especial (punto, guion, barra baja, etc.).
                 </p>
               </div>
             </div>

@@ -40,6 +40,7 @@ function mapBackendUser(data: BackendAuthResponse["user"]): User {
     roleName: data.role.name,
     isActive: data.isActive,
     createdAt: data.createdAt,
+    mustChangePassword: data.mustChangePassword,
   };
 }
 
@@ -136,4 +137,8 @@ export async function verifyAndSetPassword(email: string, token: string, passwor
     }
     return { success: false, message: "Error de red. No se pudo conectar al servidor." };
   }
+}
+
+export async function changePassword(password: string): Promise<void> {
+  await apiClient.post("/auth/change-password", { password });
 }

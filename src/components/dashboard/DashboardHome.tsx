@@ -11,10 +11,15 @@ import { useAnnouncementBell, requestNavigate } from "../../hooks/useAnnouncemen
 import StatsCard from "./StatsCard";
 import UrgentTasksList from "./UrgentTasksList";
 import RecentAnnouncementsCard from "./RecentAnnouncementsCard";
+import { FilterTab } from "../tasks/TaskList";
+
 
 interface DashboardHomeProps {
   user: User;
-  onNavigate: (section: string) => void;
+  onNavigate: (
+    section: string,
+    options?: { tab?: FilterTab; priority?: string; dueSoon?: boolean; taskId?: number }
+  ) => void;
 }
 
 export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) {
@@ -32,6 +37,17 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
 
   function openAnnouncement(id: number) {
     bell.markSeen(id);
+    const ann = data?.announcements?.find((a) => a.id === id) || bell.announcements.find((a) => a.id === id);
+    if (ann) {
+      if (ann.type === "task" && ann.taskId != null) {
+        requestNavigate({ section: "tareas", taskId: ann.taskId });
+        return;
+      }
+      if (ann.type === "article" && ann.articleId != null) {
+        requestNavigate({ section: "wiki", articleId: ann.articleId });
+        return;
+      }
+    }
     requestNavigate({ section: "anuncios", announcementId: id });
   }
 
@@ -67,7 +83,7 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
           value={data.stats.pending}
           label={isAdmin ? "Tareas pendientes" : "Mis pendientes"}
           hint="Sin iniciar"
-          onClick={() => onNavigate("tareas")}
+          onClick={() => onNavigate("tareas", { tab: "pending" })}
         />
         <StatsCard
           icon={<Loader size={20} strokeWidth={1.7} />}
@@ -75,7 +91,7 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
           label={isAdmin ? "En progreso" : "Mis en progreso"}
           hint="Trabajándose ahora"
           accent="warning"
-          onClick={() => onNavigate("tareas")}
+          onClick={() => onNavigate("tareas", { tab: "in_progress" })}
         />
         <StatsCard
           icon={<Clock size={20} strokeWidth={1.7} />}
@@ -83,7 +99,7 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
           label="Vencen en 24 h"
           hint="Pendientes o en progreso"
           accent={data.stats.dueSoon > 0 ? "warning" : "default"}
-          onClick={() => onNavigate("tareas")}
+          onClick={() => onNavigate("tareas", { dueSoon: true })}
         />
         <StatsCard
           icon={<AlertTriangle size={20} strokeWidth={1.7} />}
@@ -91,7 +107,7 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
           label="Críticas activas"
           hint="Prioridad crítica"
           accent={data.stats.critical > 0 ? "danger" : "default"}
-          onClick={() => onNavigate("tareas")}
+          onClick={() => onNavigate("tareas", { priority: "critical" })}
         />
       </div>
 
@@ -101,7 +117,7 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
           tasks={data.urgentTasks}
           title={tasksTitle}
           emptyMessage={tasksEmpty}
-          onOpenTasks={() => onNavigate("tareas")}
+          onOpenTasks={(taskId) => onNavigate("tareas", taskId ? { taskId } : undefined)}
         />
         <RecentAnnouncementsCard
           announcements={data.announcements}

@@ -48,7 +48,7 @@ interface UrgentTasksListProps {
   tasks: BackendTaskListItem[];
   title: string;
   emptyMessage: string;
-  onOpenTasks: () => void;
+  onOpenTasks: (taskId?: number) => void;
 }
 
 export default function UrgentTasksList({
@@ -64,7 +64,7 @@ export default function UrgentTasksList({
           {title}
         </h2>
         <button
-          onClick={onOpenTasks}
+          onClick={() => onOpenTasks()}
           className="flex items-center gap-1 font-inter text-[12px] font-medium text-primary hover:underline"
         >
           Ver todas
@@ -90,7 +90,7 @@ export default function UrgentTasksList({
             return (
               <li key={task.id}>
                 <button
-                  onClick={onOpenTasks}
+                  onClick={() => onOpenTasks(task.id)}
                   className="flex w-full items-center gap-3 py-2.5 text-left transition-colors hover:bg-primary-light/40"
                 >
                   <StatusIcon name={task.status.name} />

@@ -62,7 +62,7 @@ function TypeIcon({ type }: { type: AnnouncementType }) {
 
 const FILTERS: { id: AnnouncementType | "all"; label: string }[] = [
   { id: "all", label: "Todos" },
-  { id: "text", label: "Texto" },
+  { id: "text", label: "General" },
   { id: "task", label: "Tareas" },
   { id: "article", label: "Artículos" },
 ];

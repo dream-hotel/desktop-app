@@ -151,9 +151,12 @@ export async function createArticle(payload: ArticleInputPayload): Promise<WikiA
   return mapArticleDetail(created);
 }
 
-export async function setArticleFile(id: number, file: File): Promise<void> {
+export async function setArticleFile(id: number, file: File, extractedText?: string): Promise<void> {
   const form = new FormData();
   form.append("file", file);
+  if (extractedText !== undefined) {
+    form.append("extracted_text", extractedText);
+  }
   return apiClient.postForm<void>(`/wiki/articles/${id}/content/file`, form);
 }
 

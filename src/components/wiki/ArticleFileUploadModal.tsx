@@ -2,11 +2,16 @@ import React, { useState, useRef, useEffect } from "react";
 import { Upload, X, FileIcon, FileSpreadsheet, FileText } from "lucide-react";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { readFile } from "@tauri-apps/plugin-fs";
+import * as mammoth from "mammoth";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface ArticleFileUploadModalProps {
   initialTitle?: string;
   onCancel: () => void;
-  onSubmit: (file: File, title: string) => Promise<void>;
+  onSubmit: (file: File, title: string, extractedText?: string) => Promise<void>;
 }
 
 export default function ArticleFileUploadModal({
@@ -144,7 +149,37 @@ export default function ArticleFileUploadModal({
     setLoading(true);
     setError(null);
     try {
-      await onSubmit(file, title.trim());
+      let extractedText = "";
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const arrayBuffer = await file.arrayBuffer();
+
+      if (ext === "docx" || ext === "doc") {
+        try {
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          extractedText = result.value;
+        } catch (err) {
+          console.error("Error al extraer texto de Word:", err);
+        }
+      } else if (ext === "pdf") {
+        try {
+          const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
+          const pdf = await loadingTask.promise;
+          let text = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+              .map((item: any) => item.str)
+              .join(" ");
+            text += pageText + "\n";
+          }
+          extractedText = text;
+        } catch (err) {
+          console.error("Error al extraer texto de PDF:", err);
+        }
+      }
+
+      await onSubmit(file, title.trim(), extractedText || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al subir el archivo.");
     } finally {
