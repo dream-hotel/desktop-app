@@ -6,7 +6,7 @@ import {
 } from "../../types/models/Task";
 
 const PRIORITY_TONE: Record<string, { bg: string; text: string }> = {
-  critical: { bg: "bg-[#c5a059]", text: "text-white" },
+  critical: { bg: "bg-[#c5a059]", text: "text-[#3a2c08]" },
   high: { bg: "bg-warning/15", text: "text-warning" },
   medium: { bg: "bg-success/15", text: "text-success" },
   low: { bg: "bg-neutral-soft", text: "text-text-secondary" },

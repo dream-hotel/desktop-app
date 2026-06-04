@@ -34,7 +34,7 @@ export default function ArticleTypeModal({
             onClick={onSelectWrite}
             className="group flex flex-col items-center gap-4 rounded-[12px] border border-border bg-surface p-6 transition-all hover:border-primary/40 hover:bg-primary/5"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-accent">
               <FileText size={24} strokeWidth={1.8} />
             </div>
             <div className="flex flex-col items-center gap-1 text-center">
@@ -51,7 +51,7 @@ export default function ArticleTypeModal({
             onClick={onSelectUpload}
             className="group flex flex-col items-center gap-4 rounded-[12px] border border-border bg-surface p-6 transition-all hover:border-primary/40 hover:bg-primary/5"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-on-accent">
               <Upload size={24} strokeWidth={1.8} />
             </div>
             <div className="flex flex-col items-center gap-1 text-center">

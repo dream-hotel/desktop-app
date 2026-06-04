@@ -56,7 +56,7 @@ export default function ConfirmDeleteModal({
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="rounded-[10px] bg-danger px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+            className="rounded-[10px] bg-danger px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
           >
             {loading ? "Eliminando..." : "Eliminar"}
           </button>

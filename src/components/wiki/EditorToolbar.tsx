@@ -58,7 +58,7 @@ function ToolbarButton({ active, title, onClick, disabled, children }: ToolbarBu
       onClick={onClick}
       className={`flex h-8 w-8 items-center justify-center rounded-[6px] font-inter text-[13px] transition-colors disabled:opacity-40 ${
         active
-          ? "bg-primary text-white"
+          ? "bg-primary text-on-accent"
           : "text-text-primary hover:bg-primary/10 hover:text-primary"
       }`}
     >

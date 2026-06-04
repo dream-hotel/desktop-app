@@ -258,7 +258,7 @@ export default function ArticleFileUploadModal({
           <button
             type="submit"
             disabled={loading || !file}
-            className="rounded-[10px] bg-primary px-5 py-2 font-inter text-[13px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+            className="rounded-[10px] bg-primary px-5 py-2 font-inter text-[13px] font-medium text-on-accent transition-colors hover:bg-primary-hover disabled:opacity-50"
           >
             {loading ? "Subiendo..." : "Guardar"}
           </button>

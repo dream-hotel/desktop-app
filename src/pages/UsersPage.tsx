@@ -199,7 +199,7 @@ export default function UsersPage() {
           {tab === "users" && canCreateUsers && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="mb-2 flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
+              className="mb-2 flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-on-accent"
             >
               <Plus size={16} strokeWidth={2} />
               Nuevo Usuario
@@ -246,7 +246,7 @@ export default function UsersPage() {
                   onClick={() => setActiveFilter(f)}
                   className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] transition-colors ${
                     activeFilter === f
-                      ? "bg-primary text-white"
+                      ? "bg-primary text-on-accent"
                       : "bg-transparent text-text-secondary"
                   }`}
                 >

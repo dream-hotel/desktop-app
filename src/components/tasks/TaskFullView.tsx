@@ -34,7 +34,7 @@ const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }>
 };
 
 const PRIORITY_STYLE: Record<string, { bg: string; text: string }> = {
-  critical: { bg: "bg-[#c5a059]", text: "text-white" },
+  critical: { bg: "bg-[#c5a059]", text: "text-[#3a2c08]" },
   high: { bg: "bg-warning/15", text: "text-warning" },
   medium: { bg: "bg-success/15", text: "text-success" },
   low: { bg: "bg-neutral-soft", text: "text-text-secondary" },

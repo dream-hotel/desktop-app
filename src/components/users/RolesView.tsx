@@ -139,7 +139,7 @@ export default function RolesView() {
           {canCreate && (
             <button
               onClick={() => setShowCreate(true)}
-              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
+              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-on-accent"
             >
               <Plus size={16} strokeWidth={2} />
               Nuevo Rol
@@ -361,7 +361,7 @@ export default function RolesView() {
               <button
                 onClick={handleDelete}
                 disabled={deleteBusy}
-                className="rounded-[10px] bg-danger px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+                className="rounded-[10px] bg-danger px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
               >
                 {deleteBusy ? "Eliminando..." : "Eliminar rol"}
               </button>

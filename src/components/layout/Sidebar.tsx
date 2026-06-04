@@ -99,10 +99,10 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
             {!collapsed && (
               <div className="flex flex-col pb-[2px]">
                 <span className="font-alexandria text-[18px] leading-[20px] font-normal text-text-primary">
-                  STANNUM
+                  Dream
                 </span>
                 <span className="font-alexandria text-[13px] leading-[18px] font-normal text-primary">
-                  Dream Hotel
+                  By Stannum
                 </span>
               </div>
             )}
@@ -186,7 +186,7 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
           title={collapsed ? user.fullName : "Mi cuenta"}
           aria-label="Mi cuenta"
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-inter text-[12px] font-semibold text-white">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary font-inter text-[12px] font-semibold text-on-accent">
             {getInitials(user.fullName)}
           </div>
           {!collapsed && (

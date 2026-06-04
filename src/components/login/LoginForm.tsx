@@ -210,7 +210,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
           <button
             type="submit"
-            className="mt-[10px] h-[42px] w-[150px] self-center rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[20px] leading-[21px] font-medium text-white shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            className="mt-[10px] h-[42px] w-[150px] self-center rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[20px] leading-[21px] font-medium text-on-accent shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             disabled={isLoading}
           >
             {isLoading ? "Ingresando..." : "INGRESAR"}
@@ -273,7 +273,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             </button>
             <button
               type="submit"
-              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-white shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
+              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-on-accent shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
               disabled={isActionLoading}
             >
               {isActionLoading ? "Enviando..." : "Enviar correo"}
@@ -333,7 +333,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             </button>
             <button
               type="submit"
-              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-white shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
+              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-on-accent shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
               disabled={isActionLoading}
             >
               {isActionLoading ? "Verificando..." : "Verificar"}
@@ -434,7 +434,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             </button>
             <button
               type="submit"
-              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-white shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
+              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-on-accent shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
               disabled={isActionLoading}
             >
               {isActionLoading ? "Confirmando..." : "Confirmar"}

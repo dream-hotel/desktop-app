@@ -146,7 +146,7 @@ export default function CategoryFormModal({
           <button
             type="submit"
             disabled={loading}
-            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent transition-colors hover:bg-primary-hover disabled:opacity-50"
           >
             {loading ? "Guardando..." : "Guardar"}
           </button>

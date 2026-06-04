@@ -91,7 +91,7 @@ export default function DashboardHeader({
           >
             <Bell size={19} strokeWidth={1.6} className="text-text-secondary" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger px-1 font-inter text-[10px] font-semibold text-white">
+              <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-danger px-1 font-inter text-[10px] font-semibold text-on-accent">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

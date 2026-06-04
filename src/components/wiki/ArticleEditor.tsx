@@ -155,15 +155,15 @@ export default function ArticleEditor({
       resolved === "dark"
         ? {
             colors: {
-              editor: { text: "#f1f1f3", background: "#17171a" },
-              menu: { text: "#f1f1f3", background: "#1f1f23" },
-              tooltip: { text: "#17171a", background: "#f1f1f3" },
-              hovered: { text: "#f1f1f3", background: "#2a1c3a" },
-              selected: { text: "#d4c4ee", background: "#2a1c3a" },
-              disabled: { text: "#6b7280", background: "#0e0e10" },
+              editor: { text: "#f0ede0", background: "#1e1c15" },
+              menu: { text: "#f0ede0", background: "#26241b" },
+              tooltip: { text: "#1e1c15", background: "#f0ede0" },
+              hovered: { text: "#f0ede0", background: "#2c2a1e" },
+              selected: { text: "#d6d2b8", background: "#2c2a1e" },
+              disabled: { text: "#79755f", background: "#15140e" },
               shadow: "#00000088",
-              border: "rgba(255,255,255,0.08)",
-              sideMenu: "#9ca3af",
+              border: "rgba(232,228,213,0.10)",
+              sideMenu: "#a6a18b",
               highlights: {
                 gray: { text: "#d1d5db", background: "#27272a" },
                 brown: { text: "#fbbf24", background: "#3f2a18" },
@@ -172,22 +172,22 @@ export default function ArticleEditor({
                 yellow: { text: "#fde68a", background: "#3a3017" },
                 green: { text: "#86efac", background: "#13361f" },
                 blue: { text: "#93c5fd", background: "#172a3a" },
-                purple: { text: "#d4c4ee", background: "#2a1c3a" },
+                purple: { text: "#d8b4fe", background: "#2e1d47" },
                 pink: { text: "#f9a8d4", background: "#3a1730" },
               },
             },
           }
         : {
             colors: {
-              editor: { text: "#1a1a1a", background: "#ffffff" },
-              menu: { text: "#1a1a1a", background: "#ffffff" },
-              tooltip: { text: "#ffffff", background: "#1a1a1a" },
-              hovered: { text: "#1a1a1a", background: "#f5f0fb" },
-              selected: { text: "#492173", background: "#f5f0fb" },
-              disabled: { text: "#9ca3af", background: "#fbfbfb" },
-              shadow: "#0000001f",
-              border: "rgba(0,0,0,0.06)",
-              sideMenu: "#9ca3af",
+              editor: { text: "#26241b", background: "#fcfbf5" },
+              menu: { text: "#26241b", background: "#fcfbf5" },
+              tooltip: { text: "#fcfbf5", background: "#26241b" },
+              hovered: { text: "#26241b", background: "#efede1" },
+              selected: { text: "#6e6a57", background: "#efede1" },
+              disabled: { text: "#79755f", background: "#f6f4ec" },
+              shadow: "#2d2b201f",
+              border: "rgba(60,56,40,0.10)",
+              sideMenu: "#79755f",
               highlights: {
                 gray: { text: "#374151", background: "#f3f4f6" },
                 brown: { text: "#92400e", background: "#fef3c7" },
@@ -196,7 +196,7 @@ export default function ArticleEditor({
                 yellow: { text: "#92400e", background: "#fef9c3" },
                 green: { text: "#065f46", background: "#dcfce7" },
                 blue: { text: "#1e3a8a", background: "#dbeafe" },
-                purple: { text: "#492173", background: "#f5f0fb" },
+                purple: { text: "#6b21a8", background: "#f3e8ff" },
                 pink: { text: "#9d174d", background: "#fce7f3" },
               },
             },
@@ -262,12 +262,12 @@ export default function ArticleEditor({
           <button
             onClick={() => submit(true)}
             disabled={saving || !editorReady}
-            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-on-accent transition-colors hover:bg-primary-hover disabled:opacity-50"
           >
             {saving && publishAfterSave ? "Publicando..." : "Guardar y publicar"}
           </button>
 
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary font-inter text-[12px] font-semibold text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary font-inter text-[12px] font-semibold text-on-accent">
             {initials}
           </div>
         </div>

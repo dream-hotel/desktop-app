@@ -377,7 +377,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
           <button
             type="submit"
             disabled={saving}
-            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
           >
             {saving ? "Guardando..." : mode === "create" ? "Crear usuario" : "Guardar cambios"}
           </button>

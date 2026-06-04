@@ -40,7 +40,7 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
       label: "Tarea",
       bg: "bg-info/10",
       iconBg: "bg-info",
-      icon: <CheckSquare size={14} strokeWidth={1.8} className="text-white" />,
+      icon: <CheckSquare size={14} strokeWidth={1.8} className="text-on-accent" />,
     };
   }
   if (t === "article") {
@@ -48,14 +48,14 @@ function typeMeta(t: AnnouncementType): { label: string; bg: string; iconBg: str
       label: "Artículo",
       bg: "bg-primary/10",
       iconBg: "bg-primary",
-      icon: <FileText size={14} strokeWidth={1.8} className="text-white" />,
+      icon: <FileText size={14} strokeWidth={1.8} className="text-on-accent" />,
     };
   }
   return {
     label: "Comunicado",
     bg: "bg-surface-2",
     iconBg: "bg-text-secondary",
-    icon: <Megaphone size={14} strokeWidth={1.8} className="text-white" />,
+    icon: <Megaphone size={14} strokeWidth={1.8} className="text-on-accent" />,
   };
 }
 
@@ -145,7 +145,7 @@ export default function WelcomeNotificationsModal({
             Ver más tarde
           </button>
           <button
-            className="flex-1 rounded-xl py-3 bg-primary hover:bg-primary-hover font-inter text-sm font-semibold text-white shadow-none transition-all cursor-pointer text-center"
+            className="flex-1 rounded-xl py-3 bg-primary hover:bg-primary-hover font-inter text-sm font-semibold text-on-accent shadow-none transition-all cursor-pointer text-center"
             onClick={() => {
               onMarkAllSeen();
               onDismiss();

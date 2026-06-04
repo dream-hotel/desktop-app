@@ -276,7 +276,7 @@ export default function SchedulesPage() {
         {isAdmin && (
           <button
             onClick={() => setShowNewScheduleModal(true)}
-            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white hover:bg-primary/90 transition-colors cursor-pointer"
+            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-on-accent hover:bg-primary/90 transition-colors cursor-pointer"
           >
             Nueva Plantilla
           </button>
@@ -449,7 +449,7 @@ export default function SchedulesPage() {
               <button
                 type="submit"
                 disabled={creatingSchedule}
-                className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+                className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
               >
                 {creatingSchedule ? "Creando..." : "Crear plantilla"}
               </button>

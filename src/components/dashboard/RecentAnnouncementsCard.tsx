@@ -40,7 +40,7 @@ export default function RecentAnnouncementsCard({
             Anuncios recientes
           </h2>
           {unreadCount > 0 && (
-            <span className="rounded-full bg-primary px-2 py-[1px] font-inter text-[10px] font-semibold text-white">
+            <span className="rounded-full bg-primary px-2 py-[1px] font-inter text-[10px] font-semibold text-on-accent">
               {unreadCount}
             </span>
           )}

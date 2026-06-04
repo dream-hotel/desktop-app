@@ -543,7 +543,7 @@ export default function TaskFormModal({
                       onClick={() => update("statusId", s.id)}
                       className={`rounded-full px-3 py-1 font-inter text-[11px] font-medium ${
                         selected
-                          ? "bg-primary text-white"
+                          ? "bg-primary text-on-accent"
                           : "bg-neutral-soft text-text-secondary"
                       }`}
                     >
@@ -622,7 +622,7 @@ export default function TaskFormModal({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-on-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Check size={16} strokeWidth={2} />
               {submitting
@@ -956,7 +956,7 @@ function TaskFilesField({
                       e.stopPropagation();
                       onRemoveStaged(i);
                     }}
-                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity hover:bg-danger group-hover:opacity-100"
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-on-accent opacity-0 transition-opacity hover:bg-danger group-hover:opacity-100"
                     title="Quitar"
                   >
                     <Trash2 size={12} strokeWidth={2} />

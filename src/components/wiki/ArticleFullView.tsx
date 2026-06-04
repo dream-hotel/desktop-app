@@ -77,7 +77,7 @@ export default function ArticleFullView({
                 <button
                   onClick={onPublishClick}
                   disabled={publishing}
-                  className="flex h-8 items-center gap-1.5 rounded-[8px] bg-success px-3 font-inter text-[12px] font-medium text-white transition-colors hover:bg-success-light disabled:opacity-60"
+                  className="flex h-8 items-center gap-1.5 rounded-[8px] bg-success px-3 font-inter text-[12px] font-medium text-on-accent transition-colors hover:bg-success-light disabled:opacity-60"
                 >
                   <Check size={12} strokeWidth={2.2} />
                   {publishing ? "Publicando..." : "Publicar"}
