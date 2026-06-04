@@ -3,6 +3,7 @@ import { Code, Image as ImageIcon, IndentDecrease, IndentIncrease, Link as LinkI
 import type { BlockNoteEditor } from "@blocknote/core";
 import { useEditorState, useSelectedBlocks } from "@blocknote/react";
 import { shortcut } from "../../hooks/usePlatform";
+import Dropdown from "../ui/Dropdown";
 
 interface EditorToolbarProps {
   editor: BlockNoteEditor;
@@ -187,23 +188,20 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-border bg-surface px-3 py-2">
-      <select
-        value={blockSelectValue}
-        onMouseDown={(e) => e.stopPropagation()}
-        onChange={(e) => {
-          editor.focus();
-          applyBlockOption(editor, e.target.value);
-        }}
-        className="h-8 rounded-[6px] border border-border bg-surface px-2 font-inter text-[12px] text-text-primary outline-none focus:border-primary/50"
+      <Dropdown<string>
+        className="w-[150px]"
+        size="sm"
+        stopMouseDown
         title="Tipo de bloque"
-        aria-label="Tipo de bloque"
-      >
-        {BLOCK_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+        ariaLabel="Tipo de bloque"
+        value={blockSelectValue}
+        onChange={(v) => {
+          editor.focus();
+          applyBlockOption(editor, v);
+        }}
+        triggerClassName="flex h-8 w-full items-center justify-between gap-2 cursor-pointer rounded-[6px] border border-border bg-surface px-2 font-inter text-[12px] text-text-primary outline-none transition-colors hover:border-border-strong"
+        options={BLOCK_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+      />
 
       <Divider />
 

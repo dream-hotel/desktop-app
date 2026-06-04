@@ -17,6 +17,7 @@ import {
 import WeekGrid from "../components/schedules/WeekGrid";
 import PersonnelPanel from "../components/schedules/PersonnelPanel";
 import BlockEditorModal from "../components/schedules/BlockEditorModal";
+import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
 
 const MONTH_LABELS_ES_SHORT = [
@@ -286,17 +287,14 @@ export default function SchedulesPage() {
       <div className="flex items-center gap-6 border-b border-border bg-surface px-8 py-3">
         <div className="flex items-center gap-2">
           <span className="font-inter text-[13px] text-text-body">Días a mostrar:</span>
-          <select
+          <Dropdown<number>
+            className="w-[150px]"
+            size="sm"
+            ariaLabel="Días a mostrar"
             value={daysToShow}
-            onChange={(e) => setDaysToShow(Number(e.target.value))}
-            className="rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[13px] text-text-primary outline-none"
-          >
-            {DAYS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={setDaysToShow}
+            options={DAYS_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+          />
         </div>
 
         <div className="flex items-center gap-2">

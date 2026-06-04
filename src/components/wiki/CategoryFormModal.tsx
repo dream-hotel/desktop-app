@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { WikiCategoryNode } from "../../types/models/Wiki";
+import Dropdown from "../ui/Dropdown";
 
 interface CategoryFormModalProps {
   mode: "create" | "edit";
@@ -112,19 +113,20 @@ export default function CategoryFormModal({
             <label className="font-inter text-[12px] font-medium text-text-primary">
               Carpeta padre
             </label>
-            <select
+            <Dropdown<number | "">
+              className="w-full"
+              ariaLabel="Carpeta padre"
               value={selectedParent ?? ""}
-              onChange={(e) => setSelectedParent(e.target.value ? Number(e.target.value) : null)}
-              className="rounded-[10px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
-            >
-              <option value="">— Raíz —</option>
-              {list.map(({ node, depth }) => (
-                <option key={node.id} value={node.id}>
-                  {" ".repeat(depth * 2)}
-                  {node.name}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setSelectedParent(v === "" ? null : Number(v))}
+              options={[
+                { value: "", label: "— Raíz —" },
+                ...list.map(({ node, depth }) => ({
+                  value: node.id,
+                  searchText: node.name,
+                  label: <span style={{ paddingLeft: depth * 12 }}>{node.name}</span>,
+                })),
+              ]}
+            />
           </div>
         )}
 

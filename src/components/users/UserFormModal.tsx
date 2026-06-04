@@ -6,6 +6,7 @@ import {
   UpdateUserPayload,
 } from "../../types/models/Users";
 import { roleDisplayName } from "../../types/models/Roles";
+import Dropdown from "../ui/Dropdown";
 
 interface RoleOption {
   id: number;
@@ -320,20 +321,25 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
             <label className="font-inter text-[12px] font-medium text-text-body">
               Rol <span className="text-danger">*</span>
             </label>
-            <select
+            <Dropdown<number>
+              className="w-full"
+              ariaLabel="Rol"
+              invalid={shouldShowError("roleId")}
               value={roleId}
-              onChange={(e) => setRoleId(Number(e.target.value))}
+              onChange={setRoleId}
               onBlur={() => markTouched("roleId")}
-              aria-invalid={shouldShowError("roleId")}
-              className={inputClass("roleId")}
-            >
-              {roles.length === 0 && <option value={0}>Sin roles disponibles</option>}
-              {roles.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {roleDisplayName(opt.name)}
-                </option>
-              ))}
-            </select>
+              placeholder="Seleccionar rol..."
+              triggerClassName={`flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-[8px] border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors ${
+                shouldShowError("roleId")
+                  ? "border-danger"
+                  : "border-border hover:border-border-strong"
+              }`}
+              options={
+                roles.length === 0
+                  ? [{ value: 0, label: "Sin roles disponibles", disabled: true }]
+                  : roles.map((opt) => ({ value: opt.id, label: roleDisplayName(opt.name) }))
+              }
+            />
             {shouldShowError("roleId") && (
               <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
             )}
@@ -341,14 +347,17 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
           {mode === "edit" && (
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <label className="font-inter text-[12px] font-medium text-text-body">Estado</label>
-              <select
+              <Dropdown<string>
+                className="w-full"
+                ariaLabel="Estado"
                 value={isActive ? "1" : "0"}
-                onChange={(e) => setIsActive(e.target.value === "1")}
-                className="w-full min-w-0 rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
-              >
-                <option value="1">Activo</option>
-                <option value="0">Inactivo</option>
-              </select>
+                onChange={(v) => setIsActive(v === "1")}
+                triggerClassName="flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:border-border-strong"
+                options={[
+                  { value: "1", label: "Activo" },
+                  { value: "0", label: "Inactivo" },
+                ]}
+              />
             </div>
           )}
         </div>

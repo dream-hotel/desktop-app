@@ -18,6 +18,7 @@ import { listRoles } from "../service/roleService";
 import UserFormModal from "../components/users/UserFormModal";
 import ConfirmDeleteModal from "../components/users/ConfirmDeleteModal";
 import RolesView from "../components/users/RolesView";
+import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
 
 type ActiveFilter = "all" | "active" | "inactive";
@@ -224,20 +225,17 @@ export default function UsersPage() {
               />
             </div>
 
-            <select
-              value={roleFilter === "all" ? "all" : String(roleFilter)}
-              onChange={(e) =>
-                setRoleFilter(e.target.value === "all" ? "all" : Number(e.target.value))
-              }
-              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
-            >
-              <option value="all">Todos los roles</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {roleLabel(r.name)}
-                </option>
-              ))}
-            </select>
+            <Dropdown<RoleFilter>
+              className="w-[190px]"
+              ariaLabel="Filtrar por rol"
+              value={roleFilter}
+              onChange={setRoleFilter}
+              triggerClassName="flex w-full items-center justify-between gap-2 cursor-pointer rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:bg-surface-hover"
+              options={[
+                { value: "all", label: "Todos los roles" },
+                ...roles.map((r) => ({ value: r.id, label: roleLabel(r.name) })),
+              ]}
+            />
 
             <div className="flex items-center gap-1 rounded-[10px] bg-neutral-soft p-1">
               {(["all", "active", "inactive"] as ActiveFilter[]).map((f) => (

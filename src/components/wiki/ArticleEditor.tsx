@@ -14,6 +14,7 @@ import { User } from "../../types/response/AuthResponse";
 import * as wikiService from "../../service/wikiService";
 import { useTheme } from "../../hooks/useTheme";
 import EditorToolbar from "./EditorToolbar";
+import Dropdown from "../ui/Dropdown";
 
 interface ArticleEditorProps {
   user: User;
@@ -335,20 +336,16 @@ export default function ArticleEditor({
               <label className="font-inter text-[12px] font-medium text-text-primary">
                 Carpeta
               </label>
-              <select
+              <Dropdown<number | "">
+                className="w-full"
+                ariaLabel="Carpeta"
                 value={categoryId}
-                onChange={(e) =>
-                  setCategoryId(e.target.value === "" ? "" : Number(e.target.value))
-                }
-                className="w-full rounded-[10px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary/50"
-              >
-                <option value="">Sin categoría</option>
-                {flatCategories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
+                onChange={setCategoryId}
+                options={[
+                  { value: "", label: "Sin categoría" },
+                  ...flatCategories.map((c) => ({ value: c.id, label: c.label })),
+                ]}
+              />
             </div>
           </div>
 

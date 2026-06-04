@@ -22,6 +22,7 @@ import {
 import { listActivityLogs, listLogTypes } from "../service/activityService";
 import { listUsers } from "../service/userService";
 import { humanizeLog, logTypeIcon } from "../service/activityHumanizer";
+import Dropdown from "../components/ui/Dropdown";
 
 const PAGE_SIZE = 20;
 
@@ -246,20 +247,17 @@ export default function ActivityLogPage() {
             <label className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-secondary">
               Categoría
             </label>
-            <select
-              value={logTypeFilter === "all" ? "all" : String(logTypeFilter)}
-              onChange={(e) =>
-                setLogTypeFilter(e.target.value === "all" ? "all" : Number(e.target.value))
-              }
-              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
-            >
-              <option value="all">Todas las categorías</option>
-              {logTypes.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {logTypeLabel(t.name)}
-                </option>
-              ))}
-            </select>
+            <Dropdown<number | "all">
+              className="w-[210px]"
+              ariaLabel="Filtrar por categoría"
+              value={logTypeFilter}
+              onChange={setLogTypeFilter}
+              triggerClassName="flex w-full items-center justify-between gap-2 cursor-pointer rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:bg-surface-hover"
+              options={[
+                { value: "all", label: "Todas las categorías" },
+                ...logTypes.map((t) => ({ value: t.id, label: logTypeLabel(t.name) })),
+              ]}
+            />
           </div>
 
           <div className="flex flex-col gap-1">
