@@ -11,6 +11,7 @@ import ArticleFileUploadModal from "../components/wiki/ArticleFileUploadModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 import { useAuth } from "../hooks/useAuth";
 import { usePermissions } from "../hooks/usePermissions";
+import { usePolling } from "../hooks/usePolling";
 import { notifyAnnouncementsChanged } from "../hooks/useAnnouncementBell";
 import * as wikiService from "../service/wikiService";
 import {
@@ -101,19 +102,19 @@ export default function WikiPage({
   const [globalError, setGlobalError] = useState<string | null>(null);
 
 
-  const loadTree = useCallback(async () => {
-    setTreeLoading(true);
+  const loadTree = useCallback(async (silent = false) => {
+    if (!silent) setTreeLoading(true);
     try {
       const newTree = await wikiService.getCategoriesTree();
       setTree(newTree);
     } catch (err) {
-      setGlobalError(err instanceof Error ? err.message : "Error al cargar carpetas.");
+      if (!silent) setGlobalError(err instanceof Error ? err.message : "Error al cargar carpetas.");
     } finally {
-      setTreeLoading(false);
+      if (!silent) setTreeLoading(false);
     }
   }, []);
 
-  const loadArticles = useCallback(async () => {
+  const loadArticles = useCallback(async (silent = false) => {
     if (selectedCategoryId === null) {
       let data = [...allArticles];
       if (debouncedSearch.trim().length > 0) {
@@ -136,28 +137,28 @@ export default function WikiPage({
       return;
     }
 
-    setArticlesLoading(true);
+    if (!silent) setArticlesLoading(true);
     try {
-      const params: Parameters<typeof wikiService.findArticles>[0] = { 
+      const params: Parameters<typeof wikiService.findArticles>[0] = {
         limit: 50,
-        categoryId: selectedCategoryId 
+        categoryId: selectedCategoryId
       };
       if (debouncedSearch.trim().length > 0) params.search = debouncedSearch.trim();
       const res = await wikiService.findArticles(params);
       setArticles(res.data);
     } catch (err) {
-      setGlobalError(err instanceof Error ? err.message : "Error al cargar artículos.");
+      if (!silent) setGlobalError(err instanceof Error ? err.message : "Error al cargar artículos.");
     } finally {
-      setArticlesLoading(false);
+      if (!silent) setArticlesLoading(false);
     }
   }, [selectedCategoryId, debouncedSearch, tree, allArticles]);
 
-  const loadAllArticles = useCallback(async () => {
+  const loadAllArticles = useCallback(async (silent = false) => {
     try {
       const res = await wikiService.findArticles({ limit: 500 });
       setAllArticles(res.data);
     } catch (err) {
-      setGlobalError(err instanceof Error ? err.message : "Error al cargar artículos.");
+      if (!silent) setGlobalError(err instanceof Error ? err.message : "Error al cargar artículos.");
     }
   }, []);
 
@@ -165,6 +166,12 @@ export default function WikiPage({
     loadTree();
     loadAllArticles();
   }, [loadTree, loadAllArticles]);
+
+  usePolling(() => {
+    loadTree(true);
+    loadAllArticles(true);
+    loadArticles(true);
+  });
 
   useEffect(() => {
     if (pendingSelectedId != null) {

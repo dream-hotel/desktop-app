@@ -14,6 +14,7 @@ import {
   listTasks,
 } from "../service/taskService";
 import { listPriorities } from "../service/priorityService";
+import { usePolling } from "./usePolling";
 
 export function useTasks(query: FindTasksQuery = {}) {
   const [tasks, setTasks] = useState<BackendTaskListItem[]>([]);
@@ -22,17 +23,22 @@ export function useTasks(query: FindTasksQuery = {}) {
 
   const queryKey = JSON.stringify(query);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+      setError(null);
+    }
     try {
       const response = await listTasks(query);
       setTasks(response.data);
+      if (silent) setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al cargar tareas");
-      setTasks([]);
+      if (!silent) {
+        setError(e instanceof Error ? e.message : "Error al cargar tareas");
+        setTasks([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryKey]);
@@ -40,6 +46,8 @@ export function useTasks(query: FindTasksQuery = {}) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  usePolling(() => fetchData(true));
 
   return { tasks, isLoading, error, refresh: fetchData };
 }
@@ -49,27 +57,34 @@ export function useTaskDetail(taskId: number | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (silent = false) => {
     if (taskId == null) {
       setTask(null);
       return;
     }
-    setIsLoading(true);
-    setError(null);
+    if (!silent) {
+      setIsLoading(true);
+      setError(null);
+    }
     try {
       const data = await getTask(taskId);
       setTask(data);
+      if (silent) setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al cargar la tarea");
-      setTask(null);
+      if (!silent) {
+        setError(e instanceof Error ? e.message : "Error al cargar la tarea");
+        setTask(null);
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, [taskId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  usePolling(() => fetchData(true), { enabled: taskId != null });
 
   return { task, isLoading, error, refresh: fetchData };
 }
@@ -78,25 +93,27 @@ export function useTaskActivity(taskId: number | null) {
   const [entries, setEntries] = useState<BackendTaskActivityLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (silent = false) => {
     if (taskId == null) {
       setEntries([]);
       return;
     }
-    setIsLoading(true);
+    if (!silent) setIsLoading(true);
     try {
       const response = await getTaskActivity(taskId, { page: 1, limit: 100 });
       setEntries(response.data);
     } catch {
-      setEntries([]);
+      if (!silent) setEntries([]);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, [taskId]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  usePolling(() => fetchData(true), { enabled: taskId != null });
 
   return { entries, isLoading, refresh: fetchData };
 }

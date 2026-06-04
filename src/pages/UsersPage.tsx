@@ -20,6 +20,7 @@ import ConfirmDeleteModal from "../components/users/ConfirmDeleteModal";
 import RolesView from "../components/users/RolesView";
 import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
+import { usePolling } from "../hooks/usePolling";
 
 type ActiveFilter = "all" | "active" | "inactive";
 type RoleFilter = "all" | number;
@@ -82,13 +83,15 @@ export default function UsersPage() {
     setPage(1);
   }, [searchDebounced, activeFilter, roleFilter]);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (silent = false) => {
     if (!canReadUsers) {
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setError(null);
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const query: FindUsersQuery = { page, limit: PAGE_SIZE };
       if (searchDebounced) query.search = searchDebounced;
@@ -97,11 +100,14 @@ export default function UsersPage() {
       const result = await listUsers(query);
       setUsers(result.data);
       setMeta(result.meta);
+      if (silent) setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudieron cargar los usuarios");
-      setUsers([]);
+      if (!silent) {
+        setError(err instanceof Error ? err.message : "No se pudieron cargar los usuarios");
+        setUsers([]);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [page, searchDebounced, roleFilter, activeFilter, canReadUsers]);
 
@@ -111,7 +117,7 @@ export default function UsersPage() {
       const data = await listRoles();
       setRoles(data);
     } catch {
-      setRoles([]);
+      /* keep last good roles on failure */
     }
   }, [canViewRoles]);
 
@@ -122,6 +128,11 @@ export default function UsersPage() {
   useEffect(() => {
     fetchRoles();
   }, [fetchRoles]);
+
+  usePolling(() => {
+    fetchRoles();
+    if (tab === "users") fetchUsers(true);
+  });
 
   async function handleCreate(payload: CreateUserPayload | UpdateUserPayload) {
     await createUser(payload as CreateUserPayload);

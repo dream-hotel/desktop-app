@@ -19,6 +19,7 @@ import PersonnelPanel from "../components/schedules/PersonnelPanel";
 import BlockEditorModal from "../components/schedules/BlockEditorModal";
 import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
+import { usePolling } from "../hooks/usePolling";
 
 const MONTH_LABELS_ES_SHORT = [
   "Ene",
@@ -153,6 +154,8 @@ export default function SchedulesPage() {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+  usePolling(() => fetchAll(true));
 
   const schedulesById = useMemo(() => {
     const map = new Map<number, WeeklySchedule>();

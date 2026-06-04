@@ -3,6 +3,7 @@ import { BackendTaskListItem } from "../types/models/Task";
 import { Announcement } from "../types/models/Announcement";
 import { listTasks } from "../service/taskService";
 import { findAnnouncements } from "../service/announcementService";
+import { usePolling } from "./usePolling";
 
 export interface DashboardStats {
   pending: number;
@@ -55,9 +56,11 @@ export function useDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+      setError(null);
+    }
     try {
       const [tasksRes, annRes] = await Promise.all([
         listTasks({ limit: 200 }),
@@ -65,18 +68,24 @@ export function useDashboard() {
       ]);
       setTasks(tasksRes.data);
       setAnnouncements(annRes.data);
+      if (silent) setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al cargar el dashboard");
-      setTasks([]);
-      setAnnouncements([]);
+      // On background polls keep showing the last good data instead of wiping it.
+      if (!silent) {
+        setError(e instanceof Error ? e.message : "Error al cargar el dashboard");
+        setTasks([]);
+        setAnnouncements([]);
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  usePolling(() => fetchData(true));
 
   const data = useMemo<DashboardData | null>(() => {
     const active = tasks.filter(isActive);

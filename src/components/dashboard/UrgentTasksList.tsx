@@ -77,7 +77,7 @@ export default function UrgentTasksList({
           {emptyMessage}
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-border">
+        <ul className="flex flex-col gap-0.5">
           {tasks.map((task) => {
             const priorityTone = PRIORITY_TONE[task.priority.name] ?? PRIORITY_TONE.low;
             const deadline = formatDeadline(task.limitDate);
@@ -91,7 +91,7 @@ export default function UrgentTasksList({
               <li key={task.id}>
                 <button
                   onClick={onOpenTasks}
-                  className="flex w-full items-center gap-3 py-2.5 text-left transition-colors hover:bg-primary-light/40"
+                  className="flex w-[calc(100%+1rem)] items-center gap-3 -mx-2 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-surface-hover"
                 >
                   <StatusIcon name={task.status.name} />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
