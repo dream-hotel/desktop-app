@@ -111,7 +111,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
           {/* Profile card */}
           <section className="overflow-hidden rounded-[14px] border border-border bg-surface">
             <div className="flex items-center gap-5 border-b border-border px-6 py-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary font-inter text-[20px] font-semibold text-white">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary font-inter text-[20px] font-semibold text-on-accent">
                 {getInitials(user.fullName)}
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -208,7 +208,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                   {status === "available" && (
                     <button
                       onClick={downloadAndInstall}
-                      className="flex items-center gap-1.5 rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-white transition-colors hover:bg-primary-hover"
+                      className="flex items-center gap-1.5 rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-on-accent transition-colors hover:bg-primary-hover"
                     >
                       <Download size={14} strokeWidth={1.8} />
                       Instalar versión {manifest?.version}
@@ -329,7 +329,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                 <button
                   type="submit"
                   disabled={saving || !newPassword || !confirmPassword}
-                  className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-50"
+                  className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[12px] font-medium text-on-accent transition-colors hover:bg-primary-hover disabled:opacity-50"
                 >
                   {saving ? "Guardando..." : "Actualizar contraseña"}
                 </button>
@@ -372,7 +372,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
                   </button>
                   <button
                     onClick={onLogout}
-                    className="rounded-[10px] bg-danger px-3 py-1.5 font-inter text-[12px] font-medium text-white transition-colors hover:bg-danger/90"
+                    className="rounded-[10px] bg-danger px-3 py-1.5 font-inter text-[12px] font-medium text-on-accent transition-colors hover:bg-danger/90"
                   >
                     Sí, cerrar sesión
                   </button>

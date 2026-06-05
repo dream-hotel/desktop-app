@@ -40,7 +40,7 @@ export default function RecentAnnouncementsCard({
             Anuncios recientes
           </h2>
           {unreadCount > 0 && (
-            <span className="rounded-full bg-primary px-2 py-[1px] font-inter text-[10px] font-semibold text-white">
+            <span className="rounded-full bg-primary px-2 py-[1px] font-inter text-[10px] font-semibold text-on-accent">
               {unreadCount}
             </span>
           )}
@@ -59,7 +59,7 @@ export default function RecentAnnouncementsCard({
           No hay anuncios para mostrar.
         </p>
       ) : (
-        <ul className="flex flex-col divide-y divide-border">
+        <ul className="flex flex-col gap-0.5">
           {announcements.map((a) => {
             const tone = priorityTone(a.priority.name);
             const unread = isUnread(a.id);
@@ -67,7 +67,7 @@ export default function RecentAnnouncementsCard({
               <li key={a.id}>
                 <button
                   onClick={() => onOpen(a.id)}
-                  className="flex w-full flex-col gap-1 py-3 text-left transition-colors hover:bg-primary-light/40"
+                  className="flex w-[calc(100%+1rem)] flex-col gap-1 -mx-2 rounded-xl px-2 py-3 text-left transition-colors hover:bg-surface-hover"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2">

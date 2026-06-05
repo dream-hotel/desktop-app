@@ -51,7 +51,7 @@ function StatusIcon({ name }: { name: string }) {
 
 function PriorityBadge({ name }: { name: string }) {
   const config: Record<string, { bg: string; border: string; text: string; label: string }> = {
-    critical: { bg: "bg-[#c5a059]", border: "", text: "text-white", label: "Crítica" },
+    critical: { bg: "bg-[#c5a059]", border: "", text: "text-[#3a2c08]", label: "Crítica" },
     high: { bg: "bg-[rgba(197,160,89,0.15)]", border: "border border-[rgba(197,160,89,0.3)]", text: "text-warning", label: "Alta" },
     medium: { bg: "bg-[rgba(118,199,194,0.15)]", border: "border border-[rgba(118,199,194,0.3)]", text: "text-success", label: "Media" },
     low: { bg: "bg-neutral-soft", border: "border border-[rgba(209,213,219,0.3)]", text: "text-text-secondary", label: "Baja" },
@@ -97,7 +97,7 @@ function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => voi
   return (
     <button onClick={onChange} className="flex shrink-0 items-center justify-center p-[3px]">
       {checked ? (
-        <span className="flex h-[10px] w-[10px] items-center justify-center rounded-[2px] bg-primary text-white">
+        <span className="flex h-[10px] w-[10px] items-center justify-center rounded-[2px] bg-primary text-on-accent">
           <Check size={8} strokeWidth={2.5} />
         </span>
       ) : (
@@ -249,7 +249,7 @@ function MiniCalendar({ selected, onSelect, onClose, anchorRect }: MiniCalendarP
                 }}
                 className={`flex h-[18px] w-[18px] items-center justify-center rounded-full font-inter text-[9px] transition-colors ${
                   isSelected(day)
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-on-accent"
                     : isToday(day)
                       ? "bg-primary-light text-primary"
                       : "text-text-primary hover:bg-neutral-soft"
@@ -612,7 +612,7 @@ export default function TaskList({
           {canCreate && (
             <button
               onClick={onNewTask}
-              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-2 font-inter text-[13px] font-medium leading-[19.5px] text-white shrink-0"
+              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-2 font-inter text-[13px] font-medium leading-[19.5px] text-on-accent shrink-0"
             >
               <Plus size={16} strokeWidth={2} />
               Nueva Tarea
@@ -628,7 +628,7 @@ export default function TaskList({
               onClick={() => setActiveFilter(tab.id)}
               className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] ${
                 activeFilter === tab.id
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-on-accent"
                   : "bg-neutral-soft text-text-secondary"
               }`}
             >

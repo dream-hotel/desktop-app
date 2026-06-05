@@ -148,7 +148,7 @@ export default function AudiencePicker({
                     <span
                       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                         checked
-                          ? "border-primary bg-primary text-white"
+                          ? "border-primary bg-primary text-on-accent"
                           : "border-border bg-surface"
                       }`}
                     >

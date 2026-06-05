@@ -6,6 +6,7 @@ import {
   UpdateUserPayload,
 } from "../../types/models/Users";
 import { roleDisplayName } from "../../types/models/Roles";
+import Dropdown from "../ui/Dropdown";
 
 interface RoleOption {
   id: number;
@@ -296,6 +297,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
             <label className="font-inter text-[12px] font-medium text-text-body">
               Contraseña
             </label>
+<<<<<<< HEAD
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -354,6 +356,46 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
           </select>
           {shouldShowError("roleId") && (
             <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
+=======
+            <Dropdown<number>
+              className="w-full"
+              ariaLabel="Rol"
+              invalid={shouldShowError("roleId")}
+              value={roleId}
+              onChange={setRoleId}
+              onBlur={() => markTouched("roleId")}
+              placeholder="Seleccionar rol..."
+              triggerClassName={`flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-[8px] border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors ${
+                shouldShowError("roleId")
+                  ? "border-danger"
+                  : "border-border hover:border-border-strong"
+              }`}
+              options={
+                roles.length === 0
+                  ? [{ value: 0, label: "Sin roles disponibles", disabled: true }]
+                  : roles.map((opt) => ({ value: opt.id, label: roleDisplayName(opt.name) }))
+              }
+            />
+            {shouldShowError("roleId") && (
+              <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
+            )}
+          </div>
+          {mode === "edit" && (
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <label className="font-inter text-[12px] font-medium text-text-body">Estado</label>
+              <Dropdown<string>
+                className="w-full"
+                ariaLabel="Estado"
+                value={isActive ? "1" : "0"}
+                onChange={(v) => setIsActive(v === "1")}
+                triggerClassName="flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:border-border-strong"
+                options={[
+                  { value: "1", label: "Activo" },
+                  { value: "0", label: "Inactivo" },
+                ]}
+              />
+            </div>
+>>>>>>> 179ba4ba170dabce2c202f0019b99c747c11169e
           )}
         </div>
 
@@ -381,7 +423,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
           <button
             type="submit"
             disabled={saving}
-            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
           >
             {saving ? "Guardando..." : mode === "create" ? "Crear usuario" : "Guardar cambios"}
           </button>

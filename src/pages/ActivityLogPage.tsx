@@ -9,7 +9,6 @@ import {
   LogIn,
   type LucideProps,
   Megaphone,
-  RefreshCw,
   Search,
   Users,
 } from "lucide-react";
@@ -22,6 +21,8 @@ import {
 import { listActivityLogs, listLogTypes } from "../service/activityService";
 import { listUsers } from "../service/userService";
 import { humanizeLog, logTypeIcon } from "../service/activityHumanizer";
+import Dropdown from "../components/ui/Dropdown";
+import { usePolling } from "../hooks/usePolling";
 
 const PAGE_SIZE = 20;
 
@@ -151,9 +152,11 @@ export default function ActivityLogPage() {
     setPage(1);
   }, [logTypeFilter, dateFrom, dateTo]);
 
-  const fetchLogs = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchLogs = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const query: FindLogsQuery = { page, limit: PAGE_SIZE };
       if (logTypeFilter !== "all") query.logTypeId = logTypeFilter;
@@ -164,17 +167,22 @@ export default function ActivityLogPage() {
       const result = await listActivityLogs(query);
       setLogs(result.data);
       setMeta(result.meta);
+      if (silent) setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudieron cargar los eventos");
-      setLogs([]);
+      if (!silent) {
+        setError(err instanceof Error ? err.message : "No se pudieron cargar los eventos");
+        setLogs([]);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [page, logTypeFilter, dateFrom, dateTo]);
 
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
+
+  usePolling(() => fetchLogs(true));
 
   const humanizedLogs = useMemo(() => {
     return logs
@@ -246,20 +254,17 @@ export default function ActivityLogPage() {
             <label className="font-inter text-[11px] font-medium uppercase tracking-wide text-text-secondary">
               Categoría
             </label>
-            <select
-              value={logTypeFilter === "all" ? "all" : String(logTypeFilter)}
-              onChange={(e) =>
-                setLogTypeFilter(e.target.value === "all" ? "all" : Number(e.target.value))
-              }
-              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
-            >
-              <option value="all">Todas las categorías</option>
-              {logTypes.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {logTypeLabel(t.name)}
-                </option>
-              ))}
-            </select>
+            <Dropdown<number | "all">
+              className="w-[210px]"
+              ariaLabel="Filtrar por categoría"
+              value={logTypeFilter}
+              onChange={setLogTypeFilter}
+              triggerClassName="flex w-full items-center justify-between gap-2 cursor-pointer rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:bg-surface-hover"
+              options={[
+                { value: "all", label: "Todas las categorías" },
+                ...logTypes.map((t) => ({ value: t.id, label: logTypeLabel(t.name) })),
+              ]}
+            />
           </div>
 
           <div className="flex flex-col gap-1">
@@ -295,14 +300,6 @@ export default function ActivityLogPage() {
             </button>
           )}
 
-          <button
-            onClick={() => fetchLogs()}
-            disabled={loading}
-            className="self-end ml-auto flex items-center gap-[9px] rounded-[10px] border border-border bg-surface px-3 py-[9px] font-inter text-[13px] font-medium text-text-body hover:bg-surface-hover disabled:opacity-50"
-          >
-            <RefreshCw size={15} strokeWidth={1.8} className={loading ? "animate-spin" : undefined} />
-            Actualizar
-          </button>
         </div>
       </div>
 

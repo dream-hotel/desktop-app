@@ -87,7 +87,7 @@ export default function NotificationsPanel({
               Anuncios
             </h2>
             {unreadCount > 0 && (
-              <span className="rounded-full bg-danger px-2 py-[2px] font-inter text-[11px] font-semibold text-white">
+              <span className="rounded-full bg-danger px-2 py-[2px] font-inter text-[11px] font-semibold text-on-accent">
                 {unreadCount} nuevo{unreadCount !== 1 ? "s" : ""}
               </span>
             )}
@@ -106,7 +106,7 @@ export default function NotificationsPanel({
             <button
               className={`rounded-full border px-3 py-[5px] font-inter text-[12px] font-medium shadow-none transition-all ${
                 tab === "nuevos"
-                  ? "border-text-primary bg-text-primary text-white"
+                  ? "border-text-primary bg-text-primary text-bg"
                   : "border-border-strong bg-surface text-text-secondary hover:text-text-primary"
               }`}
               onClick={() => setTab("nuevos")}
@@ -116,7 +116,7 @@ export default function NotificationsPanel({
             <button
               className={`rounded-full border px-3 py-[5px] font-inter text-[12px] font-medium shadow-none transition-all ${
                 tab === "todos"
-                  ? "border-text-primary bg-text-primary text-white"
+                  ? "border-text-primary bg-text-primary text-bg"
                   : "border-border-strong bg-surface text-text-secondary hover:text-text-primary"
               }`}
               onClick={() => setTab("todos")}

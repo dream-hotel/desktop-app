@@ -44,7 +44,7 @@ export default function ArticleList({
           {isAdmin && (
             <button
               onClick={onCreateClick}
-              className="flex h-7 items-center justify-center gap-1 rounded-[8px] bg-primary px-2.5 font-inter text-[11.5px] font-medium text-white transition-colors hover:bg-primary-hover"
+              className="flex h-7 items-center justify-center gap-1 rounded-[8px] bg-primary px-2.5 font-inter text-[11.5px] font-medium text-on-accent transition-colors hover:bg-primary-hover"
             >
               <Plus size={12} strokeWidth={2.2} />
               Crear

@@ -17,7 +17,9 @@ import {
 import WeekGrid from "../components/schedules/WeekGrid";
 import PersonnelPanel from "../components/schedules/PersonnelPanel";
 import BlockEditorModal from "../components/schedules/BlockEditorModal";
+import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
+import { usePolling } from "../hooks/usePolling";
 
 const MONTH_LABELS_ES_SHORT = [
   "Ene",
@@ -153,6 +155,8 @@ export default function SchedulesPage() {
     fetchAll();
   }, [fetchAll]);
 
+  usePolling(() => fetchAll(true));
+
   const schedulesById = useMemo(() => {
     const map = new Map<number, WeeklySchedule>();
     for (const s of schedules) map.set(s.id, s);
@@ -276,7 +280,7 @@ export default function SchedulesPage() {
         {isAdmin && (
           <button
             onClick={() => setShowNewScheduleModal(true)}
-            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white hover:bg-primary/90 transition-colors cursor-pointer"
+            className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-on-accent hover:bg-primary/90 transition-colors cursor-pointer"
           >
             Nueva Plantilla
           </button>
@@ -286,17 +290,14 @@ export default function SchedulesPage() {
       <div className="flex items-center gap-6 border-b border-border bg-surface px-8 py-3">
         <div className="flex items-center gap-2">
           <span className="font-inter text-[13px] text-text-body">Días a mostrar:</span>
-          <select
+          <Dropdown<number>
+            className="w-[150px]"
+            size="sm"
+            ariaLabel="Días a mostrar"
             value={daysToShow}
-            onChange={(e) => setDaysToShow(Number(e.target.value))}
-            className="rounded-[8px] border border-border bg-surface px-3 py-1.5 font-inter text-[13px] text-text-primary outline-none"
-          >
-            {DAYS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={setDaysToShow}
+            options={DAYS_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+          />
         </div>
 
         <div className="flex items-center gap-2">
@@ -449,7 +450,7 @@ export default function SchedulesPage() {
               <button
                 type="submit"
                 disabled={creatingSchedule}
-                className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+                className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
               >
                 {creatingSchedule ? "Creando..." : "Crear plantilla"}
               </button>

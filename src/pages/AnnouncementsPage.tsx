@@ -6,6 +6,7 @@ import AnnouncementFormModal from "../components/announcements/AnnouncementFormM
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
 
 import { usePermissions } from "../hooks/usePermissions";
+import { usePolling } from "../hooks/usePolling";
 import {
   useAnnouncementBell,
   notifyAnnouncementsChanged,
@@ -61,24 +62,27 @@ export default function AnnouncementsPage({
 
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const loadAnnouncements = useCallback(async () => {
-    setListLoading(true);
+  const loadAnnouncements = useCallback(async (silent = false) => {
+    if (!silent) setListLoading(true);
     try {
       const params: Parameters<typeof announcementService.findAnnouncements>[0] = { limit: 50 };
       if (typeFilter !== "all") params.type = typeFilter;
       const res = await announcementService.findAnnouncements(params);
       setAnnouncements(res.data);
       setTotalCount(res.meta.total);
+      if (silent) setGlobalError(null);
     } catch (err) {
-      setGlobalError(err instanceof Error ? err.message : "Error al cargar anuncios.");
+      if (!silent) setGlobalError(err instanceof Error ? err.message : "Error al cargar anuncios.");
     } finally {
-      setListLoading(false);
+      if (!silent) setListLoading(false);
     }
   }, [typeFilter]);
 
   useEffect(() => {
     loadAnnouncements();
   }, [loadAnnouncements]);
+
+  usePolling(() => loadAnnouncements(true));
 
   useEffect(() => {
     if (selectedId == null) {

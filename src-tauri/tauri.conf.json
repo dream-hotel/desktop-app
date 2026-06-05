@@ -64,7 +64,11 @@
       "endpoints": [
         "https://github.com/dream-hotel/desktop-app/releases/latest/download/latest.json"
       ],
+<<<<<<< HEAD
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUwQkNDQjEyQjQ1MzQxODMKUldTRFFWTzBFc3U4VUwwVGttcm1vZTl3OWEzRVBkbkV4YlF0VXpQQkRPWXMxZzZGZm1SRVNuWEcK"
+=======
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBQUFBOUQxM0Y5MDM2M0MKUldROE5wQS8wYW1xR3IremFveVpzUm96SU9pVjZTUVZyd1VEbFFPYmYzdXBvRlRkQzhJdSs4b1gK"
+>>>>>>> 179ba4ba170dabce2c202f0019b99c747c11169e
     }
   }
 }

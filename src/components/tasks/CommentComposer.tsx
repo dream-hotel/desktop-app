@@ -121,7 +121,7 @@ export default function CommentComposer({
               <button
                 type="button"
                 onClick={() => removeStaged(i)}
-                className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-white hover:bg-danger"
+                className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-on-accent hover:bg-danger"
                 title="Quitar"
               >
                 <X size={9} strokeWidth={2.5} />
@@ -171,7 +171,7 @@ export default function CommentComposer({
           type="button"
           onClick={handleSend}
           disabled={!draft.trim() || posting}
-          className="flex h-9 items-center gap-2 rounded-lg bg-primary px-3 font-inter text-[12px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-9 items-center gap-2 rounded-lg bg-primary px-3 font-inter text-[12px] font-medium text-on-accent disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Send size={12} strokeWidth={2} />
           {posting ? "Enviando..." : "Enviar"}

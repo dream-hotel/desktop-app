@@ -19,7 +19,9 @@ import { listRoles } from "../service/roleService";
 import UserFormModal from "../components/users/UserFormModal";
 import ConfirmDeleteModal from "../components/users/ConfirmDeleteModal";
 import RolesView from "../components/users/RolesView";
+import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
+import { usePolling } from "../hooks/usePolling";
 
 type ActiveFilter = "active" | "inactive";
 type RoleFilter = "all" | number;
@@ -83,13 +85,15 @@ export default function UsersPage() {
     setPage(1);
   }, [searchDebounced, activeFilter, roleFilter]);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (silent = false) => {
     if (!canReadUsers) {
       setLoading(false);
       return;
     }
-    setLoading(true);
-    setError(null);
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const query: FindUsersQuery = { page, limit: PAGE_SIZE };
       if (searchDebounced) query.search = searchDebounced;
@@ -100,11 +104,14 @@ export default function UsersPage() {
       const result = await listUsers(query);
       setUsers(result.data);
       setMeta(result.meta);
+      if (silent) setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudieron cargar los usuarios");
-      setUsers([]);
+      if (!silent) {
+        setError(err instanceof Error ? err.message : "No se pudieron cargar los usuarios");
+        setUsers([]);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [page, searchDebounced, roleFilter, activeFilter, canReadUsers]);
 
@@ -114,7 +121,7 @@ export default function UsersPage() {
       const data = await listRoles();
       setRoles(data);
     } catch {
-      setRoles([]);
+      /* keep last good roles on failure */
     }
   }, [canViewRoles]);
 
@@ -125,6 +132,11 @@ export default function UsersPage() {
   useEffect(() => {
     fetchRoles();
   }, [fetchRoles]);
+
+  usePolling(() => {
+    fetchRoles();
+    if (tab === "users") fetchUsers(true);
+  });
 
   async function handleCreate(payload: CreateUserPayload | UpdateUserPayload) {
     await createUser(payload as CreateUserPayload);
@@ -216,7 +228,7 @@ export default function UsersPage() {
           {tab === "users" && canCreateUsers && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="mb-2 flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-white"
+              className="mb-2 flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-[6px] font-inter text-[13px] font-medium leading-[19.5px] text-on-accent"
             >
               <Plus size={16} strokeWidth={2} />
               Nuevo Usuario
@@ -241,20 +253,17 @@ export default function UsersPage() {
               />
             </div>
 
-            <select
-              value={roleFilter === "all" ? "all" : String(roleFilter)}
-              onChange={(e) =>
-                setRoleFilter(e.target.value === "all" ? "all" : Number(e.target.value))
-              }
-              className="rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none"
-            >
-              <option value="all">Todos los roles</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {roleLabel(r.name)}
-                </option>
-              ))}
-            </select>
+            <Dropdown<RoleFilter>
+              className="w-[190px]"
+              ariaLabel="Filtrar por rol"
+              value={roleFilter}
+              onChange={setRoleFilter}
+              triggerClassName="flex w-full items-center justify-between gap-2 cursor-pointer rounded-[10px] bg-neutral-soft px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:bg-surface-hover"
+              options={[
+                { value: "all", label: "Todos los roles" },
+                ...roles.map((r) => ({ value: r.id, label: roleLabel(r.name) })),
+              ]}
+            />
 
             <div className="flex items-center gap-1 rounded-[10px] bg-neutral-soft p-1">
               {(["active", "inactive"] as ActiveFilter[]).map((f) => (
@@ -263,7 +272,7 @@ export default function UsersPage() {
                   onClick={() => setActiveFilter(f)}
                   className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] transition-colors ${
                     activeFilter === f
-                      ? "bg-primary text-white"
+                      ? "bg-primary text-on-accent"
                       : "bg-transparent text-text-secondary"
                   }`}
                 >

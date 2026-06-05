@@ -93,7 +93,7 @@ export default function AnnouncementsList({
           {isAdmin && (
             <button
               onClick={onCreateClick}
-              className="flex h-7 items-center justify-center gap-1 rounded-[8px] bg-primary px-2.5 font-inter text-[11.5px] font-medium text-white transition-colors hover:bg-primary-hover"
+              className="flex h-7 items-center justify-center gap-1 rounded-[8px] bg-primary px-2.5 font-inter text-[11.5px] font-medium text-on-accent transition-colors hover:bg-primary-hover"
             >
               <Plus size={12} strokeWidth={2.2} />
               Crear
@@ -108,7 +108,7 @@ export default function AnnouncementsList({
               onClick={() => onSelectType(f.id)}
               className={`rounded-full px-2.5 py-1 font-inter text-[11px] font-medium transition-colors ${
                 typeFilter === f.id
-                  ? "bg-primary text-white"
+                  ? "bg-primary text-on-accent"
                   : "bg-bg text-text-secondary hover:bg-primary/5 hover:text-primary"
               }`}
             >

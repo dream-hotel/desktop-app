@@ -15,6 +15,7 @@ import { listUsers } from "../../service/userService";
 import { listRoles } from "../../service/roleService";
 import AudiencePicker, { AudienceOption } from "./AudiencePicker";
 import { roleDisplayName } from "../../types/models/Roles";
+import Dropdown from "../ui/Dropdown";
 
 interface EntityOption {
   id: number;
@@ -447,21 +448,22 @@ export default function AnnouncementFormModal({
               <label className="font-inter text-[11.5px] font-semibold uppercase tracking-wide text-text-secondary">
                 Prioridad <span className="text-danger">*</span>
               </label>
-              <select
-                value={priorityId === "" ? "" : String(priorityId)}
-                onChange={(e) =>
-                  setPriorityId(e.target.value === "" ? "" : Number(e.target.value))
-                }
+              <Dropdown<number | "">
+                className="w-full"
+                ariaLabel="Prioridad"
                 disabled={priorities.length === 0}
-                className="w-full rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors focus:border-primary/50 focus:bg-surface disabled:opacity-60"
-              >
-                {priorities.length === 0 && <option value="">Cargando prioridades...</option>}
-                {priorities.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {priorityLabel(p.name)}
-                  </option>
-                ))}
-              </select>
+                value={priorityId}
+                onChange={setPriorityId}
+                placeholder="Seleccionar prioridad..."
+                triggerClassName={`flex w-full items-center justify-between gap-2 rounded-[10px] border border-border bg-bg px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:border-border-strong ${
+                  priorities.length === 0 ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                }`}
+                options={
+                  priorities.length === 0
+                    ? [{ value: "", label: "Cargando prioridades...", disabled: true }]
+                    : priorities.map((p) => ({ value: p.id, label: priorityLabel(p.name) }))
+                }
+              />
             </div>
 
             {!isEdit && (
@@ -646,7 +648,7 @@ export default function AnnouncementFormModal({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[12.5px] font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
+              className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[12.5px] font-medium text-on-accent transition-colors hover:bg-primary-hover disabled:opacity-60"
             >
               {saving
                 ? isEdit

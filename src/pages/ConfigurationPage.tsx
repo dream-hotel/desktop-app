@@ -59,7 +59,7 @@ function ThemeOption({ id, label, description, active, onSelect, preview }: Them
         </div>
         <span
           className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-            active ? "border-primary bg-primary text-white" : "border-border-strong bg-surface"
+            active ? "border-primary bg-primary text-on-accent" : "border-border-strong bg-surface"
           }`}
           aria-hidden
         >
@@ -72,9 +72,9 @@ function ThemeOption({ id, label, description, active, onSelect, preview }: Them
 
 function LightPreview() {
   return (
-    <div className="flex h-[78px] overflow-hidden rounded-[10px] border border-black/8 bg-[#fbfbfb]">
+    <div className="flex h-[78px] overflow-hidden rounded-[10px] border border-black/8 bg-[#ffffff]">
       <div className="flex w-[28%] flex-col gap-1.5 border-r border-black/6 bg-[#ffffff] p-2">
-        <span className="h-1.5 w-2/3 rounded-full bg-[#492173]" />
+        <span className="h-1.5 w-2/3 rounded-full bg-[#6e6a57]" />
         <span className="h-1 w-3/4 rounded-full bg-black/8" />
         <span className="h-1 w-1/2 rounded-full bg-black/8" />
         <span className="h-1 w-2/3 rounded-full bg-black/8" />
@@ -82,7 +82,7 @@ function LightPreview() {
       <div className="flex flex-1 flex-col gap-1.5 p-2">
         <span className="h-1.5 w-1/2 rounded-full bg-black/15" />
         <span className="h-1 w-3/4 rounded-full bg-black/8" />
-        <span className="mt-auto h-3 w-12 rounded-md bg-[#492173]" />
+        <span className="mt-auto h-3 w-12 rounded-md bg-[#6e6a57]" />
       </div>
     </div>
   );
@@ -90,9 +90,9 @@ function LightPreview() {
 
 function DarkPreview() {
   return (
-    <div className="flex h-[78px] overflow-hidden rounded-[10px] border border-white/10 bg-[#0e0e10]">
-      <div className="flex w-[28%] flex-col gap-1.5 border-r border-white/8 bg-[#17171a] p-2">
-        <span className="h-1.5 w-2/3 rounded-full bg-[#b39ddb]" />
+    <div className="flex h-[78px] overflow-hidden rounded-[10px] border border-white/10 bg-[#131209]">
+      <div className="flex w-[28%] flex-col gap-1.5 border-r border-white/8 bg-[#1e1c14] p-2">
+        <span className="h-1.5 w-2/3 rounded-full bg-[#c6c1a2]" />
         <span className="h-1 w-3/4 rounded-full bg-white/12" />
         <span className="h-1 w-1/2 rounded-full bg-white/12" />
         <span className="h-1 w-2/3 rounded-full bg-white/12" />
@@ -100,7 +100,7 @@ function DarkPreview() {
       <div className="flex flex-1 flex-col gap-1.5 p-2">
         <span className="h-1.5 w-1/2 rounded-full bg-white/30" />
         <span className="h-1 w-3/4 rounded-full bg-white/12" />
-        <span className="mt-auto h-3 w-12 rounded-md bg-[#b39ddb]" />
+        <span className="mt-auto h-3 w-12 rounded-md bg-[#c6c1a2]" />
       </div>
     </div>
   );
@@ -108,14 +108,14 @@ function DarkPreview() {
 
 function SystemPreview() {
   return (
-    <div className="relative flex h-[78px] overflow-hidden rounded-[10px] border border-border bg-[#fbfbfb]">
-      <div className="flex w-1/2 flex-col gap-1.5 bg-[#fbfbfb] p-2">
-        <span className="h-1.5 w-2/3 rounded-full bg-[#492173]" />
+    <div className="relative flex h-[78px] overflow-hidden rounded-[10px] border border-border bg-[#ffffff]">
+      <div className="flex w-1/2 flex-col gap-1.5 bg-[#ffffff] p-2">
+        <span className="h-1.5 w-2/3 rounded-full bg-[#6e6a57]" />
         <span className="h-1 w-3/4 rounded-full bg-black/10" />
         <span className="h-1 w-1/2 rounded-full bg-black/10" />
       </div>
-      <div className="flex w-1/2 flex-col gap-1.5 bg-[#0e0e10] p-2">
-        <span className="h-1.5 w-2/3 rounded-full bg-[#b39ddb]" />
+      <div className="flex w-1/2 flex-col gap-1.5 bg-[#131209] p-2">
+        <span className="h-1.5 w-2/3 rounded-full bg-[#c6c1a2]" />
         <span className="h-1 w-3/4 rounded-full bg-white/12" />
         <span className="h-1 w-1/2 rounded-full bg-white/12" />
       </div>

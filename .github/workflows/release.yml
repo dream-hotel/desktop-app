@@ -1,56 +1,83 @@
-name: "Publish Release"
+name: Release
 
+# Dispara al pushear un tag tipo v1.2.3, o manualmente desde la pestaña Actions.
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
+  workflow_dispatch:
+
+# Necesario para que tauri-action pueda crear el Release y subir los binarios.
+permissions:
+  contents: write
 
 jobs:
-  publish-tauri:
-    permissions:
-      contents: write
+  build-tauri:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest" # For macOS
-            args: ""
-          - platform: "windows-latest" # For Windows
-            args: ""
+          - platform: 'macos-latest' # Apple Silicon + Intel (binario universal)
+            args: '--target universal-apple-darwin'
+          - platform: 'ubuntu-22.04' # Linux (.deb / .AppImage)
+            args: ''
+          - platform: 'windows-latest' # Windows (.msi / .exe)
+            args: ''
 
     runs-on: ${{ matrix.platform }}
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 20
           cache: 'npm'
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
+          # En macOS compilamos para ambas arquitecturas (binario universal).
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Install dependencies (macOS only)
-        if: matrix.platform == 'macos-latest'
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
-          echo "No extra dependencies needed for macOS in standard Tauri"
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            build-essential \
+            file
 
       - name: Install frontend dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build and Publish
+      - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Firma del updater (clave privada + contraseña almacenadas como secrets).
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # URL del backend que Vite incrusta en el build (configurable por secret).
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "v__VERSION__" # Will be replaced by tauri-action with the version in tauri.conf.json
+          # Usa el tag que disparó el workflow; en run manual cae a un placeholder.
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'app-v__VERSION__' }}
+          releaseName: 'Dream by Stannum v__VERSION__'
+          releaseBody: 'Ver los binarios adjuntos. El auto-update se entrega vía latest.json.'
           releaseDraft: true
           prerelease: false
+          includeUpdaterJson: true
           args: ${{ matrix.args }}

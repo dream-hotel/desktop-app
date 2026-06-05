@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import * as announcementService from "../service/announcementService";
 import { Announcement } from "../types/models/Announcement";
 import { useAuth } from "./useAuth";
+import { usePolling } from "./usePolling";
 
 const CHANGED_EVENT = "app:announcements-changed";
 const SEEN_UPDATED_EVENT = "app:bell-seen-updated";
@@ -66,7 +67,7 @@ export interface UseAnnouncementBellResult {
   isUnread: (id: number) => boolean;
   markSeen: (id: number) => void;
   markAllSeen: () => void;
-  reload: () => Promise<void>;
+  reload: (silent?: boolean) => Promise<void>;
 }
 
 export function useAnnouncementBell(): UseAnnouncementBellResult {
@@ -77,21 +78,23 @@ export function useAnnouncementBell(): UseAnnouncementBellResult {
   const [loading, setLoading] = useState(true);
   const [seenIds, setSeenIds] = useState<Set<number>>(() => loadSeen(userId));
 
-  const reload = useCallback(async () => {
-    setLoading(true);
+  const reload = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await announcementService.findAnnouncements({ limit: 20 });
       setAnnouncements(res.data);
     } catch {
       /* fail silently — bell is non-critical UI; errors surface on the Anuncios page */
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     reload();
   }, [reload]);
+
+  usePolling(() => reload(true), { enabled: userId != null });
 
   useEffect(() => {
     setSeenIds(loadSeen(userId));

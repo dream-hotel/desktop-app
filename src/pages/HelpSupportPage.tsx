@@ -423,7 +423,7 @@ export default function HelpSupportPage() {
               </div>
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="inline-flex h-9 shrink-0 items-center gap-2 rounded-[10px] bg-primary px-4 font-inter text-[12.5px] font-medium text-white transition-colors hover:bg-primary/90"
+                className="inline-flex h-9 shrink-0 items-center gap-2 rounded-[10px] bg-primary px-4 font-inter text-[12.5px] font-medium text-on-accent transition-colors hover:bg-primary/90"
               >
                 <Mail size={14} strokeWidth={2} />
                 {SUPPORT_EMAIL}

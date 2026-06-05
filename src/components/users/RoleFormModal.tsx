@@ -283,7 +283,7 @@ export default function RoleFormModal({ mode, role, allPermissions, onClose, onS
                           if (el) el.indeterminate = someOn;
                         }}
                         onChange={() => toggleModule(mod.module, allOn)}
-                        className="h-3.5 w-3.5 accent-[#492173]"
+                        className="h-3.5 w-3.5 accent-[#6e6a57]"
                       />
                       <span className="whitespace-nowrap font-inter text-[11px] font-medium text-text-body">
                         {allOn ? "Todos" : `${moduleSelected}/${total}`}
@@ -306,7 +306,7 @@ export default function RoleFormModal({ mode, role, allPermissions, onClose, onS
                               type="checkbox"
                               checked={checked}
                               onChange={() => togglePermission(perm.id)}
-                              className="mt-[3px] h-3.5 w-3.5 shrink-0 accent-[#492173]"
+                              className="mt-[3px] h-3.5 w-3.5 shrink-0 accent-[#6e6a57]"
                             />
                             <div className="flex min-w-0 flex-col gap-0.5">
                               <span
@@ -349,7 +349,7 @@ export default function RoleFormModal({ mode, role, allPermissions, onClose, onS
           <button
             type="submit"
             disabled={saving}
-            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+            className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
           >
             {saving ? "Guardando..." : mode === "create" ? "Crear rol" : "Guardar cambios"}
           </button>

@@ -5,33 +5,44 @@
   --font-inter: "Inter", sans-serif;
   --font-alegreya-sc: "Alegreya Sans SC", sans-serif;
 
-  --color-primary: #492173;
-  --color-primary-light: #faf6ff;
-  --color-primary-dark: #2f1f40;
-  --color-primary-hover: #3d2854;
+  /* Brand palette derived from the app logo: an olive / taupe arch mark
+     (#6e6a57) sitting on a warm sand background (#e6e3d7). */
+  --color-primary: #6e6a57;
+  --color-primary-light: #e9e6d6;
+  --color-primary-dark: #3d3a2e;
+  --color-primary-hover: #585441;
+  /* Foreground for filled accent surfaces (primary/danger/success buttons).
+     Near-white in light mode; flips to near-black in dark mode where the
+     accent fills themselves become light. */
+  --color-on-accent: #fbfaf4;
 
-  --color-bg: #fbfbfb;
+  /* Light mode: an almost-white page (a barely-warm off-white) with pure
+     white cards. Since the page is so close to white, cards no longer
+     separate by luminosity — borders carry the section delineation, so they
+     are intentionally a touch stronger here. The olive stays an accent only
+     (buttons, active states, chips, logo). */
+  --color-bg: #ffffff;
   --color-surface: #ffffff;
-  --color-surface-2: #f5f3f7;
-  --color-surface-hover: #f5f3f7;
-  --color-overlay: rgba(0, 0, 0, 0.30);
+  --color-surface-2: #f3f1ea;
+  --color-surface-hover: #f0eee6;
+  --color-overlay: rgba(30, 28, 20, 0.32);
 
-  --color-border: rgba(0, 0, 0, 0.06);
-  --color-border-strong: rgba(0, 0, 0, 0.12);
+  --color-border: rgba(28, 26, 16, 0.12);
+  --color-border-strong: rgba(28, 26, 16, 0.22);
 
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #6b7280;
-  --color-text-body: #374151;
+  --color-text-primary: #1e1d16;
+  --color-text-secondary: #676453;
+  --color-text-body: #3e3b30;
 
-  --color-success: #16a34a;
-  --color-success-light: #22c55e;
-  --color-teal: #76c7c2;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #3b82f6;
+  --color-success: #4a7644;
+  --color-success-light: #5e9455;
+  --color-teal: #4d8c85;
+  --color-warning: #8f5d10;
+  --color-danger: #b04d37;
+  --color-info: #4c6d7d;
 
-  --color-neutral-soft: #f3f4f6;
-  --color-neutral-mid: #e5e7eb;
+  --color-neutral-soft: #f3f1ea;
+  --color-neutral-mid: #e2ddcd;
 }
 
 @layer base {
@@ -73,32 +84,36 @@
 
   /* === Dark theme === */
   [data-theme="dark"] {
-    --color-bg: #0e0e10;
-    --color-surface: #17171a;
-    --color-surface-2: #1f1f23;
-    --color-surface-hover: #232328;
-    --color-overlay: rgba(0, 0, 0, 0.62);
+    /* Warm, olive-tinted charcoals so the dark theme still reads as the
+       same earthy brand rather than a neutral gray. */
+    --color-bg: #131209;
+    --color-surface: #1e1c14;
+    --color-surface-2: #272318;
+    --color-surface-hover: #322e22;
+    --color-overlay: rgba(0, 0, 0, 0.66);
 
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-border-strong: rgba(255, 255, 255, 0.16);
+    --color-border: rgba(235, 231, 216, 0.12);
+    --color-border-strong: rgba(235, 231, 216, 0.22);
 
-    --color-text-primary: #f1f1f3;
-    --color-text-secondary: #9ca3af;
-    --color-text-body: #d1d5db;
+    --color-text-primary: #f1eee2;
+    --color-text-secondary: #aaa590;
+    --color-text-body: #d6d2c1;
 
-    --color-primary: #b39ddb;
-    --color-primary-light: #2a1c3a;
-    --color-primary-dark: #d4c4ee;
-    --color-primary-hover: #c4b1e2;
+    --color-primary: #c6c1a2;
+    --color-primary-light: #2c2a1e;
+    --color-primary-dark: #dad6bd;
+    --color-primary-hover: #d0ccb0;
+    --color-on-accent: #1c1a14;
 
-    --color-success: #34d399;
-    --color-success-light: #4ade80;
-    --color-warning: #fbbf24;
-    --color-danger: #f87171;
-    --color-info: #60a5fa;
+    --color-success: #85b673;
+    --color-success-light: #95c382;
+    --color-teal: #74b8af;
+    --color-warning: #e3b362;
+    --color-danger: #e59478;
+    --color-info: #84adba;
 
-    --color-neutral-soft: #27272a;
-    --color-neutral-mid: #3f3f46;
+    --color-neutral-soft: #262319;
+    --color-neutral-mid: #3e3b2d;
 
     color-scheme: dark;
   }
@@ -121,10 +136,10 @@
   [data-theme="dark"] [stroke="#1a1a1a"] {
     stroke: var(--color-text-primary);
   }
-  [data-theme="dark"] [stroke="#492173"] {
+  [data-theme="dark"] [stroke="#6e6a57"] {
     stroke: var(--color-primary);
   }
-  [data-theme="dark"] [fill="#492173"] {
+  [data-theme="dark"] [fill="#6e6a57"] {
     fill: var(--color-primary);
   }
   [data-theme="dark"] [stroke="#d1d5db"] {

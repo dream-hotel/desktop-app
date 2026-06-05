@@ -3,7 +3,6 @@ import {
   CircleDashed,
   Clock,
   Loader,
-  RefreshCw,
 } from "lucide-react";
 import { User } from "../../types/response/AuthResponse";
 import { useDashboard } from "../../hooks/useDashboard";
@@ -23,7 +22,7 @@ interface DashboardHomeProps {
 }
 
 export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) {
-  const { data, isLoading, error, refresh } = useDashboard();
+  const { data, isLoading, error } = useDashboard();
   const bell = useAnnouncementBell();
   const isAdmin = user.role === "administrador";
 
@@ -58,18 +57,6 @@ export default function DashboardHome({ user, onNavigate }: DashboardHomeProps) 
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-8 pb-6 pt-4">
-      {/* Action bar */}
-      <div className="flex items-center justify-end">
-        <button
-          onClick={refresh}
-          className="flex h-9 items-center gap-2 rounded-lg border border-border-strong px-3 font-inter text-[12px] font-medium text-text-secondary hover:bg-neutral-soft"
-          title="Refrescar datos"
-        >
-          <RefreshCw size={13} strokeWidth={1.8} />
-          Actualizar
-        </button>
-      </div>
-
       {error && (
         <div className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 font-inter text-[12px] text-danger">
           {error}

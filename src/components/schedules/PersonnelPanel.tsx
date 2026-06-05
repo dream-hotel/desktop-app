@@ -7,6 +7,7 @@ import {
   formatDurationFromMinutes,
   minutesFromTime,
 } from "../../types/models/Schedule";
+import Dropdown from "../ui/Dropdown";
 
 interface PersonnelPanelProps {
   users: BackendUserListItem[];
@@ -160,23 +161,15 @@ export default function PersonnelPanel({
                   </span>
                 </div>
                 {canManage && onAssignSchedule && allSchedules.length > 0 && (
-                  <select
-                    defaultValue=""
-                    onChange={async (e) => {
-                      const val = e.target.value;
-                      if (val) {
-                        await onAssignSchedule(user.id, Number(val));
-                      }
-                    }}
-                    className="max-w-[100px] rounded-[6px] border border-border bg-surface px-1.5 py-0.5 font-inter text-[10px] text-text-secondary outline-none shrink-0"
-                  >
-                    <option value="" disabled>Asignar...</option>
-                    {allSchedules.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown<number>
+                    className="w-[110px] shrink-0"
+                    ariaLabel="Asignar horario"
+                    value={null}
+                    placeholder="Asignar..."
+                    onChange={(v) => onAssignSchedule(user.id, v)}
+                    triggerClassName="flex w-full items-center justify-between gap-1 cursor-pointer rounded-[6px] border border-border bg-surface px-1.5 py-0.5 font-inter text-[10px] text-text-secondary outline-none transition-colors hover:border-border-strong"
+                    options={allSchedules.map((s) => ({ value: s.id, label: s.name }))}
+                  />
                 )}
               </div>
             );

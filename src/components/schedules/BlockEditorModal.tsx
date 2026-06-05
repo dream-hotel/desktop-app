@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { DailyBlock, formatTime } from "../../types/models/Schedule";
+import Dropdown from "../ui/Dropdown";
 
 const DAY_OPTIONS = [
   { value: 1, label: "Lunes" },
@@ -120,17 +121,13 @@ export default function BlockEditorModal({
 
         <div className="flex flex-col gap-1">
           <label className="font-inter text-[12px] font-medium text-text-body">Día de la semana</label>
-          <select
+          <Dropdown<number>
+            className="w-full"
+            ariaLabel="Día"
             value={day}
-            onChange={(e) => setDay(Number(e.target.value))}
-            className="rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none focus:border-primary"
-          >
-            {DAY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={setDay}
+            options={DAY_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+          />
         </div>
 
         <div className="flex gap-3">
@@ -187,7 +184,7 @@ export default function BlockEditorModal({
             <button
               type="submit"
               disabled={saving || deleting}
-              className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-white disabled:opacity-50"
+              className="rounded-[10px] bg-primary px-4 py-2 font-inter text-[13px] font-medium text-on-accent disabled:opacity-50"
             >
               {saving ? "Guardando..." : mode === "create" ? "Crear bloque" : "Guardar"}
             </button>
