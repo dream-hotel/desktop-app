@@ -40,7 +40,11 @@ export interface NavigateRequest {
   announcementId?: number;
   taskId?: number;
   articleId?: number;
+  tab?: string;
+  priority?: string;
+  dueSoon?: boolean;
 }
+
 
 export function requestNavigate(req: NavigateRequest): void {
   window.dispatchEvent(new CustomEvent<NavigateRequest>(NAVIGATE_EVENT, { detail: req }));

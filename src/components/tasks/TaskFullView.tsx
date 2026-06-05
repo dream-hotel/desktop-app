@@ -25,6 +25,7 @@ import {
 import CommentComposer from "./CommentComposer";
 import CommentDetailModal from "./CommentDetailModal";
 import TaskFilesGallery from "./TaskFilesGallery";
+import { getFullUrl } from "../../service/apiConfig";
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string }> = {
   in_progress: { bg: "bg-warning/15", border: "border-[rgba(197,160,89,0.2)]", text: "text-warning" },
@@ -383,7 +384,7 @@ function FullComment({
               {images.slice(0, 4).map((url) => (
                 <img
                   key={url}
-                  src={url}
+                  src={getFullUrl(url)}
                   alt=""
                   className="h-10 w-10 rounded-md border border-border object-cover"
                 />

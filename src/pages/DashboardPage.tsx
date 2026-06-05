@@ -18,6 +18,9 @@ import SchedulesPage from "./SchedulesPage";
 import AccountPage from "./AccountPage";
 import ConfigurationPage, { readWelcomeModalEnabled } from "./ConfigurationPage";
 import HelpSupportPage from "./HelpSupportPage";
+import { FilterTab } from "../components/tasks/TaskList";
+import ForcePasswordChangeModal from "../components/login/ForcePasswordChangeModal";
+
 
 const PAGE_LABELS: Record<string, string> = {
   tareas: "Tareas",
@@ -72,6 +75,10 @@ export default function DashboardPage() {
   const [pendingAnnouncementId, setPendingAnnouncementId] = useState<number | null>(null);
   const [pendingTaskId, setPendingTaskId] = useState<number | null>(null);
   const [pendingArticleId, setPendingArticleId] = useState<number | null>(null);
+  const [pendingTaskTab, setPendingTaskTab] = useState<FilterTab | null>(null);
+  const [pendingTaskPriority, setPendingTaskPriority] = useState<string | null>(null);
+  const [pendingTaskDueSoon, setPendingTaskDueSoon] = useState<boolean | null>(null);
+
 
   useEffect(() => {
     return onNavigateRequest((req) => {
@@ -79,8 +86,25 @@ export default function DashboardPage() {
       if (req.announcementId != null) setPendingAnnouncementId(req.announcementId);
       if (req.taskId != null) setPendingTaskId(req.taskId);
       if (req.articleId != null) setPendingArticleId(req.articleId);
+      if (req.tab != null) setPendingTaskTab(req.tab as FilterTab);
+      if (req.priority != null) setPendingTaskPriority(req.priority);
+      if (req.dueSoon != null) setPendingTaskDueSoon(req.dueSoon);
     });
   }, []);
+
+  const handleDashboardNavigate = (
+    section: string,
+    options?: { tab?: FilterTab; priority?: string; dueSoon?: boolean; taskId?: number }
+  ) => {
+    setActiveNav(section);
+    if (section === "tareas") {
+      if (options?.tab != null) setPendingTaskTab(options.tab);
+      if (options?.priority != null) setPendingTaskPriority(options.priority);
+      if (options?.dueSoon != null) setPendingTaskDueSoon(options.dueSoon);
+      if (options?.taskId != null) setPendingTaskId(options.taskId);
+    }
+  };
+
 
   useEffect(() => {
     const required = SECTION_PERMISSIONS[activeNav];
@@ -109,6 +133,22 @@ export default function DashboardPage() {
   const handleAnnouncementClick = (id: number) => {
     bell.markSeen(id);
     setShowNotifications(false);
+    setWelcomeDismissed(true);
+
+    const ann = bell.announcements.find((a) => a.id === id);
+    if (ann) {
+      if (ann.type === "task" && ann.taskId != null) {
+        setActiveNav("tareas");
+        setPendingTaskId(ann.taskId);
+        return;
+      }
+      if (ann.type === "article" && ann.articleId != null) {
+        setActiveNav("wiki");
+        setPendingArticleId(ann.articleId);
+        return;
+      }
+    }
+
     setActiveNav("anuncios");
     setPendingAnnouncementId(id);
   };
@@ -162,11 +202,19 @@ export default function DashboardPage() {
           {!sectionAllowed ? (
             <NoAccessView />
           ) : activeNav === "dashboard" ? (
-            <DashboardHome user={user} onNavigate={setActiveNav} />
+            <DashboardHome user={user} onNavigate={handleDashboardNavigate} />
           ) : activeNav === "tareas" ? (
             <TasksPage
               pendingSelectedId={pendingTaskId}
               onConsumeSelection={() => setPendingTaskId(null)}
+              pendingTab={pendingTaskTab}
+              pendingPriority={pendingTaskPriority}
+              pendingDueSoon={pendingTaskDueSoon}
+              onConsumeFilters={() => {
+                setPendingTaskTab(null);
+                setPendingTaskPriority(null);
+                setPendingTaskDueSoon(null);
+              }}
             />
           ) : activeNav === "wiki" ? (
             <WikiPage
@@ -204,6 +252,10 @@ export default function DashboardPage() {
           onDismiss={() => setWelcomeDismissed(true)}
           onOpenAnnouncement={handleAnnouncementClick}
         />
+      )}
+
+      {user.mustChangePassword && (
+        <ForcePasswordChangeModal />
       )}
     </div>
   );

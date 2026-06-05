@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Image as ImageIcon, X } from "lucide-react";
 import { BackendTaskActivityLog, fullName } from "../../types/models/Task";
 import ImageLightbox from "./ImageLightbox";
+import { getFullUrl } from "../../service/apiConfig";
 
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
@@ -24,7 +25,7 @@ interface CommentDetailModalProps {
 
 export default function CommentDetailModal({ comment, onClose }: CommentDetailModalProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const images = comment.imageUrls ?? [];
+  const images = (comment.imageUrls ?? []).map(url => getFullUrl(url));
   const authorName = comment.user ? fullName(comment.user) : "Sistema";
 
   useEffect(() => {

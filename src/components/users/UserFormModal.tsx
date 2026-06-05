@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
@@ -32,7 +32,7 @@ type FieldErrors = {
 const NAME_MAX = 100;
 const EMAIL_MAX = 150;
 const PASSWORD_MIN = 8;
-const PASSWORD_MAX = 20;
+const PASSWORD_MAX = 72;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const NAME_REGEX = /^[\p{L}\p{M}\s'.-]+$/u;
@@ -63,14 +63,16 @@ function validateEmail(value: string): string | undefined {
   return undefined;
 }
 
-function validatePassword(value: string, mode: "create" | "edit"): string | undefined {
+function validatePassword(value: string): string | undefined {
   if (!value) {
-    if (mode === "edit") return undefined;
     return undefined;
   }
   if (value.length < PASSWORD_MIN) return `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.`;
   if (value.length > PASSWORD_MAX) return `La contraseña no puede superar los ${PASSWORD_MAX} caracteres.`;
   if (/\s/.test(value)) return "La contraseña no puede contener espacios en blanco.";
+  if (!/[a-zA-Z]/.test(value)) return "La contraseña debe contener al menos una letra.";
+  if (!/\d/.test(value)) return "La contraseña debe contener al menos un número.";
+  if (!/[^a-zA-Z\d]/.test(value)) return "La contraseña debe contener al menos un carácter especial (ej. punto, guion, barra baja).";
   return undefined;
 }
 
@@ -108,6 +110,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState<Record<keyof FieldErrors, boolean>>({
     fullName: false,
     lastName: false,
@@ -127,6 +130,10 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
       setPassword("");
     } else if (mode === "create") {
       setRoleId(defaultRoleId);
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = String(now.getFullYear()).slice(-2);
+      setPassword(`dreamByStannum${month}_${year}`);
     }
   }, [mode, user, defaultRoleId]);
 
@@ -135,7 +142,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
       fullName: validateFullName(fullName),
       lastName: validateLastName(lastName),
       email: validateEmail(email),
-      password: validatePassword(password, mode),
+      password: validatePassword(password),
       roleId: validateRoleId(roleId, roles),
     }),
     [fullName, lastName, email, password, roleId, mode, roles],
@@ -285,80 +292,69 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
           )}
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="font-inter text-[12px] font-medium text-text-body">
-            Contraseña{" "}
-            {mode === "edit" ? (
-              <span className="text-text-secondary">(opcional, dejar en blanco para conservar la actual)</span>
-            ) : (
-              <span className="text-text-secondary">(opcional, si se omite se enviará una invitación)</span>
-            )}
-          </label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            maxLength={PASSWORD_MAX}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => markTouched("password")}
-            placeholder={mode === "create" ? "Entre 8 y 20 caracteres" : "••••••••"}
-            aria-invalid={shouldShowError("password")}
-            className={inputClass("password")}
-          />
-          {shouldShowError("password") ? (
-            <span className="font-inter text-[11px] text-danger">{errors.password}</span>
-          ) : (
-            password && (
-              <span className="font-inter text-[11px] text-text-secondary">
-                Entre {PASSWORD_MIN} y {PASSWORD_MAX} caracteres, sin espacios.
-              </span>
-            )
-          )}
-        </div>
-
-        <div className="flex gap-3">
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {mode === "create" && (
+          <div className="flex flex-col gap-1">
             <label className="font-inter text-[12px] font-medium text-text-body">
-              Rol <span className="text-danger">*</span>
+              Contraseña
             </label>
-            <Dropdown<number>
-              className="w-full"
-              ariaLabel="Rol"
-              invalid={shouldShowError("roleId")}
-              value={roleId}
-              onChange={setRoleId}
-              onBlur={() => markTouched("roleId")}
-              placeholder="Seleccionar rol..."
-              triggerClassName={`flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-[8px] border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors ${
-                shouldShowError("roleId")
-                  ? "border-danger"
-                  : "border-border hover:border-border-strong"
-              }`}
-              options={
-                roles.length === 0
-                  ? [{ value: 0, label: "Sin roles disponibles", disabled: true }]
-                  : roles.map((opt) => ({ value: opt.id, label: roleDisplayName(opt.name) }))
-              }
-            />
-            {shouldShowError("roleId") && (
-              <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                maxLength={PASSWORD_MAX}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => markTouched("password")}
+                placeholder="Entre 8 y 72 caracteres"
+                aria-invalid={shouldShowError("password")}
+                className={`${inputClass("password")} pr-10`}
+              />
+              <button
+                type="button"
+                className="absolute top-1/2 right-[10px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer text-text-secondary hover:text-text-primary"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <Eye size={16} strokeWidth={1.8} />
+                ) : (
+                  <EyeOff size={16} strokeWidth={1.8} />
+                )}
+              </button>
+            </div>
+            {shouldShowError("password") ? (
+              <span className="font-inter text-[11px] text-danger">{errors.password}</span>
+            ) : (
+              password && (
+                <span className="font-inter text-[11px] text-text-secondary">
+                  Entre {PASSWORD_MIN} y {PASSWORD_MAX} caracteres (debe incluir letra, número y carácter especial), sin espacios.
+                </span>
+              )
             )}
           </div>
-          {mode === "edit" && (
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <label className="font-inter text-[12px] font-medium text-text-body">Estado</label>
-              <Dropdown<string>
-                className="w-full"
-                ariaLabel="Estado"
-                value={isActive ? "1" : "0"}
-                onChange={(v) => setIsActive(v === "1")}
-                triggerClassName="flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-[8px] border border-border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors hover:border-border-strong"
-                options={[
-                  { value: "1", label: "Activo" },
-                  { value: "0", label: "Inactivo" },
-                ]}
-              />
-            </div>
+        )}
+
+        <div className="flex flex-col gap-1">
+          <label className="font-inter text-[12px] font-medium text-text-body">
+            Rol <span className="text-danger">*</span>
+          </label>
+          <select
+            value={roleId}
+            onChange={(e) => setRoleId(Number(e.target.value))}
+            onBlur={() => markTouched("roleId")}
+            aria-invalid={shouldShowError("roleId")}
+            className={inputClass("roleId")}
+          >
+            {roles.length === 0 && <option value={0}>Sin roles disponibles</option>}
+            {roles.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {roleDisplayName(opt.name)}
+              </option>
+            ))}
+          </select>
+          {shouldShowError("roleId") && (
+            <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
           )}
         </div>
 

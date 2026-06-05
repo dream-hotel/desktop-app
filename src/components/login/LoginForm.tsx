@@ -114,9 +114,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     }
 
     // Complexity check matching backend requirements
-    const complexityRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+    const complexityRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$/;
     if (!complexityRegex.test(password)) {
-      setErrorMsg("La contraseña debe incluir al menos una mayúscula, una minúscula y un número.");
+      setErrorMsg("La contraseña debe incluir al menos una letra, un número y un carácter especial (punto, guion, barra baja, etc.).");
       return;
     }
 
@@ -404,7 +404,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               </button>
             </div>
             <p className="mt-1 font-alexandria text-[11px] leading-[15px] font-light text-white/70">
-              Mínimo 8 caracteres, debe incluir al menos una mayúscula, una minúscula y un número.
+              Mínimo 8 caracteres, debe incluir al menos una letra, un número y un carácter especial (punto, guion, barra baja, etc.).
             </p>
           </div>
 

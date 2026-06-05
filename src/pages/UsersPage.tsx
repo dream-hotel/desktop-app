@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pencil, Plus, Search, ShieldCheck, Trash2, Users as UsersIcon } from "lucide-react";
+import { Pencil, Plus, RotateCcw, Search, ShieldCheck, Trash2, Users as UsersIcon } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
@@ -12,6 +12,7 @@ import {
   createUser,
   deleteUser,
   listUsers,
+  restoreUser,
   updateUser,
 } from "../service/userService";
 import { listRoles } from "../service/roleService";
@@ -22,7 +23,7 @@ import Dropdown from "../components/ui/Dropdown";
 import { usePermissions } from "../hooks/usePermissions";
 import { usePolling } from "../hooks/usePolling";
 
-type ActiveFilter = "all" | "active" | "inactive";
+type ActiveFilter = "active" | "inactive";
 type RoleFilter = "all" | number;
 type Tab = "users" | "roles";
 
@@ -62,7 +63,7 @@ export default function UsersPage() {
   const [meta, setMeta] = useState({ page: 1, limit: PAGE_SIZE, pages: 1, total: 0 });
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
-  const [activeFilter, setActiveFilter] = useState<ActiveFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>("active");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,7 @@ export default function UsersPage() {
   const [deletingUser, setDeletingUser] = useState<BackendUserListItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [restoringUserId, setRestoringUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => setSearchDebounced(search.trim()), 300);
@@ -96,7 +98,9 @@ export default function UsersPage() {
       const query: FindUsersQuery = { page, limit: PAGE_SIZE };
       if (searchDebounced) query.search = searchDebounced;
       if (roleFilter !== "all") query.roleId = roleFilter;
-      if (activeFilter !== "all") query.isActive = activeFilter === "active";
+      if (activeFilter === "inactive") {
+        query.onlyDeleted = true;
+      }
       const result = await listUsers(query);
       setUsers(result.data);
       setMeta(result.meta);
@@ -159,6 +163,19 @@ export default function UsersPage() {
       setDeleteError(err instanceof Error ? err.message : "Error al eliminar");
     } finally {
       setDeleting(false);
+    }
+  }
+
+  async function handleRestore(u: BackendUserListItem) {
+    if (restoringUserId !== null) return;
+    setRestoringUserId(u.id);
+    try {
+      await restoreUser(u.id);
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al restaurar el usuario");
+    } finally {
+      setRestoringUserId(null);
     }
   }
 
@@ -249,7 +266,7 @@ export default function UsersPage() {
             />
 
             <div className="flex items-center gap-1 rounded-[10px] bg-neutral-soft p-1">
-              {(["all", "active", "inactive"] as ActiveFilter[]).map((f) => (
+              {(["active", "inactive"] as ActiveFilter[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f)}
@@ -259,7 +276,7 @@ export default function UsersPage() {
                       : "bg-transparent text-text-secondary"
                   }`}
                 >
-                  {f === "all" ? "Todos" : f === "active" ? "Activos" : "Inactivos"}
+                  {f === "active" ? "Activos" : "Inactivos"}
                 </button>
               ))}
             </div>
@@ -340,27 +357,34 @@ export default function UsersPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          <span
-                            className={`inline-flex items-center gap-[5px] rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${
-                              u.isActive
-                                ? "bg-success/10 text-success"
-                                : "bg-danger/10 text-danger"
-                            }`}
-                          >
+                          {u.deletedAt ? (
+                            <span className="inline-flex items-center gap-[5px] rounded-full bg-danger/10 px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] text-danger">
+                              <span className="h-[6px] w-[6px] rounded-full bg-danger" />
+                              Eliminado
+                            </span>
+                          ) : (
                             <span
-                              className={`h-[6px] w-[6px] rounded-full ${
-                                u.isActive ? "bg-success" : "bg-danger"
+                              className={`inline-flex items-center gap-[5px] rounded-full px-2 py-[2.5px] font-inter text-[11px] leading-[16.5px] ${
+                                u.isActive
+                                  ? "bg-success/10 text-success"
+                                  : "bg-danger/10 text-danger"
                               }`}
-                            />
-                            {u.isActive ? "Activo" : "Inactivo"}
-                          </span>
+                            >
+                              <span
+                                className={`h-[6px] w-[6px] rounded-full ${
+                                  u.isActive ? "bg-success" : "bg-danger"
+                                }`}
+                              />
+                              {u.isActive ? "Activo" : "Inactivo"}
+                            </span>
+                          )}
                         </td>
                         <td className="px-5 py-3 font-inter text-[12px] text-text-secondary">
                           {formatDate(u.createdAt)}
                         </td>
                         <td className="px-5 py-3">
                           <div className="flex justify-end gap-1">
-                            {canUpdateUsers && (
+                            {!u.deletedAt && canUpdateUsers && (
                               <button
                                 onClick={() => setEditingUser(u)}
                                 title="Editar"
@@ -369,7 +393,7 @@ export default function UsersPage() {
                                 <Pencil size={14} strokeWidth={1.8} />
                               </button>
                             )}
-                            {canDeleteUsers && (
+                            {!u.deletedAt && canDeleteUsers && (
                               <button
                                 onClick={() => {
                                   setDeletingUser(u);
@@ -379,6 +403,20 @@ export default function UsersPage() {
                                 className="rounded-md p-1.5 text-text-secondary hover:bg-danger/10 hover:text-danger"
                               >
                                 <Trash2 size={14} strokeWidth={1.8} />
+                              </button>
+                            )}
+                            {u.deletedAt && canUpdateUsers && (
+                              <button
+                                onClick={() => handleRestore(u)}
+                                disabled={restoringUserId === u.id}
+                                title="Restaurar"
+                                className="rounded-md p-1.5 text-text-secondary hover:bg-primary-light hover:text-primary disabled:opacity-50"
+                              >
+                                <RotateCcw
+                                  size={14}
+                                  strokeWidth={1.8}
+                                  className={restoringUserId === u.id ? "animate-spin" : ""}
+                                />
                               </button>
                             )}
                           </div>

@@ -33,8 +33,7 @@ export default function ConfirmDeleteModal({
               Eliminar usuario
             </h3>
             <p className="font-inter text-[13px] text-text-body">
-              ¿Estás seguro de eliminar a <strong>{userName}</strong>? Esta acción es un soft delete:
-              los registros históricos se conservan.
+              ¿Estás seguro de eliminar a <strong>{userName}</strong>?
             </p>
           </div>
         </div>

@@ -23,6 +23,7 @@ import {
 } from "../../types/models/Task";
 import { BackendUserListItem } from "../../types/models/Users";
 import { listUsers } from "../../service/userService";
+import { getFullUrl } from "../../service/apiConfig";
 import {
   createTask,
   removeTaskFile,
@@ -860,13 +861,13 @@ function TaskFilesField({
                   {isImage ? (
                     <button
                       type="button"
-                      onClick={() => openLightboxForExisting(file.url)}
+                      onClick={() => openLightboxForExisting(getFullUrl(file.url))}
                       className="absolute inset-0 h-full w-full"
                       title="Ver imagen"
                       disabled={flagged}
                     >
                       <img
-                        src={file.url}
+                        src={getFullUrl(file.url)}
                         alt=""
                         loading="lazy"
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
@@ -874,7 +875,7 @@ function TaskFilesField({
                     </button>
                   ) : (
                     <a
-                      href={file.url}
+                      href={getFullUrl(file.url)}
                       target="_blank"
                       rel="noreferrer noopener"
                       onClick={(e) => flagged && e.preventDefault()}

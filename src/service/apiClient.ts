@@ -113,6 +113,11 @@ async function request<T>(path: string, opts: RequestOptions): Promise<T> {
 
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (method === "GET") {
+    headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+    headers["Pragma"] = "no-cache";
+    headers["Expires"] = "0";
+  }
   
   const getHeaders = () => {
     if (auth) {

@@ -24,16 +24,15 @@ import {
   priorityNameLabel,
   shortName,
 } from "../../types/models/Task";
-import { PriorityName } from "../../types/models/Announcement";
+import { BackendPriority } from "../../types/models/Announcement";
 
-type FilterTab = "all" | "pending" | "in_progress" | "completed" | "archived";
+export type FilterTab = "all" | "pending" | "in_progress" | "completed";
 
 const FILTER_TABS: { id: FilterTab; label: string }[] = [
   { id: "all", label: "Todos" },
   { id: "pending", label: "Pendiente" },
   { id: "in_progress", label: "En Progreso" },
   { id: "completed", label: "Finalizado" },
-  { id: "archived", label: "Archivado" },
 ];
 
 function StatusIcon({ name }: { name: string }) {
@@ -82,12 +81,10 @@ function StatusBadge({ name }: { name: string }) {
 
 // --- Filter types & component ---
 
-type PriorityFilter = "high" | "medium" | "low";
-
 interface FilterState {
   dateFrom: Date | null;
   dateTo: Date | null;
-  priorities: PriorityFilter[];
+  priorities: number[];
 }
 
 const EMPTY_FILTER: FilterState = { dateFrom: null, dateTo: null, priorities: [] };
@@ -317,9 +314,10 @@ function DatePickerField({ label, value, onChange }: DatePickerFieldProps) {
 interface FilterButtonProps {
   filter: FilterState;
   onFilterChange: (filter: FilterState) => void;
+  priorities: BackendPriority[];
 }
 
-function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
+function FilterButton({ filter, onFilterChange, priorities }: FilterButtonProps) {
   const [expanded, setExpanded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const active = isFilterActive(filter);
@@ -338,10 +336,10 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
     }
   }, [expanded]);
 
-  function togglePriority(p: PriorityFilter) {
-    const next = filter.priorities.includes(p)
-      ? filter.priorities.filter((x) => x !== p)
-      : [...filter.priorities, p];
+  function togglePriority(id: number) {
+    const next = filter.priorities.includes(id)
+      ? filter.priorities.filter((x) => x !== id)
+      : [...filter.priorities, id];
     onFilterChange({ ...filter, priorities: next });
   }
 
@@ -413,14 +411,14 @@ function FilterButton({ filter, onFilterChange }: FilterButtonProps) {
             Prioridad
           </p>
           <div className="flex flex-col">
-            {(["high", "medium", "low"] as PriorityFilter[]).map((p) => (
-              <div key={p} className="flex items-center gap-[2px]">
+            {priorities.map((p) => (
+              <div key={p.id} className="flex items-center gap-[2px]">
                 <Checkbox
-                  checked={filter.priorities.includes(p)}
-                  onChange={() => togglePriority(p)}
+                  checked={filter.priorities.includes(p.id)}
+                  onChange={() => togglePriority(p.id)}
                 />
                 <span className="font-alexandria text-[9px] font-light leading-[19.5px] text-black">
-                  {priorityNameLabel(p)}
+                  {priorityNameLabel(p.name)}
                 </span>
               </div>
             ))}
@@ -453,9 +451,10 @@ interface TaskItemProps {
   task: BackendTaskListItem;
   isSelected: boolean;
   onClick: () => void;
+  showStatusBadge?: boolean;
 }
 
-function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
+function TaskItem({ task, isSelected, onClick, showStatusBadge }: TaskItemProps) {
   const isDone = task.status.name === "completed";
   return (
     <button
@@ -481,7 +480,7 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
           </p>
           <div className="flex flex-wrap items-center gap-x-2">
             <PriorityBadge name={task.priority.name} />
-            <StatusBadge name={task.status.name} />
+            {showStatusBadge && <StatusBadge name={task.status.name} />}
             <div className="flex items-center gap-1">
               <UserIcon size={10} strokeWidth={1.4} className="text-text-secondary" />
               <span
@@ -506,33 +505,81 @@ function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
 
 interface TaskListProps {
   tasks: BackendTaskListItem[];
+  priorities?: BackendPriority[];
   isLoading: boolean;
   selectedTaskId: number | null;
   onSelectTask: (id: number) => void;
   onNewTask: () => void;
   canCreate?: boolean;
+  initialTab?: FilterTab | null;
+  initialPriority?: string | null;
+  initialDueSoon?: boolean | null;
+  onConsumeFilters?: () => void;
 }
 
 export default function TaskList({
   tasks,
+  priorities = [],
   isLoading,
   selectedTaskId,
   onSelectTask,
   onNewTask,
   canCreate = true,
+  initialTab,
+  initialPriority,
+  initialDueSoon,
+  onConsumeFilters,
 }: TaskListProps) {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [advancedFilter, setAdvancedFilter] = useState<FilterState>(EMPTY_FILTER);
 
+  useEffect(() => {
+    if (initialPriority && priorities.length === 0) {
+      return; // Wait for priorities to be loaded
+    }
+
+    let changed = false;
+    let nextFilterState = { ...advancedFilter };
+
+    if (initialTab) {
+      const mappedTab = initialTab === ("archived" as any) ? "completed" : initialTab;
+      setActiveFilter(mappedTab);
+      changed = true;
+    }
+    if (initialPriority) {
+      const pObj = priorities.find((p) => p.name === initialPriority);
+      if (pObj) {
+        nextFilterState.priorities = [pObj.id];
+        changed = true;
+      }
+    }
+    if (initialDueSoon) {
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      nextFilterState.dateFrom = null;
+      nextFilterState.dateTo = tomorrow;
+      changed = true;
+    }
+
+    if (changed) {
+      setAdvancedFilter(nextFilterState);
+      onConsumeFilters?.();
+    }
+  }, [initialTab, initialPriority, initialDueSoon, priorities, onConsumeFilters]);
+
+
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
-      if (activeFilter !== "all" && task.status.name !== activeFilter) return false;
+      if (activeFilter !== "all") {
+        if (activeFilter === "completed") {
+          if (task.status.name !== "completed" && task.status.name !== "archived") return false;
+        } else {
+          if (task.status.name !== activeFilter) return false;
+        }
+      }
       if (search && !task.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (advancedFilter.priorities.length > 0) {
-        const name = task.priority.name as PriorityName;
-        const mapped: PriorityFilter = name === "critical" ? "high" : (name as PriorityFilter);
-        if (!advancedFilter.priorities.includes(mapped)) return false;
+        if (!advancedFilter.priorities.includes(task.priority.id)) return false;
       }
       if (advancedFilter.dateFrom || advancedFilter.dateTo) {
         if (!task.limitDate) return false;
@@ -571,7 +618,7 @@ export default function TaskList({
               Nueva Tarea
             </button>
           )}
-          <FilterButton filter={advancedFilter} onFilterChange={setAdvancedFilter} />
+          <FilterButton filter={advancedFilter} onFilterChange={setAdvancedFilter} priorities={priorities} />
         </div>
 
         <div className="flex items-center gap-2">
@@ -607,6 +654,7 @@ export default function TaskList({
               task={task}
               isSelected={selectedTaskId === task.id}
               onClick={() => onSelectTask(task.id)}
+              showStatusBadge={activeFilter === "all"}
             />
           ))
         )}

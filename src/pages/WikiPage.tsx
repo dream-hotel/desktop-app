@@ -9,6 +9,7 @@ import ArticleRenameModal from "../components/wiki/ArticleRenameModal";
 import ArticleTypeModal from "../components/wiki/ArticleTypeModal";
 import ArticleFileUploadModal from "../components/wiki/ArticleFileUploadModal";
 import ConfirmDialog from "../components/wiki/ConfirmDialog";
+import ReceptionistWikiView from "../components/wiki/ReceptionistWikiView";
 import { useAuth } from "../hooks/useAuth";
 import { usePermissions } from "../hooks/usePermissions";
 import { usePolling } from "../hooks/usePolling";
@@ -41,7 +42,7 @@ type ArticleDialog =
 type ConfirmState =
   | { kind: "deleteCategory"; category: WikiCategoryNode }
   | { kind: "deleteArticle"; article: WikiArticleSummary }
-  | { kind: "replaceWithFile"; article: WikiArticleSummary; file: File; newTitle: string };
+  | { kind: "replaceWithFile"; article: WikiArticleSummary; file: File; newTitle: string; extractedText?: string };
 
 function buildBreadcrumb(
   tree: WikiCategoryNode[],
@@ -309,14 +310,14 @@ export default function WikiPage({
     setCreationFlow({ kind: "selection" });
   };
 
-  const handleFileUpload = async (file: File, title: string) => {
+  const handleFileUpload = async (file: File, title: string, extractedText?: string) => {
     try {
       const article = await wikiService.createArticle({
         title,
         categoryId: selectedCategoryId,
         isPublic: true
       });
-      await wikiService.setArticleFile(article.id, file);
+      await wikiService.setArticleFile(article.id, file, extractedText);
       setCreationFlow(null);
       await Promise.all([loadArticles(), loadAllArticles()]);
       setSelectedArticleId(article.id);
@@ -326,11 +327,11 @@ export default function WikiPage({
     }
   };
 
-  const handleAttachFileToExisting = async (file: File, title: string) => {
+  const handleAttachFileToExisting = async (file: File, title: string, extractedText?: string) => {
     if (articleDialog?.kind !== "attachFile") return;
     const article = articleDialog.article;
     setArticleDialog(null);
-    setConfirmState({ kind: "replaceWithFile", article, file, newTitle: title });
+    setConfirmState({ kind: "replaceWithFile", article, file, newTitle: title, extractedText });
   };
 
   const handleConfirmReplaceWithFile = async () => {
@@ -338,11 +339,11 @@ export default function WikiPage({
     setConfirmLoading(true);
     setConfirmError(null);
     try {
-      const { article, file, newTitle } = confirmState;
+      const { article, file, newTitle, extractedText } = confirmState;
       // Actualizamos el título por si se cambió en el modal de subida
       await wikiService.updateArticle(article.id, { title: newTitle });
       // Subimos el archivo
-      await wikiService.setArticleFile(article.id, file);
+      await wikiService.setArticleFile(article.id, file, extractedText);
       
       setConfirmState(null);
       await Promise.all([loadArticles(), loadAllArticles()]);
@@ -421,7 +422,12 @@ export default function WikiPage({
         isAdmin={isAdmin}
         breadcrumb={breadcrumb}
         publishing={publishing}
-        onClose={() => setFullView(false)}
+        onClose={() => {
+          setFullView(false);
+          if (!isAdmin) {
+            setSelectedArticleId(null);
+          }
+        }}
         onEditClick={() => {
           setFullView(false);
           handleEdit();
@@ -454,7 +460,17 @@ export default function WikiPage({
       )}
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        {treeLoading ? (
+        {!isAdmin ? (
+          <ReceptionistWikiView
+            tree={tree}
+            articles={allArticles}
+            articlesLoading={articlesLoading}
+            onSelectArticle={(id) => {
+              setSelectedArticleId(id);
+              setFullView(true);
+            }}
+          />
+        ) : treeLoading ? (
           <div className="flex h-full w-[260px] items-center justify-center border-r border-border bg-surface font-inter text-[12px] text-text-secondary">
             Cargando carpetas...
           </div>
@@ -502,39 +518,43 @@ export default function WikiPage({
           />
         )}
 
-        <ArticleList
-          articles={articles}
-          selectedArticleId={selectedArticleId}
-          loading={articlesLoading}
-          isAdmin={isAdmin}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onSelectArticle={setSelectedArticleId}
-          onCreateClick={handleCreate}
-        />
+        {isAdmin && (
+          <ArticleList
+            articles={articles}
+            selectedArticleId={selectedArticleId}
+            loading={articlesLoading}
+            isAdmin={isAdmin}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onSelectArticle={setSelectedArticleId}
+            onCreateClick={handleCreate}
+          />
+        )}
 
-        <ArticleViewer
-          article={selectedArticle}
-          loading={articleLoading}
-          isAdmin={isAdmin}
-          breadcrumb={breadcrumb}
-          onExpandClick={() => setFullView(true)}
-          onEditClick={handleEdit}
-          onDeleteClick={() => {
-            const summary =
-              articles.find((a) => a.id === selectedArticle?.id) ??
-              allArticles.find((a) => a.id === selectedArticle?.id);
-            if (summary) setConfirmState({ kind: "deleteArticle", article: summary });
-          }}
-          onPublishClick={handlePublish}
-          onUploadClick={() => {
-            const summary =
-              articles.find((a) => a.id === selectedArticle?.id) ??
-              allArticles.find((a) => a.id === selectedArticle?.id);
-            if (summary) setArticleDialog({ kind: "attachFile", article: summary });
-          }}
-          publishing={publishing}
-        />
+        {isAdmin && (
+          <ArticleViewer
+            article={selectedArticle}
+            loading={articleLoading}
+            isAdmin={isAdmin}
+            breadcrumb={breadcrumb}
+            onExpandClick={() => setFullView(true)}
+            onEditClick={handleEdit}
+            onDeleteClick={() => {
+              const summary =
+                articles.find((a) => a.id === selectedArticle?.id) ??
+                allArticles.find((a) => a.id === selectedArticle?.id);
+              if (summary) setConfirmState({ kind: "deleteArticle", article: summary });
+            }}
+            onPublishClick={handlePublish}
+            onUploadClick={() => {
+              const summary =
+                articles.find((a) => a.id === selectedArticle?.id) ??
+                allArticles.find((a) => a.id === selectedArticle?.id);
+              if (summary) setArticleDialog({ kind: "attachFile", article: summary });
+            }}
+            publishing={publishing}
+          />
+        )}
       </div>
 
       {categoryDialog?.kind === "createRoot" && (

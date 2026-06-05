@@ -14,6 +14,7 @@ export interface AuthState {
   login: (request: LoginRequest) => Promise<boolean>;
   logout: () => void;
   clearSessionExpired: () => void;
+  changePassword: (password: string) => Promise<void>;
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
 }
@@ -58,6 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSessionExpired(false);
   }, []);
 
+  const changePassword = useCallback(async (password: string): Promise<void> => {
+    await authService.changePassword(password);
+    setUser((prev) => (prev ? { ...prev, mustChangePassword: false } : null));
+  }, []);
+
   useEffect(() => {
     return onUnauthorized(() => {
       setUser((prev) => {
@@ -94,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         clearSessionExpired,
+        changePassword,
         hasPermission,
         hasAnyPermission,
       }}

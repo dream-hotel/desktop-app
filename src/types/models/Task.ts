@@ -38,6 +38,13 @@ export interface BackendTaskListItem {
   assignments: BackendTaskAssignee[];
 }
 
+export interface BackendTaskViewer {
+  id: number;
+  fullName: string;
+  lastName: string;
+  viewedAt: string | null;
+}
+
 export interface BackendTask {
   id: number;
   title: string;
@@ -53,6 +60,7 @@ export interface BackendTask {
   creator: BackendTaskUser;
   assignments: BackendTaskAssignee[];
   files: BackendTaskFile[];
+  viewers?: BackendTaskViewer[];
 }
 
 export interface BackendTaskActivityLog {

@@ -15,6 +15,7 @@ import {
 import { User } from "../../types/response/AuthResponse";
 import { usePermissions } from "../../hooks/usePermissions";
 import dreamLogo from "../../assets/dream_logo.svg";
+import { useAnnouncementBell } from "../../hooks/useAnnouncementBell";
 
 interface SidebarItem {
   id: string;
@@ -70,6 +71,7 @@ function roleLabel(role: User["role"]): string {
 export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { hasAny } = usePermissions();
+  const { unreadCount } = useAnnouncementBell();
   const accountActive = activeItem === "cuenta";
 
   const visibleNav = useMemo(
@@ -130,7 +132,7 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
           {visibleNav.map((item) => (
             <button
               key={item.id}
-              className={`flex h-[36px] w-full items-center gap-3 rounded-[10px] border-none px-[13px] text-left font-inter text-[13px] leading-[20px] shadow-none transition-colors ${
+              className={`relative flex h-[36px] w-full items-center gap-3 rounded-[10px] border-none px-[13px] text-left font-inter text-[13px] leading-[20px] shadow-none transition-colors ${
                 collapsed ? "justify-center px-0" : ""
               } ${
                 activeItem === item.id
@@ -140,11 +142,21 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
               onClick={() => onNavigate(item.id)}
               title={collapsed ? item.label : undefined}
             >
-              <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+              <span className="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center">
                 {item.icon}
+                {collapsed && item.id === "anuncios" && unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary font-inter text-[8px] font-semibold text-white leading-none">
+                    {unreadCount}
+                  </span>
+                )}
               </span>
               {!collapsed && <span className="flex-1">{item.label}</span>}
-              {!collapsed && activeItem === item.id && (
+              {!collapsed && item.id === "anuncios" && unreadCount > 0 && (
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 font-inter text-[11px] font-semibold text-white leading-none">
+                  {unreadCount}
+                </span>
+              )}
+              {!collapsed && activeItem === item.id && activeItem !== "anuncios" && (
                 <span className="h-[6px] w-[6px] shrink-0 rounded-full bg-primary" />
               )}
             </button>

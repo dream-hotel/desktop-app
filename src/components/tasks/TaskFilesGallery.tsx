@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ExternalLink, Paperclip } from "lucide-react";
 import { BackendTaskFile } from "../../types/models/Task";
 import ImageLightbox from "./ImageLightbox";
+import { getFullUrl } from "../../service/apiConfig";
 
 const IMAGE_EXT_RE = /\.(jpe?g|png|gif|webp|svg|avif|bmp)(\?.*)?$/i;
 const isImageUrl = (url: string): boolean => IMAGE_EXT_RE.test(url);
@@ -27,7 +28,7 @@ export default function TaskFilesGallery({ files, variant = "full" }: TaskFilesG
 
   const imageFiles = files.filter((f) => isImageUrl(f.url));
   const otherFiles = files.filter((f) => !isImageUrl(f.url));
-  const imageUrls = imageFiles.map((f) => f.url);
+  const imageUrls = imageFiles.map((f) => getFullUrl(f.url));
 
   const isCompact = variant === "compact";
   const gridCols = isCompact ? "grid-cols-4 sm:grid-cols-6" : "grid-cols-3 sm:grid-cols-4";
@@ -46,7 +47,7 @@ export default function TaskFilesGallery({ files, variant = "full" }: TaskFilesG
               title="Ver imagen"
             >
               <img
-                src={file.url}
+                src={getFullUrl(file.url)}
                 alt=""
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform group-hover:scale-105"
@@ -61,7 +62,7 @@ export default function TaskFilesGallery({ files, variant = "full" }: TaskFilesG
           {otherFiles.map((file) => (
             <li key={file.id}>
               <a
-                href={file.url}
+                href={getFullUrl(file.url)}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="flex items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 py-2 hover:bg-neutral-soft"

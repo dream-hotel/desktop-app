@@ -14,6 +14,7 @@ export interface BackendUserListItem {
   schedules: any[];
   createdAt: string;
   role: BackendRole;
+  deletedAt?: string;
 }
 
 export interface CreateUserPayload {
@@ -40,6 +41,7 @@ export interface FindUsersQuery {
   search?: string;
   roleId?: number;
   isActive?: boolean;
+  onlyDeleted?: boolean;
 }
 
 export function roleLabel(name: string): string {
