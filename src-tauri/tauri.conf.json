@@ -62,9 +62,9 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://raw.githubusercontent.com/dream-hotel/desktop-app/main/update.json"
+        "https://github.com/dream-hotel/desktop-app/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMwNUJDNTQ0QzZCOTU1RgpSV1JmbFd0TVZMd0ZERWJQTHp1MFREOXh6YnBJUHJ1ck5zUnpsMDlJUXliQVZQMUZ5N3RRd25qaQo="
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBQUFBOUQxM0Y5MDM2M0MKUldROE5wQS8wYW1xR3IremFveVpzUm96SU9pVjZTUVZyd1VEbFFPYmYzdXBvRlRkQzhJdSs4b1gK"
     }
   }
 }
