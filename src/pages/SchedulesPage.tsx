@@ -155,7 +155,7 @@ export default function SchedulesPage() {
     fetchAll();
   }, [fetchAll]);
 
-  usePolling(() => fetchAll(true));
+  usePolling(() => fetchAll(true), { resources: ["schedules"] });
 
   const schedulesById = useMemo(() => {
     const map = new Map<number, WeeklySchedule>();

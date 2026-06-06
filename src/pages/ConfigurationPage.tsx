@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { Bell, Check, Info, Palette } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 import { ThemePreference } from "../state/ThemeContext";
@@ -127,10 +128,15 @@ function SystemPreview() {
 export default function ConfigurationPage() {
   const { preference, resolved, setPreference } = useTheme();
   const [welcomeEnabled, setWelcomeEnabled] = useState<boolean>(() => readWelcomeModalEnabled());
+  const [appVersion, setAppVersion] = useState<string>("...");
 
   useEffect(() => {
     writeWelcomeModalEnabled(welcomeEnabled);
   }, [welcomeEnabled]);
+
+  useEffect(() => {
+    getVersion().then(setAppVersion).catch(console.error);
+  }, []);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-bg">
@@ -265,7 +271,7 @@ export default function ConfigurationPage() {
                 <dt className="text-[11px] uppercase tracking-wide text-text-secondary">
                   Versión
                 </dt>
-                <dd className="text-text-primary">1.0.0</dd>
+                <dd className="text-text-primary">{appVersion}</dd>
               </div>
               <div className="flex flex-col gap-0.5">
                 <dt className="text-[11px] uppercase tracking-wide text-text-secondary">

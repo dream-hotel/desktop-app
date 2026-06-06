@@ -172,7 +172,7 @@ export default function WikiPage({
     loadTree(true);
     loadAllArticles(true);
     loadArticles(true);
-  });
+  }, { resources: ["wiki"] });
 
   useEffect(() => {
     if (pendingSelectedId != null) {

@@ -6,7 +6,6 @@ import {
   UpdateUserPayload,
 } from "../../types/models/Users";
 import { roleDisplayName } from "../../types/models/Roles";
-import Dropdown from "../ui/Dropdown";
 
 interface RoleOption {
   id: number;

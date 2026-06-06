@@ -47,7 +47,7 @@ export function useTasks(query: FindTasksQuery = {}) {
     fetchData();
   }, [fetchData]);
 
-  usePolling(() => fetchData(true));
+  usePolling(() => fetchData(true), { resources: ["tasks"] });
 
   return { tasks, isLoading, error, refresh: fetchData };
 }
@@ -84,7 +84,7 @@ export function useTaskDetail(taskId: number | null) {
     fetchData();
   }, [fetchData]);
 
-  usePolling(() => fetchData(true), { enabled: taskId != null });
+  usePolling(() => fetchData(true), { enabled: taskId != null, resources: ["tasks"] });
 
   return { task, isLoading, error, refresh: fetchData };
 }
@@ -113,7 +113,7 @@ export function useTaskActivity(taskId: number | null) {
     fetchData();
   }, [fetchData]);
 
-  usePolling(() => fetchData(true), { enabled: taskId != null });
+  usePolling(() => fetchData(true), { enabled: taskId != null, resources: ["tasks"] });
 
   return { entries, isLoading, refresh: fetchData };
 }

@@ -82,7 +82,7 @@ export default function AnnouncementsPage({
     loadAnnouncements();
   }, [loadAnnouncements]);
 
-  usePolling(() => loadAnnouncements(true));
+  usePolling(() => loadAnnouncements(true), { resources: ["announcements"] });
 
   useEffect(() => {
     if (selectedId == null) {

@@ -136,7 +136,7 @@ export default function UsersPage() {
   usePolling(() => {
     fetchRoles();
     if (tab === "users") fetchUsers(true);
-  });
+  }, { resources: ["users"] });
 
   async function handleCreate(payload: CreateUserPayload | UpdateUserPayload) {
     await createUser(payload as CreateUserPayload);

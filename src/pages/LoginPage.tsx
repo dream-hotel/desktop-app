@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getVersion } from "@tauri-apps/api/app";
 import { AlertTriangle } from "lucide-react";
 import LoginForm from "../components/login/LoginForm";
 import loginBg from "../assets/login-bg.jpg";
@@ -9,12 +10,17 @@ import { useAuth } from "../hooks/useAuth";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
+  const [appVersion, setAppVersion] = useState<string>("");
 
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    getVersion().then(setAppVersion).catch(console.error);
+  }, []);
 
   function handleLoginSuccess() {
     navigate("/dashboard");
@@ -62,7 +68,7 @@ export default function LoginPage() {
       </div>
 
       <p className="absolute bottom-4 left-7 z-[2] m-0 font-inter text-[11px] leading-[16.5px] font-normal text-white">
-        2026 Dream by Stannum - Versión 1.0.0
+        2026 Dream by Stannum{appVersion ? ` - Versión ${appVersion}` : ""}
       </p>
     </div>
   );

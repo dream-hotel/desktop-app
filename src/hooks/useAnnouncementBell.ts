@@ -94,7 +94,7 @@ export function useAnnouncementBell(): UseAnnouncementBellResult {
     reload();
   }, [reload]);
 
-  usePolling(() => reload(true), { enabled: userId != null });
+  usePolling(() => reload(true), { enabled: userId != null, resources: ["announcements"] });
 
   useEffect(() => {
     setSeenIds(loadSeen(userId));

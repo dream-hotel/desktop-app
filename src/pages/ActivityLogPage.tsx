@@ -182,7 +182,7 @@ export default function ActivityLogPage() {
     fetchLogs();
   }, [fetchLogs]);
 
-  usePolling(() => fetchLogs(true));
+  usePolling(() => fetchLogs(true), { resources: ["activity"] });
 
   const humanizedLogs = useMemo(() => {
     return logs

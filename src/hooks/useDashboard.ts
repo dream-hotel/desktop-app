@@ -85,7 +85,7 @@ export function useDashboard() {
     fetchData();
   }, [fetchData]);
 
-  usePolling(() => fetchData(true));
+  usePolling(() => fetchData(true), { resources: ["tasks", "announcements"] });
 
   const data = useMemo<DashboardData | null>(() => {
     const active = tasks.filter(isActive);
