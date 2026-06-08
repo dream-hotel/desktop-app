@@ -98,9 +98,7 @@ export default function UsersPage() {
       const query: FindUsersQuery = { page, limit: PAGE_SIZE };
       if (searchDebounced) query.search = searchDebounced;
       if (roleFilter !== "all") query.roleId = roleFilter;
-      if (activeFilter === "inactive") {
-        query.onlyDeleted = true;
-      }
+      query.isActive = activeFilter === "active";
       const result = await listUsers(query);
       setUsers(result.data);
       setMeta(result.meta);

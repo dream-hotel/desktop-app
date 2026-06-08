@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff, RefreshCw } from "lucide-react";
 import {
   BackendUserListItem,
   CreateUserPayload,
   UpdateUserPayload,
 } from "../../types/models/Users";
 import { roleDisplayName } from "../../types/models/Roles";
+import Dropdown from "../ui/Dropdown";
 
 interface RoleOption {
   id: number;
@@ -80,6 +81,46 @@ function validateRoleId(value: number, roles: RoleOption[]): string | undefined 
   return undefined;
 }
 
+const PASSWORD_GEN_LENGTH = 16;
+
+// Genera una contraseña aleatoria criptográficamente segura que cumple las
+// reglas de validación: incluye al menos una letra, un número y un carácter
+// especial, y no contiene espacios.
+function generateRandomPassword(): string {
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const digits = "23456789";
+  const special = "!@#$%&*?-_+.";
+  const all = lower + upper + digits + special;
+
+  const randomFrom = (set: string): string => {
+    const buffer = new Uint32Array(1);
+    crypto.getRandomValues(buffer);
+    return set[buffer[0] % set.length];
+  };
+
+  // Garantiza al menos un carácter de cada grupo requerido.
+  const chars: string[] = [
+    randomFrom(lower),
+    randomFrom(upper),
+    randomFrom(digits),
+    randomFrom(special),
+  ];
+  while (chars.length < PASSWORD_GEN_LENGTH) {
+    chars.push(randomFrom(all));
+  }
+
+  // Mezcla con Fisher-Yates usando entropía segura.
+  for (let i = chars.length - 1; i > 0; i--) {
+    const buffer = new Uint32Array(1);
+    crypto.getRandomValues(buffer);
+    const j = buffer[0] % (i + 1);
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+
+  return chars.join("");
+}
+
 function translateServerError(message: string): string {
   const lower = message.toLowerCase();
   if (lower.includes("email already registered") || lower.includes("correo electrónico ya está registrado")) {
@@ -129,10 +170,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
       setPassword("");
     } else if (mode === "create") {
       setRoleId(defaultRoleId);
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const year = String(now.getFullYear()).slice(-2);
-      setPassword(`dreamByStannum${month}_${year}`);
+      setPassword(generateRandomPassword());
     }
   }, [mode, user, defaultRoleId]);
 
@@ -222,7 +260,7 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
             </h2>
             <p className="mt-1 font-inter text-[12px] text-text-secondary">
               {mode === "create"
-                ? "Cree una nueva cuenta. Si no establece una contraseña, se enviará una invitación por correo."
+                ? "Cree una nueva cuenta. Las credenciales de acceso se enviarán automáticamente al correo del usuario."
                 : "Actualice los datos del usuario seleccionado."}
             </p>
           </div>
@@ -306,21 +344,35 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
                 onBlur={() => markTouched("password")}
                 placeholder="Entre 8 y 72 caracteres"
                 aria-invalid={shouldShowError("password")}
-                className={`${inputClass("password")} pr-10`}
+                className={`${inputClass("password")} pr-16`}
               />
-              <button
-                type="button"
-                className="absolute top-1/2 right-[10px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer text-text-secondary hover:text-text-primary"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-                title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-              >
-                {showPassword ? (
-                  <Eye size={16} strokeWidth={1.8} />
-                ) : (
-                  <EyeOff size={16} strokeWidth={1.8} />
-                )}
-              </button>
+              <div className="absolute top-1/2 right-[10px] flex -translate-y-1/2 items-center gap-1">
+                <button
+                  type="button"
+                  className="flex items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer text-text-secondary hover:text-text-primary"
+                  onClick={() => {
+                    setPassword(generateRandomPassword());
+                    setShowPassword(true);
+                  }}
+                  tabIndex={-1}
+                  title="Generar una nueva contraseña aleatoria"
+                >
+                  <RefreshCw size={16} strokeWidth={1.8} />
+                </button>
+                <button
+                  type="button"
+                  className="flex items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer text-text-secondary hover:text-text-primary"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                >
+                  {showPassword ? (
+                    <Eye size={16} strokeWidth={1.8} />
+                  ) : (
+                    <EyeOff size={16} strokeWidth={1.8} />
+                  )}
+                </button>
+              </div>
             </div>
             {shouldShowError("password") ? (
               <span className="font-inter text-[11px] text-danger">{errors.password}</span>
@@ -338,20 +390,26 @@ export default function UserFormModal({ mode, user, roles, onClose, onSubmit }: 
           <label className="font-inter text-[12px] font-medium text-text-body">
             Rol <span className="text-danger">*</span>
           </label>
-          <select
+          <Dropdown<number>
+            className="w-full"
             value={roleId}
-            onChange={(e) => setRoleId(Number(e.target.value))}
+            onChange={setRoleId}
             onBlur={() => markTouched("roleId")}
-            aria-invalid={shouldShowError("roleId")}
-            className={inputClass("roleId")}
-          >
-            {roles.length === 0 && <option value={0}>Sin roles disponibles</option>}
-            {roles.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {roleDisplayName(opt.name)}
-              </option>
-            ))}
-          </select>
+            invalid={shouldShowError("roleId")}
+            disabled={roles.length === 0}
+            ariaLabel="Seleccionar rol"
+            placeholder={roles.length === 0 ? "Sin roles disponibles" : "Seleccionar rol"}
+            options={roles.map((opt) => ({
+              value: opt.id,
+              label: roleDisplayName(opt.name),
+              searchText: roleDisplayName(opt.name),
+            }))}
+            triggerClassName={[
+              "flex w-full items-center justify-between gap-2 rounded-[8px] border bg-surface px-3 py-2 font-inter text-[13px] text-text-primary outline-none transition-colors",
+              shouldShowError("roleId") ? "border-danger" : "border-border focus:border-primary",
+              roles.length === 0 ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-border-strong",
+            ].join(" ")}
+          />
           {shouldShowError("roleId") && (
             <span className="font-inter text-[11px] text-danger">{errors.roleId}</span>
           )}
