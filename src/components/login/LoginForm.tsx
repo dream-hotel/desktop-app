@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import * as authService from "../../service/authService";
@@ -7,7 +7,7 @@ interface LoginFormProps {
   onSuccess: () => void;
 }
 
-type FormView = "login" | "request-recovery" | "verify-code" | "reset-password";
+type FormView = "login" | "request-recovery" | "verify-code" | "reset-password" | "force-reset-password";
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [view, setView] = useState<FormView>("login");
@@ -23,9 +23,17 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  const { login, isLoading, error } = useAuth();
+  const { user, login, logout, changePassword, isLoading, error } = useAuth();
 
   const activeError = view === "login" ? error : errorMsg;
+
+  useEffect(() => {
+    if (user && user.mustChangePassword) {
+      setView("force-reset-password");
+      setPassword("");
+      setConfirmPassword("");
+    }
+  }, [user]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -37,6 +45,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       await handleVerifyCode();
     } else if (view === "reset-password") {
       await handleResetPassword();
+    } else if (view === "force-reset-password") {
+      await handleForceResetPassword();
     }
   }
 
@@ -138,6 +148,41 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       setCode("");
     } else {
       setErrorMsg(result.message);
+    }
+  }
+
+  async function handleForceResetPassword() {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (!password) {
+      setErrorMsg("Por favor, ingresa la nueva contraseña.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    const complexityRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$/;
+    if (!complexityRegex.test(password)) {
+      setErrorMsg("La contraseña debe incluir al menos una letra, un número y un carácter especial (punto, guion, barra baja, etc.).");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMsg("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setIsActionLoading(true);
+    try {
+      await changePassword(password);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Error al cambiar la contraseña. Intente nuevamente.");
+    } finally {
+      setIsActionLoading(false);
     }
   }
 
@@ -438,6 +483,107 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               disabled={isActionLoading}
             >
               {isActionLoading ? "Confirmando..." : "Confirmar"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {view === "force-reset-password" && (
+        <>
+          <h1 className="mb-[6px] font-alexandria text-[30px] leading-[35px] font-normal text-white text-center">
+            Actualizar contraseña
+          </h1>
+          <p className="mb-4 font-alexandria text-[11px] leading-[15px] font-light text-white/80 text-center">
+            Es tu primer inicio de sesión. Por seguridad, debes establecer una nueva contraseña para continuar.
+          </p>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-alexandria text-[20px] leading-[21px] font-extralight text-white">
+              Nueva contraseña
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="h-[42px] w-full rounded-[10px] border-[0.5px] border-white/80 bg-transparent pr-[45px] pl-[14px] font-alexandria text-[20px] leading-[21px] font-light text-white outline-none placeholder:text-white/40 focus:border-white"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                autoFocus
+              />
+              <button
+                type="button"
+                className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <Eye size={17} strokeWidth={1.8} className="text-white" />
+                ) : (
+                  <EyeOff size={17} strokeWidth={1.8} className="text-white/70" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="font-alexandria text-[20px] leading-[21px] font-extralight text-white">
+              Confirmar contraseña
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                className="h-[42px] w-full rounded-[10px] border-[0.5px] border-white/80 bg-transparent pr-[45px] pl-[14px] font-alexandria text-[20px] leading-[21px] font-light text-white outline-none placeholder:text-white/40 focus:border-white"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                tabIndex={-1}
+                aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showConfirmPassword ? (
+                  <Eye size={17} strokeWidth={1.8} className="text-white" />
+                ) : (
+                  <EyeOff size={17} strokeWidth={1.8} className="text-white/70" />
+                )}
+              </button>
+            </div>
+            <p className="mt-1 font-alexandria text-[11px] leading-[15px] font-light text-white/70">
+              Mínimo 8 caracteres, debe incluir al menos una letra, un número y un carácter especial (punto, guion, barra baja, etc.).
+            </p>
+          </div>
+
+          {activeError && (
+            <p className="text-center font-alexandria text-[13px] text-red-400 mt-2">
+              {activeError}
+            </p>
+          )}
+
+          <div className="mt-4 flex w-full gap-3">
+            <button
+              type="button"
+              className="h-[42px] flex-1 rounded-[10px] border border-white/40 bg-transparent font-alegreya-sc text-[18px] leading-[21px] font-medium text-white transition-all hover:bg-white/10 active:scale-[0.98] cursor-pointer text-center flex items-center justify-center"
+              onClick={() => {
+                logout();
+                setView("login");
+                setErrorMsg(null);
+                setSuccessMsg(null);
+              }}
+            >
+              Salir
+            </button>
+            <button
+              type="submit"
+              className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-on-accent shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
+              disabled={isActionLoading}
+            >
+              {isActionLoading ? "Guardando..." : "Confirmar"}
             </button>
           </div>
         </>
