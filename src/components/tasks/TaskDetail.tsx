@@ -8,7 +8,6 @@ import {
   Paperclip,
   Pencil,
   Trash2,
-  Users,
   X,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -17,6 +16,7 @@ import {
   BackendTaskActivityLog,
   fullName,
   priorityNameLabel,
+  shortName,
   statusLabel,
 } from "../../types/models/Task";
 import CommentComposer from "./CommentComposer";
@@ -96,22 +96,20 @@ export default function TaskDetail({
   const isAdmin = user?.role === "administrador";
 
   const { viewedAssignees, notViewedAssignees } = useMemo(() => {
-    const viewersMap = new Map((task.viewers || []).map((v) => [v.id, v]));
     const viewed: any[] = [];
     const notViewed: any[] = [];
     for (const assignment of task.assignments) {
-      const viewer = viewersMap.get(assignment.userId);
-      if (viewer) {
+      if (assignment.viewedAt) {
         viewed.push({
           ...assignment.user,
-          viewedAt: viewer.viewedAt,
+          viewedAt: assignment.viewedAt,
         });
       } else {
         notViewed.push(assignment.user);
       }
     }
     return { viewedAssignees: viewed, notViewedAssignees: notViewed };
-  }, [task.assignments, task.viewers]);
+  }, [task.assignments]);
 
   const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
 
@@ -212,18 +210,21 @@ export default function TaskDetail({
           <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">
             Asignado a
           </span>
-          <span className="flex items-center gap-1 font-inter text-sm font-medium leading-[21px] text-text-primary">
+          <div className="flex flex-wrap gap-1 mt-0.5">
             {task.assignments.length === 0 ? (
-              "Sin asignar"
-            ) : task.assignments.length === 1 ? (
-              fullName(task.assignments[0].user)
+              <span className="font-inter text-sm font-medium leading-[21px] text-text-secondary">Sin asignar</span>
             ) : (
-              <>
-                <Users size={13} strokeWidth={1.6} className="text-text-secondary" />
-                {task.assignments.length} colaboradores
-              </>
+              task.assignments.map((assignment) => (
+                <span
+                  key={assignment.userId}
+                  className="inline-flex items-center rounded-full bg-primary-light px-2 py-0.5 font-inter text-[11px] font-medium text-primary"
+                  title={fullName(assignment.user)}
+                >
+                  {shortName(assignment.user)}
+                </span>
+              ))
             )}
-          </span>
+          </div>
         </div>
         <div className="flex w-[175px] flex-col gap-[2px]">
           <span className="font-inter text-[11px] leading-[16.5px] text-text-secondary">

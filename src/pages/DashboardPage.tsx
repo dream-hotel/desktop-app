@@ -19,7 +19,6 @@ import AccountPage from "./AccountPage";
 import ConfigurationPage, { readWelcomeModalEnabled } from "./ConfigurationPage";
 import HelpSupportPage from "./HelpSupportPage";
 import { FilterTab } from "../components/tasks/TaskList";
-import ForcePasswordChangeModal from "../components/login/ForcePasswordChangeModal";
 
 
 const PAGE_LABELS: Record<string, string> = {
@@ -254,9 +253,6 @@ export default function DashboardPage() {
         />
       )}
 
-      {user.mustChangePassword && (
-        <ForcePasswordChangeModal />
-      )}
     </div>
   );
 }

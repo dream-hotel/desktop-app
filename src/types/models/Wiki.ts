@@ -1,4 +1,5 @@
 // === Backend DTOs (mirror /backend/src/modules/wiki) ===
+import { ResourceView } from "./Announcement";
 
 export interface BackendCategory {
   id: number;
@@ -32,6 +33,7 @@ export interface BackendArticleList {
 
 export interface BackendArticle extends BackendArticleList {
   content: BackendArticleContent | null;
+  views?: ResourceView[];
 }
 
 // === Frontend view models ===
@@ -60,4 +62,5 @@ export interface WikiArticleDetail extends WikiArticleSummary {
   isPublic: boolean;
   fileUrl: string | null;
   fileMimetype: string | null;
+  views?: ResourceView[];
 }

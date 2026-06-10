@@ -22,6 +22,18 @@ export interface AudienceRole {
   name: string;
 }
 
+export interface ResourceViewUser {
+  id: number;
+  fullName: string;
+  lastName: string;
+}
+
+export interface ResourceView {
+  userId: number;
+  user: ResourceViewUser;
+  viewedAt: string;
+}
+
 export interface BackendAnnouncement {
   id: number;
   title: string;
@@ -34,6 +46,7 @@ export interface BackendAnnouncement {
   priority: BackendPriority;
   audienceUsers: AudienceUser[];
   audienceRoles: AudienceRole[];
+  views?: ResourceView[];
 }
 
 // === Frontend view model ===
@@ -52,6 +65,7 @@ export interface Announcement {
   audienceRoles: AudienceRole[];
   /** True when no audience filter is configured — anyone with announcements:read sees it. */
   isPublic: boolean;
+  views?: ResourceView[];
 }
 
 // === Inputs ===
