@@ -9,14 +9,14 @@ import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
+  const { user, isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
   const [appVersion, setAppVersion] = useState<string>("");
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !user?.mustChangePassword) {
       navigate("/dashboard", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     getVersion().then(setAppVersion).catch(console.error);
