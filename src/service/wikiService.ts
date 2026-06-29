@@ -37,6 +37,7 @@ function mapArticleDetail(a: BackendArticle): WikiArticleDetail {
     isPublic: true,
     fileUrl: a.content?.fileUrl ?? null,
     fileMimetype: a.content?.mimetype ?? null,
+    views: a.views ?? [],
   };
 }
 

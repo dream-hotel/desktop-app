@@ -24,6 +24,7 @@ function mapAnnouncement(a: BackendAnnouncement): Announcement {
     audienceUsers,
     audienceRoles,
     isPublic: audienceUsers.length === 0 && audienceRoles.length === 0,
+    views: a.views ?? [],
   };
 }
 

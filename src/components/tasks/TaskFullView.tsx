@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 import {
   ArrowLeft,
   Ban,
@@ -107,6 +108,8 @@ export default function TaskFullView({
   onDelete,
 }: TaskFullViewProps) {
   const [openComment, setOpenComment] = useState<BackendTaskActivityLog | null>(null);
+  const { user } = useAuth();
+  const isAdmin = user?.role === "administrador";
 
   const statusStyle = STATUS_STYLE[task.status.name] ?? STATUS_STYLE.pending;
   const priorityStyle = PRIORITY_STYLE[task.priority.name] ?? PRIORITY_STYLE.low;
@@ -249,15 +252,30 @@ export default function TaskFullView({
             {task.assignments.length === 0 ? (
               <span className="font-inter text-sm text-text-secondary">Sin asignar</span>
             ) : (
-              <ul className="flex flex-col gap-1.5">
+              <ul className="flex flex-col gap-2.5">
                 {task.assignments.map((a) => (
-                  <li key={a.userId} className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-light font-inter text-[10px] font-semibold text-primary">
-                      {(a.user.fullName ?? "?").charAt(0).toUpperCase()}
-                    </span>
-                    <span className="font-inter text-sm text-text-primary">
-                      {fullName(a.user)}
-                    </span>
+                  <li key={a.userId} className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-light font-inter text-[10px] font-semibold text-primary">
+                        {(a.user.fullName ?? "?").charAt(0).toUpperCase()}
+                      </span>
+                      <span className="font-inter text-sm text-text-primary">
+                        {fullName(a.user)}
+                      </span>
+                    </div>
+                    {isAdmin && (
+                      <div className="ml-8 mt-0.5 font-inter text-[10px]">
+                        {a.viewedAt ? (
+                          <span className="font-medium text-success">
+                            Visto el {formatDateTime(a.viewedAt)}
+                          </span>
+                        ) : (
+                          <span className="text-text-secondary">
+                            No visto aún
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

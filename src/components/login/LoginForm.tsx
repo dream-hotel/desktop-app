@@ -1,4 +1,4 @@
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import * as authService from "../../service/authService";
@@ -7,7 +7,7 @@ interface LoginFormProps {
   onSuccess: () => void;
 }
 
-type FormView = "login" | "request-recovery" | "verify-code" | "reset-password" | "force-reset-password";
+type FormView = "login" | "request-recovery" | "verify-code" | "reset-password" | "force-change-password";
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [view, setView] = useState<FormView>("login");
@@ -23,17 +23,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  const { user, login, logout, changePassword, isLoading, error } = useAuth();
+  const { login, isLoading, error, changePassword, logout } = useAuth();
 
   const activeError = view === "login" ? error : errorMsg;
-
-  useEffect(() => {
-    if (user && user.mustChangePassword) {
-      setView("force-reset-password");
-      setPassword("");
-      setConfirmPassword("");
-    }
-  }, [user]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -45,16 +37,57 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       await handleVerifyCode();
     } else if (view === "reset-password") {
       await handleResetPassword();
-    } else if (view === "force-reset-password") {
-      await handleForceResetPassword();
+    } else if (view === "force-change-password") {
+      await handleForceChangePassword();
     }
   }
 
   async function handleLogin() {
     setErrorMsg(null);
-    const success = await login({ email, password });
-    if (success) {
-      onSuccess();
+    const result = await login({ email, password });
+    if (result.success) {
+      if (result.mustChangePassword) {
+        setView("force-change-password");
+        setPassword("");
+        setConfirmPassword("");
+      } else {
+        onSuccess();
+      }
+    }
+  }
+
+  async function handleForceChangePassword() {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (!password) {
+      setErrorMsg("Por favor, ingresa la nueva contraseña.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    const complexityRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$/;
+    if (!complexityRegex.test(password)) {
+      setErrorMsg("La contraseña debe incluir al menos una letra, un número y un carácter especial (punto, guion, barra baja, etc.).");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMsg("Las contraseñas no coinciden.");
+      return;
+    }
+
+    setIsActionLoading(true);
+    try {
+      await changePassword(password);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Error al cambiar la contraseña. Intente nuevamente.");
+    } finally {
+      setIsActionLoading(false);
     }
   }
 
@@ -148,41 +181,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       setCode("");
     } else {
       setErrorMsg(result.message);
-    }
-  }
-
-  async function handleForceResetPassword() {
-    setErrorMsg(null);
-    setSuccessMsg(null);
-
-    if (!password) {
-      setErrorMsg("Por favor, ingresa la nueva contraseña.");
-      return;
-    }
-
-    if (password.length < 8) {
-      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
-      return;
-    }
-
-    const complexityRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$/;
-    if (!complexityRegex.test(password)) {
-      setErrorMsg("La contraseña debe incluir al menos una letra, un número y un carácter especial (punto, guion, barra baja, etc.).");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMsg("Las contraseñas no coinciden.");
-      return;
-    }
-
-    setIsActionLoading(true);
-    try {
-      await changePassword(password);
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Error al cambiar la contraseña. Intente nuevamente.");
-    } finally {
-      setIsActionLoading(false);
     }
   }
 
@@ -412,6 +410,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showPassword ? (
                   <Eye size={17} strokeWidth={1.8} className="text-white" />
@@ -440,6 +439,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 tabIndex={-1}
+                aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showConfirmPassword ? (
                   <Eye size={17} strokeWidth={1.8} className="text-white" />
@@ -488,18 +488,18 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </>
       )}
 
-      {view === "force-reset-password" && (
+      {view === "force-change-password" && (
         <>
-          <h1 className="mb-[6px] font-alexandria text-[30px] leading-[35px] font-normal text-white text-center">
+          <h1 className="mb-3 font-alexandria text-[30px] leading-[35px] font-normal text-white">
             Actualizar contraseña
           </h1>
-          <p className="mb-4 font-alexandria text-[11px] leading-[15px] font-light text-white/80 text-center">
-            Es tu primer inicio de sesión. Por seguridad, debes establecer una nueva contraseña para continuar.
+          <p className="mb-4 font-alexandria text-[11px] leading-[15px] font-light text-white/80">
+            Es tu primer inicio de sesión en Dream by Stannum. Por motivos de seguridad, debes ingresar una nueva contraseña para continuar.
           </p>
 
           <div className="flex flex-col gap-2">
             <label className="font-alexandria text-[20px] leading-[21px] font-extralight text-white">
-              Nueva contraseña
+              Contraseña
             </label>
             <div className="relative">
               <input
@@ -565,6 +565,12 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             </p>
           )}
 
+          {successMsg && (
+            <p className="text-center font-alexandria text-[13px] text-green-400 mt-2">
+              {successMsg}
+            </p>
+          )}
+
           <div className="mt-4 flex w-full gap-3">
             <button
               type="button"
@@ -576,14 +582,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 setSuccessMsg(null);
               }}
             >
-              Salir
+              Cancelar
             </button>
             <button
               type="submit"
               className="h-[42px] flex-1 rounded-[10px] border-none bg-primary-dark font-alegreya-sc text-[18px] leading-[21px] font-medium text-on-accent shadow-[0px_4px_4px_rgba(0,0,0,0.25)] transition-all hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer text-center flex items-center justify-center"
               disabled={isActionLoading}
             >
-              {isActionLoading ? "Guardando..." : "Confirmar"}
+              {isActionLoading ? "Confirmando..." : "Confirmar"}
             </button>
           </div>
         </>

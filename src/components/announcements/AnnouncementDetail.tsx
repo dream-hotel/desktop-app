@@ -350,6 +350,32 @@ function AnnouncementDetailInner({
               </div>
             )}
           </dl>
+
+          {isAdmin && announcement.views && (
+            <div className="mt-6 border-t border-border pt-5">
+              <h3 className="font-alexandria text-[13px] font-medium uppercase tracking-wide text-text-secondary">
+                Leído por ({announcement.views.length})
+              </h3>
+              {announcement.views.length === 0 ? (
+                <p className="mt-2 font-inter text-xs text-text-secondary">
+                  Nadie ha visto este comunicado todavía.
+                </p>
+              ) : (
+                <ul className="mt-2 divide-y divide-border/40 pl-0 list-none">
+                  {announcement.views.map((view) => (
+                    <li key={view.userId} className="flex justify-between items-center py-2 font-inter text-xs text-text-primary">
+                      <span className="font-medium">
+                        {view.user.fullName} {view.user.lastName || ""}
+                      </span>
+                      <span className="text-[11px] text-text-secondary">
+                        {formatDateLong(view.viewedAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

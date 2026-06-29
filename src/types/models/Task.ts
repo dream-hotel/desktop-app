@@ -19,6 +19,7 @@ export interface BackendTaskAssignee {
   taskId: number;
   userId: number;
   user: BackendTaskUser;
+  viewedAt: string | null;
 }
 
 export interface BackendTaskFile {

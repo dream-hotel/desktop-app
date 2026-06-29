@@ -24,6 +24,13 @@ function formatDateLong(iso: string): string {
   return `${d.getDate()} de ${MONTHS_ES_LONG[d.getMonth()]} de ${d.getFullYear()}`;
 }
 
+function formatDateTimeLong(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate()} de ${MONTHS_ES_LONG[d.getMonth()]} de ${d.getFullYear()}, ${String(
+    d.getHours(),
+  ).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 export default function ArticleFullView({
   article,
   isAdmin,
@@ -149,6 +156,32 @@ export default function ArticleFullView({
               </div>
             )}
           </div>
+
+          {isAdmin && article.views && (
+            <div className="mt-8 border-t border-border pt-6">
+              <h3 className="font-alexandria text-[13px] font-medium uppercase tracking-wide text-text-secondary">
+                Leído por ({article.views.length})
+              </h3>
+              {article.views.length === 0 ? (
+                <p className="mt-2 font-inter text-xs text-text-secondary">
+                  Nadie ha visto este artículo todavía.
+                </p>
+              ) : (
+                <ul className="mt-3 divide-y divide-border/40 pl-0 list-none">
+                  {article.views.map((view) => (
+                    <li key={view.userId} className="flex justify-between items-center py-2.5 font-inter text-xs text-text-primary">
+                      <span className="font-medium">
+                        {view.user.fullName} {view.user.lastName || ""}
+                      </span>
+                      <span className="text-[11px] text-text-secondary">
+                        {formatDateTimeLong(view.viewedAt)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </article>
       </div>
     </div>

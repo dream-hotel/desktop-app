@@ -4,6 +4,12 @@ import { LoginRequest } from "../types/request/LoginRequest";
 import * as authService from "../service/authService";
 import { onUnauthorized } from "../service/apiClient";
 
+export interface LoginResult {
+  success: boolean;
+  mustChangePassword?: boolean;
+  message?: string;
+}
+
 export interface AuthState {
   user: User | null;
   permissions: string[];
@@ -11,7 +17,7 @@ export interface AuthState {
   isLoading: boolean;
   error: string | null;
   sessionExpired: boolean;
-  login: (request: LoginRequest) => Promise<boolean>;
+  login: (request: LoginRequest) => Promise<LoginResult>;
   logout: () => void;
   clearSessionExpired: () => void;
   changePassword: (password: string) => Promise<void>;
@@ -28,22 +34,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  const login = useCallback(async (request: LoginRequest): Promise<boolean> => {
+  // States to hold session details temporarily if forced password change is required
+  const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [pendingPermissions, setPendingPermissions] = useState<string[]>([]);
+
+  const login = useCallback(async (request: LoginRequest): Promise<LoginResult> => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await authService.login(request);
       if (response.success && response.user) {
-        setUser(response.user);
-        setPermissions(response.permissions ?? []);
-        setSessionExpired(false);
-        return true;
+        if (response.user.mustChangePassword) {
+          setPendingUser(response.user);
+          setPendingPermissions(response.permissions ?? []);
+          setSessionExpired(false);
+          return { success: true, mustChangePassword: true };
+        } else {
+          setUser(response.user);
+          setPermissions(response.permissions ?? []);
+          setSessionExpired(false);
+          return { success: true, mustChangePassword: false };
+        }
       }
       setError(response.message);
-      return false;
+      return { success: false, message: response.message };
     } catch {
-      setError("Error de conexión. Intente nuevamente.");
-      return false;
+      const errMsg = "Error de conexión. Intente nuevamente.";
+      setError(errMsg);
+      return { success: false, message: errMsg };
     } finally {
       setIsLoading(false);
     }
@@ -52,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setPermissions([]);
+    setPendingUser(null);
+    setPendingPermissions([]);
     authService.logout();
   }, []);
 
@@ -61,8 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const changePassword = useCallback(async (password: string): Promise<void> => {
     await authService.changePassword(password);
-    setUser((prev) => (prev ? { ...prev, mustChangePassword: false } : null));
-  }, []);
+    if (pendingUser) {
+      setUser({ ...pendingUser, mustChangePassword: false });
+      setPermissions(pendingPermissions);
+      setPendingUser(null);
+      setPendingPermissions([]);
+    } else {
+      setUser((prev) => (prev ? { ...prev, mustChangePassword: false } : null));
+    }
+  }, [pendingUser, pendingPermissions]);
 
   useEffect(() => {
     return onUnauthorized(() => {
