@@ -410,6 +410,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showPassword ? (
                   <Eye size={17} strokeWidth={1.8} className="text-white" />
@@ -438,6 +439,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 tabIndex={-1}
+                aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showConfirmPassword ? (
                   <Eye size={17} strokeWidth={1.8} className="text-white" />
@@ -514,6 +516,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showPassword ? (
                   <Eye size={17} strokeWidth={1.8} className="text-white" />
@@ -542,6 +545,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 className="absolute top-1/2 right-[14px] flex -translate-y-1/2 items-center justify-center border-none bg-transparent p-1 shadow-none hover:opacity-80 cursor-pointer"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 tabIndex={-1}
+                aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
                 {showConfirmPassword ? (
                   <Eye size={17} strokeWidth={1.8} className="text-white" />
