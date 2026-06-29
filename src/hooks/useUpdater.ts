@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { check } from "@tauri-apps/plugin-updater";
+import { useState, useCallback, useRef } from "react";
+import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 
 export type UpdateStatus =
@@ -15,6 +15,11 @@ export function useUpdater() {
   const [status, setStatus] = useState<UpdateStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [manifest, setManifest] = useState<{ version: string; body?: string } | null>(null);
+  // Porcentaje de descarga (0-100). -1 indica progreso indeterminado.
+  const [progress, setProgress] = useState(0);
+
+  // Guardamos el Update detectado para no volver a llamar a check() al instalar.
+  const updateRef = useRef<Update | null>(null);
 
   const checkForUpdates = useCallback(async (silent = false) => {
     if (!silent) setStatus("checking");
@@ -23,6 +28,7 @@ export function useUpdater() {
     try {
       const update = await check();
       if (update) {
+        updateRef.current = update;
         setManifest({
           version: update.version,
           body: update.body,
@@ -30,6 +36,7 @@ export function useUpdater() {
         setStatus("available");
         return update;
       } else {
+        updateRef.current = null;
         setStatus("not-available");
         return null;
       }
@@ -46,15 +53,40 @@ export function useUpdater() {
   const downloadAndInstall = useCallback(async () => {
     setStatus("downloading");
     setError(null);
+    setProgress(0);
 
     try {
-      const update = await check();
-      if (update) {
-        await update.downloadAndInstall();
-        setStatus("ready");
-        // Reiniciar la aplicación para aplicar los cambios
-        await relaunch();
+      // Reutilizamos el update ya detectado; si no existe (instalación directa), verificamos.
+      const update = updateRef.current ?? (await check());
+      if (!update) {
+        setStatus("not-available");
+        return;
       }
+
+      let downloaded = 0;
+      let contentLength = 0;
+
+      await update.downloadAndInstall((event) => {
+        switch (event.event) {
+          case "Started":
+            contentLength = event.data.contentLength ?? 0;
+            setProgress(contentLength > 0 ? 0 : -1);
+            break;
+          case "Progress":
+            downloaded += event.data.chunkLength;
+            if (contentLength > 0) {
+              setProgress(Math.min(100, Math.round((downloaded / contentLength) * 100)));
+            }
+            break;
+          case "Finished":
+            setProgress(100);
+            break;
+        }
+      });
+
+      setStatus("ready");
+      // Reiniciar la aplicación para aplicar los cambios.
+      await relaunch();
     } catch (err) {
       console.error("Error downloading update:", err);
       setError(err instanceof Error ? err.message : "Error al descargar la actualización.");
@@ -66,6 +98,7 @@ export function useUpdater() {
     status,
     error,
     manifest,
+    progress,
     checkForUpdates,
     downloadAndInstall,
   };

@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./state/AuthContext";
 import { ThemeProvider } from "./state/ThemeContext";
+import AutoUpdater from "./components/updater/AutoUpdater";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import "./App.css";
@@ -8,6 +9,7 @@ import "./App.css";
 function App() {
   return (
     <ThemeProvider>
+      <AutoUpdater />
       <AuthProvider>
         <HashRouter>
           <Routes>
