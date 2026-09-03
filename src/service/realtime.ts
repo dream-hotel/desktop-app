@@ -65,8 +65,7 @@ function getEcho(): Echo<"pusher"> | null {
       forceTLS: true,
       enabledTransports: ["ws", "wss"],
     });
-  } catch (err) {
-    console.warn("[realtime] Echo init failed; falling back to polling.", err);
+  } catch {
     echo = null;
   }
 
@@ -98,9 +97,7 @@ export function subscribeToResource(
       for (const fn of current) {
         try {
           fn(payload);
-        } catch (err) {
-          console.warn(`[realtime] handler error for "${resource}"`, err);
-        }
+        } catch {}
       }
     });
   }

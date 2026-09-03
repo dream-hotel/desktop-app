@@ -85,12 +85,12 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
 
   return (
     <aside
-      className={`relative flex h-full flex-col overflow-visible border-r border-border bg-surface transition-all duration-250 ${
+      className={`relative flex h-full flex-col overflow-visible border-r border-primary/20 bg-primary-light transition-all duration-250 ${
         collapsed ? "w-16 min-w-16" : "w-60 min-w-60"
       }`}
     >
       {/* Header — logo + collapse button */}
-      <div className="border-b border-border px-3 pt-4 pb-3">
+      <div className="border-b border-primary/15 px-3 pt-4 pb-3">
         <div className={`flex items-center gap-2 ${collapsed ? "justify-center" : "justify-between pl-2"}`}>
           <div className="flex items-center gap-[10px]">
             <img
@@ -111,8 +111,8 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
           </div>
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className={`flex h-7 w-7 items-center justify-center rounded-[8px] border border-border bg-surface text-text-secondary transition-colors hover:bg-surface-hover hover:text-primary ${
-              collapsed ? "absolute right-[-14px] top-5 z-10 shadow-[0px_2px_6px_rgba(0,0,0,0.08)]" : ""
+            className={`flex h-7 w-7 items-center justify-center rounded-[8px] border border-primary/20 bg-bg/80 text-text-secondary transition-colors hover:bg-bg hover:text-primary ${
+              collapsed ? "absolute right-[-14px] top-5 z-10" : ""
             }`}
             title={collapsed ? "Expandir" : "Colapsar"}
             aria-label={collapsed ? "Expandir barra lateral" : "Colapsar barra lateral"}
@@ -136,8 +136,8 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
                 collapsed ? "justify-center px-0" : ""
               } ${
                 activeItem === item.id
-                  ? "bg-primary-light font-medium text-primary"
-                  : "bg-transparent text-text-secondary hover:bg-surface-hover hover:text-primary"
+                  ? "bg-bg/90 font-medium text-primary"
+                  : "bg-transparent text-text-body hover:bg-bg/55 hover:text-primary"
               }`}
               onClick={() => onNavigate(item.id)}
               title={collapsed ? item.label : undefined}
@@ -171,8 +171,8 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
                 collapsed ? "justify-center px-0" : ""
               } ${
                 activeItem === item.id
-                  ? "bg-primary-light font-medium text-primary"
-                  : "bg-transparent text-text-secondary hover:bg-surface-hover hover:text-primary"
+                  ? "bg-bg/90 font-medium text-primary"
+                  : "bg-transparent text-text-body hover:bg-bg/55 hover:text-primary"
               }`}
               onClick={() => onNavigate(item.id)}
               title={collapsed ? item.label : undefined}
@@ -187,13 +187,13 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
       </nav>
 
       {/* User card footer */}
-      <div className="border-t border-border px-3 py-2.5">
+      <div className="border-t border-primary/15 px-3 py-2.5">
         <button
           onClick={() => onNavigate("cuenta")}
           className={`flex w-full items-center gap-2.5 rounded-[10px] px-2 py-1.5 text-left transition-colors ${
             accountActive
-              ? "bg-primary-light"
-              : "hover:bg-surface-hover"
+              ? "bg-bg/90"
+              : "hover:bg-bg/55"
           }`}
           title={collapsed ? user.fullName : "Mi cuenta"}
           aria-label="Mi cuenta"

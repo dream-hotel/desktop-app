@@ -67,8 +67,8 @@ export default function UrgentTasksList({
   onOpenTasks,
 }: UrgentTasksListProps) {
   return (
-    <section className="flex h-full min-w-0 flex-col rounded-2xl border border-border bg-surface p-5">
-      <div className="mb-3 flex items-start justify-between gap-4">
+    <section className="flex h-full min-w-0 flex-col lg:pr-8">
+      <div className="mb-3 flex items-start justify-between gap-4 border-b border-border pb-4">
         <div>
           <div className="flex items-center gap-2">
             <ClipboardCheck size={17} strokeWidth={1.7} className="text-primary" />
@@ -121,7 +121,7 @@ export default function UrgentTasksList({
                 <button
                   type="button"
                   onClick={() => onOpenTasks(task.id)}
-                  className="group -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left transition-[background-color,border-color,box-shadow] hover:border-border hover:bg-surface-hover hover:shadow-[0_4px_14px_rgba(30,29,22,0.05)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
+                  className="group -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 border-l-2 border-l-transparent px-3 py-3 text-left transition-colors hover:border-l-primary hover:bg-primary-light/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-inset"
                 >
                   <StatusIcon name={task.status.name} />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">

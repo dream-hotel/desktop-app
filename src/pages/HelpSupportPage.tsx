@@ -208,7 +208,7 @@ const CATEGORIES: FaqCategory[] = [
       },
       {
         q: "¿Dónde veo la versión de la aplicación?",
-        a: "En Configuración → Acerca de la aplicación se encuentra la versión instalada, el entorno y otros datos del sistema.",
+        a: "En Configuración → Acerca de la aplicación encontrarás la versión instalada de Dream by Stannum.",
       },
     ],
   },

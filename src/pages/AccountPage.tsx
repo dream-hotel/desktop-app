@@ -54,7 +54,7 @@ export default function AccountPage({ user, onLogout }: AccountPageProps) {
   const { status, error: updaterError, manifest, checkForUpdates, downloadAndInstall } = useUpdater();
 
   useEffect(() => {
-    getVersion().then(setCurrentAppVersion).catch(console.error);
+    getVersion().then(setCurrentAppVersion).catch(() => setCurrentAppVersion("No disponible"));
   }, []);
 
   const submitPassword = async (e: React.FormEvent) => {

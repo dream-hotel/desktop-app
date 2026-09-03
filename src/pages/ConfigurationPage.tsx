@@ -135,7 +135,7 @@ export default function ConfigurationPage() {
   }, [welcomeEnabled]);
 
   useEffect(() => {
-    getVersion().then(setAppVersion).catch(console.error);
+    getVersion().then(setAppVersion).catch(() => setAppVersion("No disponible"));
   }, []);
 
   return (
@@ -255,7 +255,7 @@ export default function ConfigurationPage() {
                   Acerca de la aplicación
                 </h2>
                 <p className="mt-0.5 font-inter text-[12px] text-text-secondary">
-                  Información del sistema y versión instalada.
+                  Información de Dream by Stannum.
                 </p>
               </div>
             </div>
@@ -272,18 +272,6 @@ export default function ConfigurationPage() {
                   Versión
                 </dt>
                 <dd className="text-text-primary">{appVersion}</dd>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <dt className="text-[11px] uppercase tracking-wide text-text-secondary">
-                  Entorno
-                </dt>
-                <dd className="text-text-primary">Desktop</dd>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <dt className="text-[11px] uppercase tracking-wide text-text-secondary">
-                  Año
-                </dt>
-                <dd className="text-text-primary">2026</dd>
               </div>
             </dl>
           </section>

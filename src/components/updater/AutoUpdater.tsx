@@ -14,8 +14,8 @@ const checkUpdatesOnStartup =
  * Si la variable no está definida, conserva el comportamiento anterior y
  * verifica las actualizaciones.
  *
- * Si no hay actualización, o si ocurre un error (p. ej. en desarrollo, donde
- * el updater no está disponible), no renderiza nada y la app continúa normal.
+ * Si no hay actualización o no puede comprobarse, la aplicación continúa
+ * normalmente sin interrumpir al usuario.
  */
 export default function AutoUpdater() {
   const { status, progress, manifest, checkForUpdates, downloadAndInstall } = useUpdater();

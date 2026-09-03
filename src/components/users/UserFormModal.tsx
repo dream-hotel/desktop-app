@@ -131,7 +131,7 @@ function translateServerError(message: string): string {
   }
   if (lower.includes("http 401")) return "Su sesión expiró. Inicie sesión nuevamente.";
   if (lower.includes("http 403")) return "No tiene permisos para realizar esta acción.";
-  if (lower.includes("http 500")) return "Ocurrió un error en el servidor. Intente nuevamente en unos minutos.";
+  if (lower.includes("http 500")) return "No pudimos guardar los cambios. Intente nuevamente en unos minutos.";
   return message;
 }
 

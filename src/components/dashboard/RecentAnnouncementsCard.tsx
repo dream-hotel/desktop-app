@@ -32,8 +32,8 @@ export default function RecentAnnouncementsCard({
   onOpenAll,
 }: RecentAnnouncementsCardProps) {
   return (
-    <section className="flex min-w-0 flex-col rounded-2xl border border-border bg-surface p-5">
-      <div className="mb-3 flex items-start justify-between gap-3">
+    <section className="flex min-w-0 flex-col pt-7">
+      <div className="mb-3 flex items-start justify-between gap-3 border-b border-border pb-4">
         <div>
           <div className="flex items-center gap-2">
             <Megaphone size={16} strokeWidth={1.7} className="text-primary" />
@@ -74,7 +74,7 @@ export default function RecentAnnouncementsCard({
                 <button
                   type="button"
                   onClick={() => onOpen(a.id)}
-                  className="group -mx-2 flex w-[calc(100%+1rem)] items-start gap-2.5 rounded-xl border border-transparent px-2.5 py-3 text-left transition-[background-color,border-color,box-shadow] hover:border-border hover:bg-surface-hover hover:shadow-[0_4px_14px_rgba(30,29,22,0.05)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
+                  className="group -mx-2 flex w-[calc(100%+1rem)] items-start gap-2.5 border-l-2 border-l-transparent px-2.5 py-3 text-left transition-colors hover:border-l-primary hover:bg-primary-light/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-inset"
                 >
                   <span className={`relative mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${tone.bg} ${tone.text}`}>
                     {a.type === "task" ? (

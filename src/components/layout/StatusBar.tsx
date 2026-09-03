@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Clock, Database, Wifi, WifiOff } from "lucide-react";
+import { CheckCircle2, Clock, LoaderCircle, WifiOff } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useSystemStatus } from "../../hooks/useSystemStatus";
 import { UserRole } from "../../types/response/AuthResponse";
@@ -67,26 +67,14 @@ export default function StatusBar() {
     return () => window.clearInterval(interval);
   }, []);
 
-  const dbInfo: { label: string; tone: Tone } =
-    status.database === "synced"
-      ? { label: "Base de datos: sincronizada", tone: "ok" }
-      : status.database === "down"
-        ? { label: "Base de datos: sin conexión", tone: "error" }
-        : status.database === "checking"
-          ? { label: "Base de datos: verificando…", tone: "neutral" }
-          : { label: "Base de datos: estado desconocido", tone: "warn" };
-
-  const serverInfo: { label: string; tone: Tone } =
-    status.network === "offline"
-      ? { label: "Sin red local", tone: "error" }
-      : status.server === "online"
-        ? {
-            label: status.latencyMs !== null ? `En línea (${status.latencyMs} ms)` : "En línea",
-            tone: "ok",
-          }
-        : status.server === "offline"
-          ? { label: "Servidor sin conexión", tone: "error" }
-          : { label: "Conectando…", tone: "neutral" };
+  const connectionInfo: { label: string; tone: Tone } =
+    status.network === "offline" || status.server === "offline"
+      ? { label: "Sin conexión", tone: "error" }
+      : status.database === "down" || status.database === "unknown"
+        ? { label: "Servicio temporalmente no disponible", tone: "warn" }
+        : status.server === "checking" || status.database === "checking"
+          ? { label: "Preparando tu espacio…", tone: "neutral" }
+          : { label: "Todo listo", tone: "ok" };
 
   const hasConnectionIssue =
     status.network === "offline" ||
@@ -100,30 +88,23 @@ export default function StatusBar() {
 
   return (
     <footer className="flex h-8 w-full shrink-0 items-center justify-between border-t border-border bg-surface px-4">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={status.refresh}
-          title={`${dbInfo.label}. Haga clic para volver a verificar.`}
+          title={`${connectionInfo.label}. Haz clic para comprobar nuevamente.`}
           className="flex items-center gap-[6px] rounded-md px-1 py-0.5 font-inter text-[11px] leading-[16.5px] transition-colors hover:bg-neutral-soft"
         >
-          <Database size={11} strokeWidth={1.6} className="text-text-secondary" />
-          <span className={TONE_TEXT[dbInfo.tone]}>{dbInfo.label}</span>
-          <span className={`h-[6px] w-[6px] rounded-full ${TONE_DOT[dbInfo.tone]}`} />
-        </button>
-
-        <div
-          className="flex items-center gap-[6px] font-inter text-[11px] leading-[16.5px]"
-          title={serverInfo.label}
-        >
-          {status.network === "online" && status.server === "online" ? (
-            <Wifi size={11} strokeWidth={1.6} className="text-text-secondary" />
+          {connectionInfo.tone === "ok" ? (
+            <CheckCircle2 size={12} strokeWidth={1.7} className="text-success" />
+          ) : connectionInfo.tone === "neutral" ? (
+            <LoaderCircle size={12} strokeWidth={1.7} className="animate-spin text-text-secondary" />
           ) : (
-            <WifiOff size={11} strokeWidth={1.6} className="text-danger" />
+            <WifiOff size={12} strokeWidth={1.7} className={TONE_TEXT[connectionInfo.tone]} />
           )}
-          <span className={TONE_TEXT[serverInfo.tone]}>{serverInfo.label}</span>
-          <span className={`h-[6px] w-[6px] rounded-full ${TONE_DOT[serverInfo.tone]}`} />
-        </div>
+          <span className={TONE_TEXT[connectionInfo.tone]}>{connectionInfo.label}</span>
+          <span className={`h-[6px] w-[6px] rounded-full ${TONE_DOT[connectionInfo.tone]}`} />
+        </button>
 
         {hasConnectionIssue && (
           <span className="font-inter text-[11px] text-danger" title={lastConnectionLabel}>

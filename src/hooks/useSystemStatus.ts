@@ -10,7 +10,6 @@ export interface SystemStatus {
   database: DatabaseState;
   lastCheckedAt: Date | null;
   lastOnlineAt: Date | null;
-  latencyMs: number | null;
   refresh: () => void;
 }
 
@@ -31,7 +30,6 @@ export function useSystemStatus(enabled: boolean = true): SystemStatus {
   const [database, setDatabase] = useState<DatabaseState>("checking");
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
   const [lastOnlineAt, setLastOnlineAt] = useState<Date | null>(null);
-  const [latencyMs, setLatencyMs] = useState<number | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const enabledRef = useRef(enabled);
@@ -43,7 +41,6 @@ export function useSystemStatus(enabled: boolean = true): SystemStatus {
     if (typeof navigator !== "undefined" && "onLine" in navigator && !navigator.onLine) {
       setServer("offline");
       setDatabase("unknown");
-      setLatencyMs(null);
       setLastCheckedAt(new Date());
       return;
     }
@@ -52,7 +49,6 @@ export function useSystemStatus(enabled: boolean = true): SystemStatus {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const startedAt = performance.now();
     try {
       const response = await checkHealth(controller.signal);
       if (controller.signal.aborted) return;
@@ -63,13 +59,11 @@ export function useSystemStatus(enabled: boolean = true): SystemStatus {
       if (dbStatus === "up") setDatabase("synced");
       else if (dbStatus === "down") setDatabase("down");
       else setDatabase("unknown");
-      setLatencyMs(Math.round(performance.now() - startedAt));
       if (isServerOnline && dbStatus === "up") setLastOnlineAt(new Date());
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setServer("offline");
       setDatabase("unknown");
-      setLatencyMs(null);
     } finally {
       if (!controller.signal.aborted) setLastCheckedAt(new Date());
     }
@@ -86,7 +80,6 @@ export function useSystemStatus(enabled: boolean = true): SystemStatus {
       setNetwork("offline");
       setServer("offline");
       setDatabase("unknown");
-      setLatencyMs(null);
       setLastCheckedAt(new Date());
     }
     function handleVisibility() {
@@ -115,7 +108,6 @@ export function useSystemStatus(enabled: boolean = true): SystemStatus {
     database,
     lastCheckedAt,
     lastOnlineAt,
-    latencyMs,
     refresh: runCheck,
   };
 }

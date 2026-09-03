@@ -16,7 +16,7 @@ export default function WorkloadOverview({ metrics, isAdmin }: WorkloadOverviewP
   const progressWidth = percentage(metrics.inProgressTasks, metrics.activeTasks);
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5">
+    <section className="pb-7">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <BarChart3 size={16} strokeWidth={1.7} className="text-primary" />
@@ -41,14 +41,14 @@ export default function WorkloadOverview({ metrics, isAdmin }: WorkloadOverviewP
         <span className="h-full bg-warning" style={{ width: `${progressWidth}%` }} />
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-2">
-        <div className="rounded-xl bg-neutral-soft/70 p-3">
+      <dl className="mt-4 grid grid-cols-2 divide-x divide-border border-y border-border py-3">
+        <div className="pr-4">
           <dt className="flex items-center gap-1.5 font-inter text-[10px] text-text-secondary">
             <CircleDashed size={12} strokeWidth={1.7} /> Pendientes
           </dt>
           <dd className="mt-1 font-inter text-lg font-semibold text-text-primary">{metrics.pendingTasks}</dd>
         </div>
-        <div className="rounded-xl bg-warning/10 p-3">
+        <div className="pl-4">
           <dt className="flex items-center gap-1.5 font-inter text-[10px] text-warning">
             <Loader size={12} strokeWidth={1.7} /> En progreso
           </dt>
@@ -56,7 +56,7 @@ export default function WorkloadOverview({ metrics, isAdmin }: WorkloadOverviewP
         </div>
       </dl>
 
-      <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+      <div className="mt-3 flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-inter text-[10.5px] text-text-secondary">
           <CalendarOff size={12} strokeWidth={1.7} /> Sin fecha límite
         </span>

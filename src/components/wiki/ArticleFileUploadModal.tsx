@@ -60,8 +60,7 @@ export default function ArticleFileUploadModal({
       const nativeFile = new File([bytes], fileName, { type: mimeType });
       
       validateAndSetFile(nativeFile);
-    } catch (err) {
-      console.error("Native drop error:", err);
+    } catch {
       setError("No se pudo leer el archivo arrastrado.");
     } finally {
       setLoading(false);
@@ -157,9 +156,7 @@ export default function ArticleFileUploadModal({
         try {
           const result = await mammoth.extractRawText({ arrayBuffer });
           extractedText = result.value;
-        } catch (err) {
-          console.error("Error al extraer texto de Word:", err);
-        }
+        } catch {}
       } else if (ext === "pdf") {
         try {
           const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
@@ -174,9 +171,7 @@ export default function ArticleFileUploadModal({
             text += pageText + "\n";
           }
           extractedText = text;
-        } catch (err) {
-          console.error("Error al extraer texto de PDF:", err);
-        }
+        } catch {}
       }
 
       await onSubmit(file, title.trim(), extractedText || undefined);

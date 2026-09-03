@@ -12,12 +12,12 @@ interface StatsCardProps {
 
 const ACCENT_STYLES: Record<
   NonNullable<StatsCardProps["accent"]>,
-  { iconBg: string; iconText: string; edge: string }
+  { iconBg: string; iconText: string }
 > = {
-  default: { iconBg: "bg-primary-light", iconText: "text-primary", edge: "bg-primary" },
-  warning: { iconBg: "bg-warning/15", iconText: "text-warning", edge: "bg-warning" },
-  danger: { iconBg: "bg-danger/10", iconText: "text-danger", edge: "bg-danger" },
-  success: { iconBg: "bg-success/15", iconText: "text-success", edge: "bg-success" },
+  default: { iconBg: "bg-primary-light", iconText: "text-primary" },
+  warning: { iconBg: "bg-warning/15", iconText: "text-warning" },
+  danger: { iconBg: "bg-danger/10", iconText: "text-danger" },
+  success: { iconBg: "bg-success/15", iconText: "text-success" },
 };
 
 export default function StatsCard({
@@ -31,17 +31,16 @@ export default function StatsCard({
   const styles = ACCENT_STYLES[accent];
   const interactive = typeof onClick === "function";
   const baseClasses =
-    "group relative flex min-h-[138px] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface p-4 text-left transition-[background-color,border-color,box-shadow] duration-200";
+    "group relative flex min-h-[122px] min-w-0 flex-col px-5 py-4 text-left transition-colors duration-200";
   const interactiveClasses = interactive
-    ? "cursor-pointer hover:border-border-strong hover:bg-surface-hover hover:shadow-[0_8px_24px_rgba(30,29,22,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+    ? "cursor-pointer hover:bg-primary-light/45 focus-visible:z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-inset"
     : "";
 
   const content = (
     <>
-      <span aria-hidden="true" className={`absolute inset-x-0 top-0 h-[3px] ${styles.edge}`} />
       <div className="flex items-center justify-between">
         <div
-          className={`flex h-9 w-9 items-center justify-center rounded-[10px] ${styles.iconBg} ${styles.iconText}`}
+          className={`flex h-8 w-8 items-center justify-center rounded-full ${styles.iconBg} ${styles.iconText}`}
         >
           {icon}
         </div>
@@ -53,8 +52,8 @@ export default function StatsCard({
           />
         )}
       </div>
-      <div className="mt-3 flex flex-col gap-0.5">
-        <span className="font-inter text-[30px] font-semibold leading-8 tracking-[-0.02em] text-text-primary">
+      <div className="mt-2 flex flex-col gap-0.5">
+        <span className="font-inter text-[28px] font-semibold leading-8 tracking-[-0.02em] text-text-primary">
           {value}
         </span>
         <span className="font-inter text-[13px] font-medium leading-[18px] text-text-body">

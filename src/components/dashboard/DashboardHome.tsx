@@ -4,8 +4,6 @@ import {
   Clock3,
   RotateCw,
   ShieldAlert,
-  UserRound,
-  UsersRound,
 } from "lucide-react";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAnnouncementBell, requestNavigate } from "../../hooks/useAnnouncementBell";
@@ -35,14 +33,13 @@ export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-5 px-8 py-6" aria-label="Cargando dashboard">
-        <div className="h-20 animate-pulse rounded-2xl bg-neutral-soft" />
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="flex flex-1 flex-col gap-7 px-8 py-6" aria-label="Cargando dashboard">
+        <div className="grid grid-cols-2 divide-x divide-border border-y border-border lg:grid-cols-4">
           {[0, 1, 2, 3].map((item) => (
-            <div key={item} className="h-[138px] animate-pulse rounded-2xl bg-neutral-soft" />
+            <div key={item} className="h-[122px] animate-pulse bg-neutral-soft/35" />
           ))}
         </div>
-        <div className="h-72 animate-pulse rounded-2xl bg-neutral-soft" />
+        <div className="h-72 animate-pulse border-t border-border bg-neutral-soft/20" />
       </div>
     );
   }
@@ -58,7 +55,7 @@ export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
             No se pudo cargar el dashboard
           </h2>
           <p className="mt-1 font-inter text-[11px] leading-relaxed text-text-secondary">
-            {error || "Verifica la conexión con el servidor local e inténtalo nuevamente."}
+            {error || "No pudimos cargar tu información. Verifica tu conexión e inténtalo nuevamente."}
           </p>
           <button
             type="button"
@@ -97,22 +94,8 @@ export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
     ? "No hay tareas pendientes ni en progreso para el equipo."
     : "No tienes tareas pendientes ni en progreso en este momento.";
 
-  const operationalMessage = metrics.overdueTasks > 0
-    ? "Hay tareas fuera de plazo"
-    : metrics.dueSoonTasks > 0
-      ? "El turno requiere seguimiento"
-      : metrics.criticalTasks > 0
-        ? "Hay prioridades críticas activas"
-        : "La operación está al día";
-
-  const operationalDescription = metrics.overdueTasks > 0
-    ? "La cola está ordenada para que resuelvas primero los vencimientos más urgentes."
-    : metrics.dueSoonTasks > 0
-      ? "Revisa los próximos vencimientos antes de continuar con el resto de la carga."
-      : "No hay vencimientos inmediatos. Puedes continuar con la carga activa del turno.";
-
   return (
-    <div className="flex flex-1 flex-col gap-5 px-8 pb-8 pt-5">
+    <div className="flex flex-1 flex-col gap-7 px-8 pb-8 pt-5">
       {error && (
         <div className="flex items-center justify-between rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 font-inter text-[12px] text-danger" role="alert">
           <span>{error}</span>
@@ -126,39 +109,6 @@ export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
         </div>
       )}
 
-      <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface px-5 py-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${metrics.overdueTasks > 0 ? "bg-danger/10 text-danger" : "bg-success/10 text-success"}`}>
-            {metrics.overdueTasks > 0 ? (
-              <ShieldAlert size={20} strokeWidth={1.7} />
-            ) : (
-              <CheckCircle2 size={20} strokeWidth={1.7} />
-            )}
-          </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-inter text-[16px] font-semibold text-text-primary">{operationalMessage}</h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-neutral-soft px-2 py-0.5 font-inter text-[9.5px] font-semibold uppercase tracking-[0.06em] text-text-secondary">
-                {isAdmin ? <UsersRound size={10} /> : <UserRound size={10} />}
-                {isAdmin ? "Vista del equipo" : "Vista personal"}
-              </span>
-            </div>
-            <p className="mt-0.5 truncate font-inter text-[11px] text-text-secondary">
-              {operationalDescription}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => refresh()}
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 font-inter text-[10.5px] font-semibold text-text-secondary transition-colors hover:border-border-strong hover:bg-surface-hover hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
-          aria-label="Actualizar dashboard"
-        >
-          <RotateCw size={12} strokeWidth={1.8} />
-          Actualizar
-        </button>
-      </section>
-
       <section aria-labelledby="dashboard-priorities-heading">
         <div className="mb-2.5 flex items-end justify-between">
           <div>
@@ -167,9 +117,9 @@ export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
             </h2>
             <p className="font-inter text-[10.5px] text-text-secondary">Lo que necesita atención antes de continuar con el turno.</p>
           </div>
-          <span className="font-inter text-[10px] text-text-secondary">Actualización automática</span>
+          <span className="font-inter text-[10px] text-text-secondary">Información al momento</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 divide-x divide-border border-y border-border lg:grid-cols-4">
           <StatsCard
             icon={<ShieldAlert size={19} strokeWidth={1.7} />}
             value={metrics.overdueTasks}
@@ -204,14 +154,14 @@ export default function DashboardHome({ onNavigate }: DashboardHomeProps) {
         </div>
       </section>
 
-      <div className="grid min-h-0 grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)]">
+      <div className="grid min-h-0 grid-cols-1 items-stretch gap-7 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)] lg:gap-0">
         <UrgentTasksList
           tasks={data.urgentTasks}
           title={tasksTitle}
           emptyMessage={tasksEmpty}
           onOpenTasks={(taskId) => onNavigate("tareas", taskId ? { taskId } : undefined)}
         />
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className="flex min-w-0 flex-col divide-y divide-border border-t border-border pt-7 lg:border-l lg:border-t-0 lg:pb-1 lg:pl-8 lg:pt-0">
           <WorkloadOverview metrics={metrics} isAdmin={isAdmin} />
           <RecentAnnouncementsCard
             announcements={data.announcements}

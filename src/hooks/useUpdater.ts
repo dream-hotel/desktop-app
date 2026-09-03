@@ -40,10 +40,9 @@ export function useUpdater() {
         setStatus("not-available");
         return null;
       }
-    } catch (err) {
-      console.error("Error checking for updates:", err);
+    } catch {
       if (!silent) {
-        setError(err instanceof Error ? err.message : "Error al buscar actualizaciones.");
+        setError("No pudimos buscar actualizaciones en este momento.");
         setStatus("error");
       }
       return null;
@@ -87,9 +86,8 @@ export function useUpdater() {
       setStatus("ready");
       // Reiniciar la aplicación para aplicar los cambios.
       await relaunch();
-    } catch (err) {
-      console.error("Error downloading update:", err);
-      setError(err instanceof Error ? err.message : "Error al descargar la actualización.");
+    } catch {
+      setError("No pudimos instalar la actualización. Inténtalo nuevamente.");
       setStatus("error");
     }
   }, []);

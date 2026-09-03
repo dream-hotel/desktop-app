@@ -67,14 +67,38 @@ function buildQueryString(query: object | undefined): string {
 }
 
 async function readErrorMessage(response: Response): Promise<string> {
+  if (response.status >= 500) {
+    return "No pudimos completar la operación. Inténtalo nuevamente en unos minutos.";
+  }
+  if (response.status === 403) {
+    return "No tienes permiso para realizar esta acción.";
+  }
+
   try {
     const body = await response.json();
     if (Array.isArray(body?.message)) return body.message.join(", ");
-    if (typeof body?.message === "string") return body.message;
+    if (typeof body?.message === "string") {
+      if (response.status === 401) {
+        if (/invalid credentials/i.test(body.message)) {
+          return "El correo o la contraseña son incorrectos.";
+        }
+        if (/verificaci[oó]n|c[oó]digo/i.test(body.message)) {
+          return body.message;
+        }
+        return "Tu sesión terminó. Vuelve a iniciar sesión para continuar.";
+      }
+      if (!/server error|sqlstate|exception|http\s*\d+/i.test(body.message)) {
+        return body.message;
+      }
+    }
   } catch {
-    // body wasn't JSON; fall through
+    // La respuesta no incluyó un mensaje que pueda mostrarse al usuario.
   }
-  return `HTTP ${response.status}`;
+
+  if (response.status === 401) return "Tu sesión terminó. Vuelve a iniciar sesión para continuar.";
+  if (response.status === 404) return "No encontramos la información solicitada.";
+  if (response.status === 422) return "Revisa la información ingresada e inténtalo nuevamente.";
+  return "No pudimos completar la operación. Inténtalo nuevamente.";
 }
 
 async function handleRefresh(): Promise<string | null> {

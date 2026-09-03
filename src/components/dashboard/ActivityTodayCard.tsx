@@ -16,7 +16,7 @@ export default function ActivityTodayCard({ points, scope }: ActivityTodayCardPr
   const total = values.reduce((sum, point) => sum + point.count, 0);
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5">
+    <section className="border-t border-border pt-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2">
           <Activity size={16} strokeWidth={1.7} className="text-primary" />
@@ -34,7 +34,7 @@ export default function ActivityTodayCard({ points, scope }: ActivityTodayCardPr
       </div>
 
       {total === 0 ? (
-        <div className="mt-4 flex h-16 items-center justify-center rounded-xl bg-neutral-soft/60 font-inter text-[11px] text-text-secondary">
+        <div className="mt-4 flex h-16 items-center justify-center border-y border-border bg-neutral-soft/25 font-inter text-[11px] text-text-secondary">
           Aún no hay actividad registrada hoy.
         </div>
       ) : (

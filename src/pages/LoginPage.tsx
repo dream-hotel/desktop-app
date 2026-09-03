@@ -19,7 +19,7 @@ export default function LoginPage() {
   }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
-    getVersion().then(setAppVersion).catch(console.error);
+    getVersion().then(setAppVersion).catch(() => undefined);
   }, []);
 
   function handleLoginSuccess() {

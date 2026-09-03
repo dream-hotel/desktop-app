@@ -86,7 +86,7 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
     }
     return {
       success: false,
-      message: "Error de red. No se pudo conectar al servidor.",
+      message: "No pudimos conectarnos. Verifica tu conexión e inténtalo nuevamente.",
     };
   }
 }
@@ -111,7 +111,7 @@ export async function requestPasswordReset(email: string): Promise<{ success: bo
     if (error instanceof ApiError) {
       return { success: false, message: error.message };
     }
-    return { success: false, message: "Error de red. No se pudo conectar al servidor." };
+    return { success: false, message: "No pudimos conectarnos. Verifica tu conexión e inténtalo nuevamente." };
   }
 }
 
@@ -123,7 +123,7 @@ export async function verifyResetToken(email: string, token: string): Promise<{ 
     if (error instanceof ApiError) {
       return { success: false, message: error.message };
     }
-    return { success: false, message: "Error de red. No se pudo conectar al servidor." };
+    return { success: false, message: "No pudimos conectarnos. Verifica tu conexión e inténtalo nuevamente." };
   }
 }
 
@@ -135,7 +135,7 @@ export async function verifyAndSetPassword(email: string, token: string, passwor
     if (error instanceof ApiError) {
       return { success: false, message: error.message };
     }
-    return { success: false, message: "Error de red. No se pudo conectar al servidor." };
+    return { success: false, message: "No pudimos conectarnos. Verifica tu conexión e inténtalo nuevamente." };
   }
 }
 

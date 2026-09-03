@@ -26,49 +26,37 @@ export default function DocumentViewer({ fileUrl, fileName }: DocumentViewerProp
     let objectUrl: string | null = null;
 
     const loadDocument = async () => {
-      console.log("[DocumentViewer] Iniciando carga de:", fileName);
       setView({ type: "loading" });
       
       try {
         const fullUrl = getFullUrl(fileUrl);
         const token = getAccessToken();
         
-        console.log("[DocumentViewer] Usando Tauri Native HTTP para bypass de CORS...");
         const response = await tauriFetch(fullUrl, {
           method: "GET",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
         if (!response.ok) {
-          throw new Error(`Servidor respondió con status ${response.status}`);
+          throw new Error("No pudimos abrir este documento.");
         }
         
         const arrayBuffer = await response.arrayBuffer();
-        const blobData = new Blob([arrayBuffer]);
-        console.log("[DocumentViewer] Bytes recibidos:", blobData.size);
 
         const ext = fileUrl.split(".").pop()?.split(/[#?]/)[0].toLowerCase();
-        console.log("[DocumentViewer] Extensión detectada:", ext);
 
-        if (cancelled) {
-          console.log("[DocumentViewer] Petición terminada pero el componente ya se desmontó.");
-          return;
-        }
+        if (cancelled) return;
 
         if (ext === "pdf") {
-          console.log("[DocumentViewer] Creando Blob URL para PDF...");
           const pdfBlob = new Blob([arrayBuffer], { type: "application/pdf" });
           objectUrl = URL.createObjectURL(pdfBlob);
-          console.log("[DocumentViewer] Blob URL generado:", objectUrl);
           setView({ type: "pdf", url: objectUrl });
         } 
         else if (ext === "docx" || ext === "doc") {
-          console.log("[DocumentViewer] Procesando Word con Mammoth...");
           const result = await mammoth.convertToHtml({ arrayBuffer });
           setView({ type: "word", html: result.value });
         }
         else if (ext === "xlsx" || ext === "xls") {
-          console.log("[DocumentViewer] Procesando Excel con SheetJS...");
           const workbook = XLSX.read(arrayBuffer, { type: "array" });
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
@@ -76,12 +64,11 @@ export default function DocumentViewer({ fileUrl, fileName }: DocumentViewerProp
           setView({ type: "excel", data });
         }
         else {
-          setView({ type: "error", message: `Formato .${ext} no soportado.` });
+          setView({ type: "error", message: "Este formato no se puede previsualizar." });
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
-          console.error("[DocumentViewer] ERROR:", err);
-          setView({ type: "error", message: err instanceof Error ? err.message : "Error al cargar." });
+          setView({ type: "error", message: "No pudimos abrir este documento." });
         }
       }
     };
@@ -91,11 +78,10 @@ export default function DocumentViewer({ fileUrl, fileName }: DocumentViewerProp
     return () => {
       cancelled = true;
       if (objectUrl) {
-        console.log("[DocumentViewer] Limpiando Blob URL:", objectUrl);
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [fileUrl]); // Quitamos fileName para evitar re-renders si el título cambia levemente
+  }, [fileUrl]);
 
   if (view.type === "loading") {
     return (
