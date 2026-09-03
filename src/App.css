@@ -66,6 +66,23 @@
     color: var(--color-text-primary);
   }
 
+  button,
+  [role="button"],
+  a[href] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  :where(button, [role="button"], a[href], input, textarea, select):focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 65%, transparent);
+    outline-offset: 2px;
+  }
+
   #root {
     width: 100vw;
     height: 100vh;
@@ -121,6 +138,17 @@
   /* Native form controls also pick up the right color scheme */
   [data-theme="light"] {
     color-scheme: light;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
   }
 
   /* Remap inline SVG colors that were hardcoded to light-mode hex.

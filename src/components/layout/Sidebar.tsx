@@ -145,14 +145,14 @@ export default function Sidebar({ activeItem, onNavigate, user }: SidebarProps) 
               <span className="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center">
                 {item.icon}
                 {collapsed && item.id === "anuncios" && unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary font-inter text-[8px] font-semibold text-white leading-none">
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary font-inter text-[8px] font-semibold text-on-accent leading-none">
                     {unreadCount}
                   </span>
                 )}
               </span>
               {!collapsed && <span className="flex-1">{item.label}</span>}
               {!collapsed && item.id === "anuncios" && unreadCount > 0 && (
-                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 font-inter text-[11px] font-semibold text-white leading-none">
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 font-inter text-[11px] font-semibold text-on-accent leading-none">
                   {unreadCount}
                 </span>
               )}

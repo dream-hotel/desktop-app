@@ -2,10 +2,17 @@ import { useEffect, useRef } from "react";
 import { useUpdater } from "../../hooks/useUpdater";
 import UpdateOverlay from "./UpdateOverlay";
 
+const checkUpdatesOnStartup =
+  import.meta.env.VITE_CHECK_UPDATES_ON_STARTUP?.toLowerCase() !== "false";
+
 /**
  * Verifica si hay una actualización disponible al iniciar la aplicación.
  * Si la hay, muestra un overlay informativo y aplica la actualización de
  * forma automática (descarga, instala y reinicia).
+ *
+ * La verificación puede desactivarse con VITE_CHECK_UPDATES_ON_STARTUP=false.
+ * Si la variable no está definida, conserva el comportamiento anterior y
+ * verifica las actualizaciones.
  *
  * Si no hay actualización, o si ocurre un error (p. ej. en desarrollo, donde
  * el updater no está disponible), no renderiza nada y la app continúa normal.
@@ -15,6 +22,8 @@ export default function AutoUpdater() {
   const startedRef = useRef(false);
 
   useEffect(() => {
+    if (!checkUpdatesOnStartup) return;
+
     // Garantiza que la verificación se ejecute una sola vez por arranque.
     if (startedRef.current) return;
     startedRef.current = true;

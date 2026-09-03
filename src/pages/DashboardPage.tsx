@@ -18,7 +18,7 @@ import SchedulesPage from "./SchedulesPage";
 import AccountPage from "./AccountPage";
 import ConfigurationPage, { readWelcomeModalEnabled } from "./ConfigurationPage";
 import HelpSupportPage from "./HelpSupportPage";
-import { FilterTab } from "../components/tasks/TaskList";
+import { DeadlineScope, FilterTab } from "../components/tasks/TaskList";
 
 
 const PAGE_LABELS: Record<string, string> = {
@@ -77,6 +77,7 @@ export default function DashboardPage() {
   const [pendingTaskTab, setPendingTaskTab] = useState<FilterTab | null>(null);
   const [pendingTaskPriority, setPendingTaskPriority] = useState<string | null>(null);
   const [pendingTaskDueSoon, setPendingTaskDueSoon] = useState<boolean | null>(null);
+  const [pendingTaskDeadlineScope, setPendingTaskDeadlineScope] = useState<DeadlineScope | null>(null);
 
 
   useEffect(() => {
@@ -93,13 +94,14 @@ export default function DashboardPage() {
 
   const handleDashboardNavigate = (
     section: string,
-    options?: { tab?: FilterTab; priority?: string; dueSoon?: boolean; taskId?: number }
+    options?: { tab?: FilterTab; priority?: string; dueSoon?: boolean; deadlineScope?: DeadlineScope; taskId?: number }
   ) => {
     setActiveNav(section);
     if (section === "tareas") {
       if (options?.tab != null) setPendingTaskTab(options.tab);
       if (options?.priority != null) setPendingTaskPriority(options.priority);
       if (options?.dueSoon != null) setPendingTaskDueSoon(options.dueSoon);
+      if (options?.deadlineScope != null) setPendingTaskDeadlineScope(options.deadlineScope);
       if (options?.taskId != null) setPendingTaskId(options.taskId);
     }
   };
@@ -201,7 +203,7 @@ export default function DashboardPage() {
           {!sectionAllowed ? (
             <NoAccessView />
           ) : activeNav === "dashboard" ? (
-            <DashboardHome user={user} onNavigate={handleDashboardNavigate} />
+            <DashboardHome onNavigate={handleDashboardNavigate} />
           ) : activeNav === "tareas" ? (
             <TasksPage
               pendingSelectedId={pendingTaskId}
@@ -209,10 +211,12 @@ export default function DashboardPage() {
               pendingTab={pendingTaskTab}
               pendingPriority={pendingTaskPriority}
               pendingDueSoon={pendingTaskDueSoon}
+              pendingDeadlineScope={pendingTaskDeadlineScope}
               onConsumeFilters={() => {
                 setPendingTaskTab(null);
                 setPendingTaskPriority(null);
                 setPendingTaskDueSoon(null);
+                setPendingTaskDeadlineScope(null);
               }}
             />
           ) : activeNav === "wiki" ? (

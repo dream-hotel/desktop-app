@@ -111,6 +111,7 @@ export default function AnnouncementsList({
                   ? "bg-primary text-on-accent"
                   : "bg-bg text-text-secondary hover:bg-primary/5 hover:text-primary"
               }`}
+              aria-pressed={typeFilter === f.id}
             >
               {f.label}
             </button>
@@ -146,11 +147,12 @@ export default function AnnouncementsList({
                 <li key={a.id}>
                   <button
                     onClick={() => onSelectAnnouncement(a.id)}
-                    className={`flex w-full flex-col gap-1.5 border-b border-border px-4 py-3 text-left transition-colors ${
+                    className={`flex w-full flex-col gap-1.5 border-b border-border px-4 py-3 text-left transition-[background-color,border-color] focus-visible:relative focus-visible:z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-inset ${
                       isSelected
-                        ? "border-l-[3px] border-l-primary bg-primary/5"
-                        : "border-l-[3px] border-l-transparent hover:bg-bg"
+                        ? "border-l-[3px] border-l-primary bg-primary/10 hover:bg-primary/15"
+                        : "border-l-[3px] border-l-transparent hover:border-l-primary/50 hover:bg-surface-hover"
                     }`}
+                    aria-current={isSelected ? "true" : undefined}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5">

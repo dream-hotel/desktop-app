@@ -1,4 +1,13 @@
-import { ArrowUpRight, Ban, CheckCircle2, CircleDashed, Clock, Loader } from "lucide-react";
+import {
+  ArrowUpRight,
+  Ban,
+  CheckCircle2,
+  ChevronRight,
+  CircleDashed,
+  ClipboardCheck,
+  Clock,
+  Loader,
+} from "lucide-react";
 import {
   BackendTaskListItem,
   priorityNameLabel,
@@ -58,14 +67,28 @@ export default function UrgentTasksList({
   onOpenTasks,
 }: UrgentTasksListProps) {
   return (
-    <div className="flex flex-1 flex-col rounded-2xl border border-border bg-surface px-6 py-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="m-0 font-inter text-lg font-semibold leading-6 text-text-primary">
-          {title}
-        </h2>
+    <section className="flex h-full min-w-0 flex-col rounded-2xl border border-border bg-surface p-5">
+      <div className="mb-3 flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <ClipboardCheck size={17} strokeWidth={1.7} className="text-primary" />
+            <h2 className="m-0 font-inter text-[16px] font-semibold leading-6 text-text-primary">
+              {title}
+            </h2>
+            {tasks.length > 0 && (
+              <span className="rounded-full bg-neutral-soft px-2 py-0.5 font-inter text-[10px] font-semibold text-text-secondary">
+                {tasks.length}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 font-inter text-[11px] text-text-secondary">
+            Vencimiento primero; después prioridad y fecha.
+          </p>
+        </div>
         <button
+          type="button"
           onClick={() => onOpenTasks()}
-          className="flex items-center gap-1 font-inter text-[12px] font-medium text-primary hover:underline"
+          className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 font-inter text-[11px] font-semibold text-primary transition-colors hover:bg-primary-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
         >
           Ver todas
           <ArrowUpRight size={12} strokeWidth={2} />
@@ -73,11 +96,17 @@ export default function UrgentTasksList({
       </div>
 
       {tasks.length === 0 ? (
-        <p className="flex flex-1 items-center justify-center font-inter text-sm text-text-secondary">
-          {emptyMessage}
-        </p>
+        <div className="flex min-h-48 flex-1 flex-col items-center justify-center text-center">
+          <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-success/10 text-success">
+            <CheckCircle2 size={21} strokeWidth={1.7} />
+          </span>
+          <p className="font-inter text-[13px] font-medium text-text-primary">Turno al día</p>
+          <p className="mt-1 max-w-[280px] font-inter text-[11px] leading-4 text-text-secondary">
+            {emptyMessage}
+          </p>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-0.5">
+        <ul className="flex flex-col divide-y divide-border">
           {tasks.map((task) => {
             const priorityTone = PRIORITY_TONE[task.priority.name] ?? PRIORITY_TONE.low;
             const deadline = formatDeadline(task.limitDate);
@@ -90,15 +119,16 @@ export default function UrgentTasksList({
             return (
               <li key={task.id}>
                 <button
+                  type="button"
                   onClick={() => onOpenTasks(task.id)}
-                  className="flex w-full items-center gap-3 py-2.5 text-left transition-colors hover:bg-primary-light/40"
+                  className="group -mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left transition-[background-color,border-color,box-shadow] hover:border-border hover:bg-surface-hover hover:shadow-[0_4px_14px_rgba(30,29,22,0.05)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
                 >
                   <StatusIcon name={task.status.name} />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="truncate font-inter text-sm font-medium text-text-primary">
+                    <span className="truncate font-inter text-[13px] font-semibold text-text-primary">
                       {task.title}
                     </span>
-                    <div className="flex items-center gap-2 font-inter text-[11px] text-text-secondary">
+                    <div className="flex items-center gap-2 font-inter text-[10.5px] text-text-secondary">
                       <span
                         className={`inline-flex items-center rounded-full px-1.5 py-[1px] text-[10px] ${priorityTone.bg} ${priorityTone.text}`}
                       >
@@ -112,16 +142,22 @@ export default function UrgentTasksList({
                       )}
                     </div>
                   </div>
-                  <div className={`flex shrink-0 items-center gap-1 font-inter text-[12px] font-medium ${deadlineColor}`}>
+                  <div className={`flex shrink-0 items-center gap-1 font-inter text-[11px] font-medium ${deadlineColor}`}>
                     <Clock size={11} strokeWidth={1.6} />
                     {deadline.label}
                   </div>
+                  <ChevronRight
+                    aria-hidden="true"
+                    size={14}
+                    strokeWidth={1.8}
+                    className="-ml-1 shrink-0 text-text-secondary opacity-0 transition-[opacity,transform] group-hover:translate-x-0.5 group-hover:opacity-70 group-focus-visible:opacity-70"
+                  />
                 </button>
               </li>
             );
           })}
         </ul>
       )}
-    </div>
+    </section>
   );
 }

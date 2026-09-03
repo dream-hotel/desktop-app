@@ -27,6 +27,7 @@ import {
 import { BackendPriority } from "../../types/models/Announcement";
 
 export type FilterTab = "all" | "pending" | "in_progress" | "completed";
+export type DeadlineScope = "overdue" | "next_24h";
 
 const FILTER_TABS: { id: FilterTab; label: string }[] = [
   { id: "all", label: "Todos" },
@@ -85,12 +86,21 @@ interface FilterState {
   dateFrom: Date | null;
   dateTo: Date | null;
   priorities: number[];
+  deadlineScope: DeadlineScope | null;
 }
 
-const EMPTY_FILTER: FilterState = { dateFrom: null, dateTo: null, priorities: [] };
+const EMPTY_FILTER: FilterState = {
+  dateFrom: null,
+  dateTo: null,
+  priorities: [],
+  deadlineScope: null,
+};
 
 function isFilterActive(filter: FilterState): boolean {
-  return filter.dateFrom !== null || filter.dateTo !== null || filter.priorities.length > 0;
+  return filter.dateFrom !== null ||
+    filter.dateTo !== null ||
+    filter.priorities.length > 0 ||
+    filter.deadlineScope !== null;
 }
 
 function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
@@ -286,7 +296,7 @@ function DatePickerField({ label, value, onChange }: DatePickerFieldProps) {
 
   return (
     <div className="flex items-center justify-between">
-      <span className="font-alexandria text-[9px] font-light leading-[21px] text-black">
+      <span className="font-alexandria text-[9px] font-light leading-[21px] text-text-primary">
         {label}
       </span>
       <button
@@ -347,45 +357,50 @@ function FilterButton({ filter, onFilterChange, priorities }: FilterButtonProps)
     onFilterChange(EMPTY_FILTER);
   }
 
-  const filterIcon = (color: string) => (
-    <SlidersHorizontal size={13} strokeWidth={1.6} style={{ color }} />
-  );
-
-  const chevron = (direction: "up" | "down", color: string) =>
+  const chevron = (direction: "up" | "down") =>
     direction === "down" ? (
-      <ChevronDown size={13} strokeWidth={1.6} style={{ color }} />
+      <ChevronDown size={13} strokeWidth={1.6} />
     ) : (
-      <ChevronUp size={13} strokeWidth={1.6} style={{ color }} />
+      <ChevronUp size={13} strokeWidth={1.6} />
     );
+
+  const activeLabel = filter.deadlineScope === "overdue"
+    ? "Vencidas"
+    : filter.deadlineScope === "next_24h"
+      ? "Próximas 24 h"
+      : "Filtro";
 
   return (
     <div ref={containerRef} className="relative">
       {active && !expanded ? (
-        <button
-          onClick={() => setExpanded(true)}
-          className="flex items-center gap-[6px] rounded-[10px] border border-success bg-[rgba(26,186,26,0.15)] px-3 py-[7px] font-inter text-[13px] font-medium text-text-primary"
-        >
+        <div className="flex items-center rounded-[10px] border border-success/60 bg-success/10 text-text-primary">
           <button
             onClick={(e) => {
               e.stopPropagation();
               clearFilter();
             }}
-            className="flex items-center justify-center"
+            className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-success/15 hover:text-text-primary"
+            aria-label="Limpiar filtros"
           >
             <X size={14} strokeWidth={1.8} className="text-text-primary" />
           </button>
-          {filterIcon("#1a1a1a")}
-          Filtro
-          {chevron("down", "#1a1a1a")}
-        </button>
+          <button
+            onClick={() => setExpanded(true)}
+            className="flex items-center gap-[6px] py-[7px] pl-1 pr-3 font-inter text-[13px] font-medium"
+          >
+            <SlidersHorizontal size={13} strokeWidth={1.6} />
+            {activeLabel}
+            {chevron("down")}
+          </button>
+        </div>
       ) : (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-[6px] rounded-[10px] bg-neutral-soft px-3 py-[7px] font-inter text-[13px] font-medium text-text-secondary"
+          className="flex items-center gap-[6px] rounded-[10px] bg-neutral-soft px-3 py-[7px] font-inter text-[13px] font-medium text-text-secondary transition-colors hover:bg-neutral-mid hover:text-text-primary"
         >
-          {filterIcon("#6b7280")}
+          <SlidersHorizontal size={13} strokeWidth={1.6} />
           Filtro
-          {chevron(expanded ? "up" : "down", "#6b7280")}
+          {chevron(expanded ? "up" : "down")}
         </button>
       )}
 
@@ -398,12 +413,12 @@ function FilterButton({ filter, onFilterChange, priorities }: FilterButtonProps)
             <DatePickerField
               label="Desde"
               value={filter.dateFrom}
-              onChange={(d) => onFilterChange({ ...filter, dateFrom: d })}
+              onChange={(d) => onFilterChange({ ...filter, dateFrom: d, deadlineScope: null })}
             />
             <DatePickerField
               label="Hasta"
               value={filter.dateTo}
-              onChange={(d) => onFilterChange({ ...filter, dateTo: d })}
+              onChange={(d) => onFilterChange({ ...filter, dateTo: d, deadlineScope: null })}
             />
           </div>
 
@@ -417,7 +432,7 @@ function FilterButton({ filter, onFilterChange, priorities }: FilterButtonProps)
                   checked={filter.priorities.includes(p.id)}
                   onChange={() => togglePriority(p.id)}
                 />
-                <span className="font-alexandria text-[9px] font-light leading-[19.5px] text-black">
+                <span className="font-alexandria text-[9px] font-light leading-[19.5px] text-text-primary">
                   {priorityNameLabel(p.name)}
                 </span>
               </div>
@@ -459,11 +474,12 @@ function TaskItem({ task, isSelected, onClick, showStatusBadge }: TaskItemProps)
   return (
     <button
       onClick={onClick}
-      className={`flex w-full flex-col items-start border-b py-4 text-left ${
+      className={`group flex w-full flex-col items-start border-b py-4 text-left transition-colors focus-visible:relative focus-visible:z-[1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-inset ${
         isSelected
-          ? "border-b-border border-l-2 border-l-primary bg-primary-light pl-[22px] pr-5"
-          : "border-b-[rgba(0,0,0,0.04)] px-5"
+          ? "border-b-border border-l-[3px] border-l-primary bg-primary-light pl-[21px] pr-5 hover:bg-primary-light"
+          : "border-b-border border-l-[3px] border-l-transparent px-5 hover:border-l-primary/50 hover:bg-surface-hover"
       }`}
+      aria-current={isSelected ? "true" : undefined}
     >
       <div className="flex w-full items-start">
         <div className="mr-3 mt-[2px] shrink-0">
@@ -514,6 +530,7 @@ interface TaskListProps {
   initialTab?: FilterTab | null;
   initialPriority?: string | null;
   initialDueSoon?: boolean | null;
+  initialDeadlineScope?: DeadlineScope | null;
   onConsumeFilters?: () => void;
 }
 
@@ -528,6 +545,7 @@ export default function TaskList({
   initialTab,
   initialPriority,
   initialDueSoon,
+  initialDeadlineScope,
   onConsumeFilters,
 }: TaskListProps) {
   const [search, setSearch] = useState("");
@@ -554,10 +572,11 @@ export default function TaskList({
         changed = true;
       }
     }
-    if (initialDueSoon) {
-      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const requestedDeadlineScope = initialDeadlineScope ?? (initialDueSoon ? "next_24h" : null);
+    if (requestedDeadlineScope) {
       nextFilterState.dateFrom = null;
-      nextFilterState.dateTo = tomorrow;
+      nextFilterState.dateTo = null;
+      nextFilterState.deadlineScope = requestedDeadlineScope;
       changed = true;
     }
 
@@ -565,7 +584,7 @@ export default function TaskList({
       setAdvancedFilter(nextFilterState);
       onConsumeFilters?.();
     }
-  }, [initialTab, initialPriority, initialDueSoon, priorities, onConsumeFilters]);
+  }, [initialTab, initialPriority, initialDueSoon, initialDeadlineScope, priorities, onConsumeFilters]);
 
 
   const filteredTasks = useMemo(() => {
@@ -580,6 +599,18 @@ export default function TaskList({
       if (search && !task.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (advancedFilter.priorities.length > 0) {
         if (!advancedFilter.priorities.includes(task.priority.id)) return false;
+      }
+      if (advancedFilter.deadlineScope) {
+        if (task.status.name !== "pending" && task.status.name !== "in_progress") return false;
+        if (!task.limitDate) return false;
+        const deadline = new Date(task.limitDate).getTime();
+        if (Number.isNaN(deadline)) return false;
+        const now = Date.now();
+        if (advancedFilter.deadlineScope === "overdue" && deadline >= now) return false;
+        if (
+          advancedFilter.deadlineScope === "next_24h" &&
+          (deadline < now || deadline > now + 24 * 60 * 60 * 1000)
+        ) return false;
       }
       if (advancedFilter.dateFrom || advancedFilter.dateTo) {
         if (!task.limitDate) return false;
@@ -606,13 +637,13 @@ export default function TaskList({
               placeholder="Buscar tareas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none"
+              className="w-full rounded-[10px] bg-neutral-soft py-2 pl-9 pr-4 font-inter text-[13px] text-text-primary placeholder:text-text-secondary outline-none transition-colors hover:bg-neutral-mid/70 focus:bg-surface focus:ring-2 focus:ring-primary/35"
             />
           </div>
           {canCreate && (
             <button
               onClick={onNewTask}
-              className="flex items-center gap-[9px] rounded-[10px] bg-primary px-3 py-2 font-inter text-[13px] font-medium leading-[19.5px] text-on-accent shrink-0"
+              className="flex shrink-0 items-center gap-[9px] rounded-[10px] bg-primary px-3 py-2 font-inter text-[13px] font-medium leading-[19.5px] text-on-accent transition-colors hover:bg-primary-hover"
             >
               <Plus size={16} strokeWidth={2} />
               Nueva Tarea
@@ -626,11 +657,12 @@ export default function TaskList({
             <button
               key={tab.id}
               onClick={() => setActiveFilter(tab.id)}
-              className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] ${
+              className={`rounded-full px-3 py-1 font-inter text-xs font-medium leading-[18px] transition-colors ${
                 activeFilter === tab.id
                   ? "bg-primary text-on-accent"
-                  : "bg-neutral-soft text-text-secondary"
+                  : "bg-neutral-soft text-text-secondary hover:bg-neutral-mid hover:text-text-primary"
               }`}
+              aria-pressed={activeFilter === tab.id}
             >
               {tab.label}
             </button>

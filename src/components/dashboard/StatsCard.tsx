@@ -12,12 +12,12 @@ interface StatsCardProps {
 
 const ACCENT_STYLES: Record<
   NonNullable<StatsCardProps["accent"]>,
-  { iconBg: string; iconText: string }
+  { iconBg: string; iconText: string; edge: string }
 > = {
-  default: { iconBg: "bg-primary-light", iconText: "text-primary" },
-  warning: { iconBg: "bg-warning/15", iconText: "text-warning" },
-  danger: { iconBg: "bg-danger/10", iconText: "text-danger" },
-  success: { iconBg: "bg-success/15", iconText: "text-success" },
+  default: { iconBg: "bg-primary-light", iconText: "text-primary", edge: "bg-primary" },
+  warning: { iconBg: "bg-warning/15", iconText: "text-warning", edge: "bg-warning" },
+  danger: { iconBg: "bg-danger/10", iconText: "text-danger", edge: "bg-danger" },
+  success: { iconBg: "bg-success/15", iconText: "text-success", edge: "bg-success" },
 };
 
 export default function StatsCard({
@@ -31,16 +31,17 @@ export default function StatsCard({
   const styles = ACCENT_STYLES[accent];
   const interactive = typeof onClick === "function";
   const baseClasses =
-    "flex min-w-[180px] flex-1 flex-col gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-colors";
+    "group relative flex min-h-[138px] min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface p-4 text-left transition-[background-color,border-color,box-shadow] duration-200";
   const interactiveClasses = interactive
-    ? "cursor-pointer hover:border-primary/40 hover:bg-primary-light/40"
+    ? "cursor-pointer hover:border-border-strong hover:bg-surface-hover hover:shadow-[0_8px_24px_rgba(30,29,22,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
     : "";
 
   const content = (
     <>
+      <span aria-hidden="true" className={`absolute inset-x-0 top-0 h-[3px] ${styles.edge}`} />
       <div className="flex items-center justify-between">
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-[10px] ${styles.iconBg} ${styles.iconText}`}
+          className={`flex h-9 w-9 items-center justify-center rounded-[10px] ${styles.iconBg} ${styles.iconText}`}
         >
           {icon}
         </div>
@@ -48,20 +49,20 @@ export default function StatsCard({
           <ArrowRight
             size={16}
             strokeWidth={1.8}
-            className="text-text-secondary opacity-50 transition-opacity group-hover:opacity-100"
+            className="text-text-secondary opacity-40 transition-[opacity,transform] group-hover:translate-x-0.5 group-hover:opacity-100"
           />
         )}
       </div>
-      <div className="flex flex-col gap-[2px]">
-        <span className="font-inter text-[32px] font-semibold leading-[38px] text-text-primary">
+      <div className="mt-3 flex flex-col gap-0.5">
+        <span className="font-inter text-[30px] font-semibold leading-8 tracking-[-0.02em] text-text-primary">
           {value}
         </span>
-        <span className="font-inter text-[13px] leading-[18px] text-text-secondary">
+        <span className="font-inter text-[13px] font-medium leading-[18px] text-text-body">
           {label}
         </span>
       </div>
       {hint && (
-        <span className="font-inter text-xs leading-4 text-text-secondary">
+        <span className="mt-1 font-inter text-[11px] leading-4 text-text-secondary">
           {hint}
         </span>
       )}

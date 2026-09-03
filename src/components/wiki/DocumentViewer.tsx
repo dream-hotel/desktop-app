@@ -3,6 +3,7 @@ import { FileText, FileSpreadsheet, Loader2, AlertCircle } from "lucide-react";
 import * as mammoth from "mammoth";
 import * as XLSX from "xlsx";
 import { getAccessToken } from "../../service/apiClient";
+import { getFullUrl } from "../../service/apiConfig";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 interface DocumentViewerProps {
@@ -19,12 +20,6 @@ type ViewState =
 
 export default function DocumentViewer({ fileUrl, fileName }: DocumentViewerProps) {
   const [view, setView] = useState<ViewState>({ type: "loading" });
-
-  const getFullUrl = (url: string) => {
-    if (url.startsWith("http")) return url;
-    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
-    return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
-  };
 
   useEffect(() => {
     let cancelled = false;

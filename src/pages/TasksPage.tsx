@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTaskActivity, useTaskCatalogs, useTaskDetail, useTasks } from "../hooks/useTasks";
 import { usePermissions } from "../hooks/usePermissions";
-import TaskList, { FilterTab } from "../components/tasks/TaskList";
+import TaskList, { DeadlineScope, FilterTab } from "../components/tasks/TaskList";
 import TaskDetail from "../components/tasks/TaskDetail";
 import TaskFullView from "../components/tasks/TaskFullView";
 import TaskFormModal from "../components/tasks/TaskFormModal";
@@ -17,6 +17,7 @@ interface TasksPageProps {
   pendingTab?: FilterTab | null;
   pendingPriority?: string | null;
   pendingDueSoon?: boolean | null;
+  pendingDeadlineScope?: DeadlineScope | null;
   onConsumeFilters?: () => void;
 }
 
@@ -26,6 +27,7 @@ export default function TasksPage({
   pendingTab,
   pendingPriority,
   pendingDueSoon,
+  pendingDeadlineScope,
   onConsumeFilters,
 }: TasksPageProps = {}) {
   const { has } = usePermissions();
@@ -153,6 +155,7 @@ export default function TasksPage({
           initialTab={pendingTab}
           initialPriority={pendingPriority}
           initialDueSoon={pendingDueSoon}
+          initialDeadlineScope={pendingDeadlineScope}
           onConsumeFilters={onConsumeFilters}
         />
       </div>

@@ -66,7 +66,7 @@ export default function WelcomeNotificationsModal({
   onOpenAnnouncement,
 }: WelcomeNotificationsModalProps) {
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-border0 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-overlay backdrop-blur-sm">
       <div className="flex max-h-[85vh] w-[520px] flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
         <div className="flex flex-col gap-1 border-b border-border px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">

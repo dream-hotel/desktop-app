@@ -33,6 +33,7 @@ export interface BackendTaskListItem {
   startDate: string | null;
   limitDate: string | null;
   createdAt: string;
+  updatedAt?: string | null;
   status: BackendTaskStatus;
   priority: BackendPriority;
   creator: BackendTaskUser;

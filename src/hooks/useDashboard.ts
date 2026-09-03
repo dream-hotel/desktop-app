@@ -3,32 +3,21 @@ import { BackendTaskListItem } from "../types/models/Task";
 import { Announcement } from "../types/models/Announcement";
 import { listTasks } from "../service/taskService";
 import { findAnnouncements } from "../service/announcementService";
+import {
+  DashboardMetrics,
+  getDashboardMetrics,
+} from "../service/dashboardService";
 import { usePolling } from "./usePolling";
-
-export interface DashboardStats {
-  pending: number;
-  inProgress: number;
-  dueSoon: number;
-  critical: number;
-}
 
 export interface DashboardData {
   tasks: BackendTaskListItem[];
   urgentTasks: BackendTaskListItem[];
   announcements: Announcement[];
-  stats: DashboardStats;
+  metrics: DashboardMetrics;
 }
 
 function isActive(task: BackendTaskListItem): boolean {
   return task.status.name === "pending" || task.status.name === "in_progress";
-}
-
-function isDueWithin(task: BackendTaskListItem, hours: number): boolean {
-  if (!task.limitDate) return false;
-  const limit = new Date(task.limitDate).getTime();
-  if (Number.isNaN(limit)) return false;
-  const now = Date.now();
-  return limit - now <= hours * 60 * 60 * 1000;
 }
 
 const PRIORITY_RANK: Record<string, number> = {
@@ -38,21 +27,33 @@ const PRIORITY_RANK: Record<string, number> = {
   low: 3,
 };
 
-function urgencyScore(task: BackendTaskListItem): number {
-  return PRIORITY_RANK[task.priority.name] ?? 99;
+function validDeadline(task: BackendTaskListItem): number {
+  if (!task.limitDate) return Number.POSITIVE_INFINITY;
+  const value = new Date(task.limitDate).getTime();
+  return Number.isNaN(value) ? Number.POSITIVE_INFINITY : value;
+}
+
+function urgencyBand(task: BackendTaskListItem): number {
+  const deadline = validDeadline(task);
+  const remaining = deadline - Date.now();
+  if (remaining < 0) return 0;
+  if (remaining <= 24 * 60 * 60 * 1000) return 1;
+  if (task.priority.name === "critical") return 2;
+  return 3;
 }
 
 function urgencyOrder(a: BackendTaskListItem, b: BackendTaskListItem): number {
-  const byPriority = urgencyScore(a) - urgencyScore(b);
+  const byBand = urgencyBand(a) - urgencyBand(b);
+  if (byBand !== 0) return byBand;
+  const byPriority = (PRIORITY_RANK[a.priority.name] ?? 99) - (PRIORITY_RANK[b.priority.name] ?? 99);
   if (byPriority !== 0) return byPriority;
-  const aLimit = a.limitDate ? new Date(a.limitDate).getTime() : Number.POSITIVE_INFINITY;
-  const bLimit = b.limitDate ? new Date(b.limitDate).getTime() : Number.POSITIVE_INFINITY;
-  return aLimit - bLimit;
+  return validDeadline(a) - validDeadline(b);
 }
 
 export function useDashboard() {
   const [tasks, setTasks] = useState<BackendTaskListItem[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,12 +63,14 @@ export function useDashboard() {
       setError(null);
     }
     try {
-      const [tasksRes, annRes] = await Promise.all([
-        listTasks({ limit: 200 }),
+      const [tasksRes, annRes, metricsRes] = await Promise.all([
+        listTasks({ limit: 500 }),
         findAnnouncements({ limit: 5 }),
+        getDashboardMetrics(),
       ]);
       setTasks(tasksRes.data);
       setAnnouncements(annRes.data);
+      setMetrics(metricsRes);
       if (silent) setError(null);
     } catch (e) {
       // On background polls keep showing the last good data instead of wiping it.
@@ -75,6 +78,7 @@ export function useDashboard() {
         setError(e instanceof Error ? e.message : "Error al cargar el dashboard");
         setTasks([]);
         setAnnouncements([]);
+        setMetrics(null);
       }
     } finally {
       if (!silent) setIsLoading(false);
@@ -88,16 +92,11 @@ export function useDashboard() {
   usePolling(() => fetchData(true), { resources: ["tasks", "announcements"] });
 
   const data = useMemo<DashboardData | null>(() => {
+    if (!metrics) return null;
     const active = tasks.filter(isActive);
-    const stats: DashboardStats = {
-      pending: tasks.filter((t) => t.status.name === "pending").length,
-      inProgress: tasks.filter((t) => t.status.name === "in_progress").length,
-      dueSoon: active.filter((t) => isDueWithin(t, 24)).length,
-      critical: active.filter((t) => t.priority.name === "critical").length,
-    };
-    const urgentTasks = [...active].sort(urgencyOrder).slice(0, 5);
-    return { tasks, urgentTasks, announcements, stats };
-  }, [tasks, announcements]);
+    const urgentTasks = [...active].sort(urgencyOrder).slice(0, 7);
+    return { tasks, urgentTasks, announcements, metrics };
+  }, [tasks, announcements, metrics]);
 
   return { data, isLoading, error, refresh: fetchData };
 }
